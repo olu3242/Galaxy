@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Galaxy — Run Your Organization on WhatsApp</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --void:#070B14;
+  --deep:#0F172A;
+  --surface:#111827;
+  --panel:#1A2235;
+  --border:rgba(109,93,252,0.15);
+  --accent:#6D5DFC;
+  --accent-2:#4D7CFE;
+  --success:#22C7A9;
+  --text-primary:#F8FAFC;
+  --text-secondary:#94A3B8;
+  --text-dim:#475569;
+  --font-display:'Syne',sans-serif;
+  --font-body:'DM Sans',sans-serif;
+  --font-mono:'JetBrains Mono',monospace;
+}
+html{scroll-behavior:smooth}
+body{background:var(--void);color:var(--text-primary);font-family:var(--font-body);font-size:16px;line-height:1.6;overflow-x:hidden}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:20px 48px;display:flex;align-items:center;justify-content:space-between;background:rgba(7,11,20,0.85);backdrop-filter:blur(20px);border-bottom:1px solid rgba(109,93,252,0.08)}
+.nav-logo{font-family:var(--font-display);font-size:22px;font-weight:800;letter-spacing:-0.5px;background:linear-gradient(135deg,#fff 0%,#6D5DFC 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.nav-links{display:flex;gap:36px;align-items:center}
+.nav-links a{color:var(--text-secondary);font-size:14px;text-decoration:none;transition:color 0.2s}
+.nav-links a:hover{color:var(--text-primary)}
+.nav-cta{background:var(--accent);color:#fff;padding:10px 24px;border-radius:8px;font-size:14px;font-weight:500;text-decoration:none;border:none;cursor:pointer;transition:opacity 0.2s,transform 0.15s;font-family:var(--font-body)}
+.nav-cta:hover{opacity:0.88;transform:translateY(-1px)}
+
+/* HERO */
+#hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:140px 48px 100px;position:relative;overflow:hidden;text-align:center}
+.hero-bg{position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 20%,rgba(109,93,252,0.12) 0%,transparent 70%);pointer-events:none}
+.orbit-ring{position:absolute;border-radius:50%;border:1px solid rgba(109,93,252,0.07);animation:slowRotate 60s linear infinite}
+.orbit-ring:nth-child(1){width:600px;height:600px;top:50%;left:50%;transform:translate(-50%,-50%) rotateX(70deg)}
+.orbit-ring:nth-child(2){width:900px;height:900px;top:50%;left:50%;transform:translate(-50%,-50%) rotateX(70deg);border-color:rgba(77,124,254,0.04);animation-duration:90s;animation-direction:reverse}
+.orbit-ring:nth-child(3){width:1200px;height:1200px;top:50%;left:50%;transform:translate(-50%,-50%) rotateX(70deg);border-color:rgba(34,199,169,0.03);animation-duration:120s}
+@keyframes slowRotate{to{transform:translate(-50%,-50%) rotateX(70deg) rotateZ(360deg)}}
+
+.hero-eyebrow{display:inline-flex;align-items:center;gap:8px;background:rgba(109,93,252,0.1);border:1px solid rgba(109,93,252,0.25);padding:6px 16px;border-radius:100px;font-size:12px;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:var(--accent);margin-bottom:32px}
+.hero-eyebrow-dot{width:6px;height:6px;border-radius:50%;background:var(--success);animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.5;transform:scale(0.8)}}
+
+h1{font-family:var(--font-display);font-size:clamp(48px,8vw,92px);font-weight:800;line-height:1.0;letter-spacing:-0.04em;max-width:960px;margin:0 auto 28px}
+.h1-white{display:block;color:#fff}
+.h1-grad{display:block;background:linear-gradient(135deg,#6D5DFC 0%,#4D7CFE 50%,#22C7A9 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+
+.hero-sub{font-size:clamp(17px,2.2vw,21px);color:var(--text-secondary);max-width:600px;margin:0 auto 48px;font-weight:300;line-height:1.6}
+
+.hero-actions{display:flex;gap:16px;align-items:center;justify-content:center;flex-wrap:wrap;margin-bottom:24px}
+.btn-primary{background:var(--accent);color:#fff;padding:16px 36px;border-radius:10px;font-size:16px;font-weight:500;text-decoration:none;border:none;cursor:pointer;font-family:var(--font-body);transition:all 0.2s;box-shadow:0 0 40px rgba(109,93,252,0.3)}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 0 60px rgba(109,93,252,0.45);opacity:0.92}
+.btn-secondary{background:transparent;color:var(--text-primary);padding:16px 36px;border-radius:10px;font-size:16px;font-weight:400;text-decoration:none;border:1px solid rgba(248,250,252,0.15);cursor:pointer;font-family:var(--font-body);transition:all 0.2s}
+.btn-secondary:hover{border-color:rgba(248,250,252,0.3);background:rgba(248,250,252,0.04)}
+.hero-note{font-size:13px;color:var(--text-dim);margin-bottom:64px}
+
+/* WHATSAPP CHAT MOCKUP IN HERO */
+.chat-preview{width:100%;max-width:800px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:24px;text-align:left}
+.chat-phone{background:var(--deep);border:1px solid var(--border);border-radius:20px;overflow:hidden;box-shadow:0 0 80px rgba(109,93,252,0.1),0 40px 80px rgba(0,0,0,0.5)}
+.phone-topbar{background:rgba(15,23,42,0.95);padding:12px 16px;border-bottom:1px solid rgba(109,93,252,0.1);display:flex;align-items:center;gap:10px}
+.phone-avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent-2));display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff}
+.phone-name{font-size:13px;font-weight:600;color:var(--text-primary)}
+.phone-status{font-size:11px;color:var(--success)}
+.chat-body{padding:16px;display:flex;flex-direction:column;gap:10px;min-height:280px}
+.msg{max-width:80%;padding:10px 14px;border-radius:12px;font-size:13px;line-height:1.5}
+.msg.in{background:rgba(26,34,53,0.9);border:1px solid rgba(109,93,252,0.12);color:var(--text-secondary);align-self:flex-start;border-radius:4px 12px 12px 12px}
+.msg.out{background:linear-gradient(135deg,rgba(109,93,252,0.3),rgba(77,124,254,0.25));border:1px solid rgba(109,93,252,0.25);color:var(--text-primary);align-self:flex-end;border-radius:12px 4px 12px 12px}
+.msg-time{font-size:10px;color:var(--text-dim);margin-top:4px;font-family:var(--font-mono)}
+.msg strong{color:var(--text-primary)}
+.galaxy-response{background:rgba(109,93,252,0.08);border:1px solid rgba(109,93,252,0.2);border-radius:10px;padding:12px;margin:4px 0;font-size:12px}
+.galaxy-response .gr-label{font-size:10px;color:var(--accent);letter-spacing:0.06em;text-transform:uppercase;font-family:var(--font-mono);margin-bottom:6px}
+.gr-item{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid rgba(109,93,252,0.08);font-size:12px;color:var(--text-secondary)}
+.gr-item:last-child{border-bottom:none}
+.gr-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+
+.dashboard-card{background:var(--deep);border:1px solid var(--border);border-radius:20px;overflow:hidden;box-shadow:0 0 80px rgba(77,124,254,0.06),0 40px 80px rgba(0,0,0,0.4)}
+.dc-topbar{background:rgba(15,23,42,0.95);padding:12px 16px;border-bottom:1px solid rgba(109,93,252,0.1);display:flex;align-items:center;justify-content:space-between}
+.dc-title{font-size:12px;color:var(--text-dim);font-family:var(--font-mono);letter-spacing:0.05em}
+.dc-live{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--success);font-family:var(--font-mono)}
+.dc-live-dot{width:5px;height:5px;border-radius:50%;background:var(--success);animation:pulse 2s ease-in-out infinite}
+.dc-body{padding:16px;display:flex;flex-direction:column;gap:12px}
+.dc-stat-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.dc-stat{background:rgba(26,34,53,0.8);border:1px solid rgba(109,93,252,0.1);border-radius:8px;padding:12px}
+.dc-stat-n{font-family:var(--font-display);font-size:24px;font-weight:700;color:var(--text-primary);margin-bottom:2px}
+.dc-stat-l{font-size:11px;color:var(--text-dim)}
+.dc-stat-d{font-size:11px;color:var(--success);margin-top:2px}
+.dc-row{display:flex;align-items:center;justify-content:space-between;padding:9px 12px;background:rgba(26,34,53,0.5);border-radius:7px;border:1px solid rgba(109,93,252,0.07);font-size:12px}
+.dc-row-name{color:var(--text-secondary)}
+.dc-badge{padding:2px 8px;border-radius:100px;font-size:10px;font-family:var(--font-mono)}
+.approved{background:rgba(34,199,169,0.12);color:var(--success);border:1px solid rgba(34,199,169,0.25)}
+.pending{background:rgba(251,191,36,0.1);color:#FBB924;border:1px solid rgba(251,191,36,0.2)}
+.new{background:rgba(109,93,252,0.12);color:#a89dff;border:1px solid rgba(109,93,252,0.25)}
+
+/* HOW IT WORKS — STORY STEPS */
+section{padding:100px 48px}
+.section-wrap{max-width:1100px;margin:0 auto}
+.eyebrow{font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent);font-family:var(--font-mono);margin-bottom:16px}
+.section-title{font-family:var(--font-display);font-size:clamp(34px,5vw,52px);font-weight:800;letter-spacing:-0.03em;line-height:1.05;margin-bottom:20px}
+.section-sub{font-size:18px;color:var(--text-secondary);font-weight:300;max-width:520px;line-height:1.65}
+
+.story-steps{display:flex;flex-direction:column;gap:0;margin-top:72px}
+.story-step{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center;padding:72px 0;border-top:1px solid rgba(109,93,252,0.08)}
+.story-step:first-child{border-top:none;padding-top:0}
+.story-step.flip{direction:rtl}
+.story-step.flip > *{direction:ltr}
+.step-num{font-family:var(--font-mono);font-size:11px;color:var(--accent);letter-spacing:0.1em;margin-bottom:20px}
+.step-title{font-family:var(--font-display);font-size:clamp(24px,3.5vw,36px);font-weight:700;letter-spacing:-0.02em;line-height:1.15;margin-bottom:16px;color:var(--text-primary)}
+.step-body{font-size:16px;color:var(--text-secondary);line-height:1.7;margin-bottom:24px}
+.step-proof{display:flex;flex-direction:column;gap:10px}
+.step-proof-item{display:flex;gap:10px;align-items:flex-start;font-size:14px;color:var(--text-secondary)}
+.sp-check{width:18px;height:18px;border-radius:50%;background:rgba(34,199,169,0.15);border:1px solid rgba(34,199,169,0.3);display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--success);flex-shrink:0;margin-top:2px}
+.step-visual{border-radius:16px;overflow:hidden;border:1px solid var(--border);background:var(--deep)}
+
+/* DEMO VIDEO SECTION */
+.demo-section{background:var(--deep);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.demo-wrap{max-width:1100px;margin:0 auto}
+.demo-video-container{position:relative;width:100%;border-radius:16px;overflow:hidden;background:#000;border:1px solid var(--border);box-shadow:0 0 100px rgba(109,93,252,0.15),0 40px 80px rgba(0,0,0,0.6);margin-top:56px}
+.demo-video-container::before{content:'';display:block;padding-top:56.25%}
+.demo-inner{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(ellipse at center,rgba(109,93,252,0.08) 0%,var(--void) 70%)}
+.demo-play-btn{width:80px;height:80px;border-radius:50%;background:rgba(109,93,252,0.9);border:2px solid rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.3s;margin-bottom:24px;position:relative;z-index:2}
+.demo-play-btn:hover{background:var(--accent);transform:scale(1.08);box-shadow:0 0 60px rgba(109,93,252,0.5)}
+.demo-play-btn::after{content:'';border-left:28px solid #fff;border-top:16px solid transparent;border-bottom:16px solid transparent;margin-left:6px}
+.demo-caption{font-size:16px;color:var(--text-secondary);font-weight:300;text-align:center}
+.demo-caption strong{color:var(--text-primary);display:block;font-family:var(--font-display);font-size:22px;font-weight:600;margin-bottom:6px}
+.demo-chapters{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:32px}
+.demo-chapter{background:var(--deep);border:1px solid var(--border);border-radius:10px;padding:16px;cursor:pointer;transition:all 0.2s;text-align:center}
+.demo-chapter:hover{border-color:rgba(109,93,252,0.4);background:rgba(109,93,252,0.06)}
+.demo-chapter.active{border-color:var(--accent);background:rgba(109,93,252,0.1)}
+.dc-time{font-family:var(--font-mono);font-size:11px;color:var(--accent);margin-bottom:6px}
+.dc-name{font-size:13px;font-weight:500;color:var(--text-primary);margin-bottom:4px}
+.dc-desc{font-size:12px;color:var(--text-dim);line-height:1.4}
+
+/* WHO IT'S FOR */
+.for-section{background:var(--deep);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.for-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1px;background:rgba(109,93,252,0.1);border-radius:12px;overflow:hidden;border:1px solid var(--border);margin-top:64px}
+.for-item{background:var(--deep);padding:32px 28px;transition:background 0.3s;cursor:default;position:relative;overflow:hidden}
+.for-item::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at center,rgba(109,93,252,0.08) 0%,transparent 70%);opacity:0;transition:opacity 0.3s}
+.for-item:hover{background:rgba(26,34,53,0.95)}
+.for-item:hover::before{opacity:1}
+.for-icon{font-size:28px;margin-bottom:16px}
+.for-name{font-family:var(--font-display);font-size:17px;font-weight:600;color:var(--text-primary);margin-bottom:8px}
+.for-pain{font-size:13px;color:var(--text-dim);line-height:1.55;margin-bottom:12px}
+.for-win{font-size:13px;color:var(--success);line-height:1.4}
+
+/* BEFORE/AFTER */
+.compare-grid{display:grid;grid-template-columns:1fr 1fr;gap:32px;margin-top:64px}
+.compare-card{border-radius:16px;overflow:hidden;border:1px solid}
+.compare-card.before{border-color:rgba(248,113,113,0.2)}
+.compare-card.after{border-color:rgba(109,93,252,0.3);box-shadow:0 0 60px rgba(109,93,252,0.08)}
+.compare-header{padding:16px 24px;display:flex;align-items:center;gap:10px;border-bottom:1px solid}
+.before .compare-header{background:rgba(248,113,113,0.05);border-color:rgba(248,113,113,0.12)}
+.after .compare-header{background:rgba(109,93,252,0.08);border-color:rgba(109,93,252,0.18)}
+.c-badge{font-size:10px;letter-spacing:0.1em;text-transform:uppercase;padding:4px 12px;border-radius:100px;font-family:var(--font-mono)}
+.before .c-badge{background:rgba(248,113,113,0.1);color:#F87171;border:1px solid rgba(248,113,113,0.2)}
+.after .c-badge{background:rgba(109,93,252,0.12);color:#a89dff;border:1px solid rgba(109,93,252,0.25)}
+.compare-body{padding:24px;background:var(--deep);min-height:320px}
+.ci{display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-bottom:1px solid rgba(255,255,255,0.04)}
+.ci:last-child{border-bottom:none}
+.ci-icon{font-size:16px;width:22px;flex-shrink:0;margin-top:1px}
+.ci-text{font-size:14px;color:var(--text-secondary);line-height:1.55}
+
+/* TESTIMONIALS */
+.testimonials{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:64px}
+.tcard{background:var(--deep);border:1px solid var(--border);border-radius:14px;padding:28px}
+.tcard.featured{border-color:rgba(109,93,252,0.3);box-shadow:0 0 50px rgba(109,93,252,0.07)}
+.tquote{font-size:16px;color:var(--text-primary);font-style:italic;line-height:1.65;margin-bottom:20px}
+.tattrib{display:flex;gap:12px;align-items:center}
+.tavatar{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--success));display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0}
+.tname{font-size:13px;font-weight:600;color:var(--text-primary)}
+.trole{font-size:12px;color:var(--text-dim)}
+
+/* STATS */
+.stats-band{padding:80px 48px;background:linear-gradient(135deg,rgba(109,93,252,0.06) 0%,rgba(77,124,254,0.04) 100%);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.stats-inner{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);gap:40px;text-align:center}
+.stat-big{font-family:var(--font-display);font-size:clamp(36px,5vw,52px);font-weight:800;letter-spacing:-0.03em;background:linear-gradient(135deg,#fff 0%,var(--accent) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.stat-desc{font-size:14px;color:var(--text-dim);margin-top:6px;line-height:1.45}
+
+/* FAQ */
+.faq-section{background:var(--deep);border-top:1px solid var(--border)}
+.faq-cols{display:grid;grid-template-columns:1fr 2fr;gap:80px;align-items:start;margin-top:64px}
+.faq-sticky{position:sticky;top:100px}
+.faq-side-title{font-family:var(--font-display);font-size:28px;font-weight:700;line-height:1.2;color:var(--text-primary);margin-bottom:16px}
+.faq-side-sub{font-size:15px;color:var(--text-secondary);line-height:1.6;margin-bottom:32px}
+.faq-contact{background:rgba(109,93,252,0.08);border:1px solid rgba(109,93,252,0.2);border-radius:12px;padding:24px}
+.faq-contact-label{font-size:12px;color:var(--accent);letter-spacing:0.06em;text-transform:uppercase;font-family:var(--font-mono);margin-bottom:10px}
+.faq-contact p{font-size:14px;color:var(--text-secondary);line-height:1.6;margin-bottom:16px}
+.faq-contact a{color:var(--accent);text-decoration:none;font-size:14px;font-weight:500}
+.faq-list{display:flex;flex-direction:column;gap:0}
+.faq-item{border-bottom:1px solid rgba(109,93,252,0.1)}
+.faq-q{width:100%;background:transparent;border:none;padding:24px 0;display:flex;align-items:flex-start;justify-content:space-between;gap:20px;cursor:pointer;text-align:left;font-family:var(--font-body)}
+.faq-q-text{font-size:17px;font-weight:500;color:var(--text-primary);line-height:1.4}
+.faq-icon{width:24px;height:24px;border-radius:50%;background:rgba(109,93,252,0.1);border:1px solid rgba(109,93,252,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--accent);font-size:16px;transition:all 0.25s;margin-top:2px}
+.faq-item.open .faq-icon{background:var(--accent);color:#fff;transform:rotate(45deg)}
+.faq-a{display:none;padding-bottom:24px}
+.faq-item.open .faq-a{display:block}
+.faq-a-text{font-size:15px;color:var(--text-secondary);line-height:1.75}
+.faq-a-text strong{color:var(--text-primary);font-weight:500}
+.faq-a-text ul{margin:12px 0 0 18px;display:flex;flex-direction:column;gap:8px}
+.faq-a-text li{color:var(--text-secondary)}
+.faq-a-text li::marker{color:var(--accent)}
+.faq-category{font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--accent);font-family:var(--font-mono);margin:32px 0 8px;display:block}
+.faq-category:first-child{margin-top:0}
+
+/* CTA */
+.cta-section{padding:160px 48px;text-align:center;position:relative;overflow:hidden}
+.cta-bg{position:absolute;inset:0;background:radial-gradient(ellipse 70% 60% at 50% 50%,rgba(109,93,252,0.14) 0%,transparent 70%);pointer-events:none}
+.cta-title{font-family:var(--font-display);font-size:clamp(40px,6.5vw,76px);font-weight:800;letter-spacing:-0.04em;line-height:1.0;max-width:800px;margin:0 auto 24px}
+.cta-sub{font-size:19px;color:var(--text-secondary);font-weight:300;margin-bottom:48px}
+.cta-note{font-size:13px;color:var(--text-dim);margin-top:20px}
+
+footer{border-top:1px solid var(--border);padding:48px;display:flex;align-items:center;justify-content:space-between;max-width:1200px;margin:0 auto}
+.footer-copy{font-size:13px;color:var(--text-dim)}
+.footer-links{display:flex;gap:32px}
+.footer-links a{font-size:13px;color:var(--text-dim);text-decoration:none;transition:color 0.2s}
+.footer-links a:hover{color:var(--text-secondary)}
+
+.fade-up{opacity:0;transform:translateY(28px);transition:opacity 0.7s ease,transform 0.7s ease}
+.fade-up.visible{opacity:1;transform:translateY(0)}
+
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:var(--void)}
+::-webkit-scrollbar-thumb{background:rgba(109,93,252,0.4);border-radius:4px}
+
+@media(max-width:900px){
+  nav{padding:16px 24px}.nav-links{display:none}
+  section,#hero,.stats-band,.faq-section,.cta-section,.demo-section{padding:64px 24px}
+  .chat-preview,.compare-grid,.testimonials,.demo-chapters{grid-template-columns:1fr}
+  .story-step,.faq-cols{grid-template-columns:1fr;gap:32px}
+  .story-step.flip{direction:ltr}
+  .stats-inner{grid-template-columns:1fr 1fr;gap:28px}
+  footer{flex-direction:column;gap:24px;text-align:center}
+  .for-grid{grid-template-columns:1fr 1fr}
+  .faq-sticky{position:static}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">Galaxy</div>
+  <div class="nav-links">
+    <a href="#how">How It Works</a>
+    <a href="#demo">See Demo</a>
+    <a href="#who">Who It's For</a>
+    <a href="#faq">FAQ</a>
+  </div>
+  <a href="#cta" class="nav-cta">Get Started Free</a>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-bg"></div>
+  <div class="orbit-ring"></div>
+  <div class="orbit-ring"></div>
+  <div class="orbit-ring"></div>
+
+  <div class="hero-eyebrow"><span class="hero-eyebrow-dot"></span>Now in Early Access · Join 1,200+ Organizations</div>
+
+  <h1>
+    <span class="h1-white">Stop losing things</span>
+    <span class="h1-grad">in your WhatsApp groups.</span>
+  </h1>
+
+  <p class="hero-sub">
+    Galaxy turns the WhatsApp your team already uses into a real management system — so approvals get done, attendance gets tracked, and nothing falls through the cracks again.
+  </p>
+
+  <div class="hero-actions">
+    <a href="#cta" class="btn-primary">Get Started Free</a>
+    <a href="#demo" class="btn-secondary">Watch 2-min Demo</a>
+  </div>
+  <div class="hero-note">No app to download. No training needed. Works in WhatsApp.</div>
+
+  <!-- SIDE-BY-SIDE: CHAT + DASHBOARD -->
+  <div class="chat-preview">
+    <!-- WhatsApp Side -->
+    <div class="chat-phone">
+      <div class="phone-topbar">
+        <div class="phone-avatar">G</div>
+        <div>
+          <div class="phone-name">Galaxy Assistant</div>
+          <div class="phone-status">● Online</div>
+        </div>
+      </div>
+      <div class="chat-body">
+        <div class="msg in">
+          Hi Pastor James, <strong>Sunday attendance report</strong> is ready. 214 members checked in — up from 198 last week. 🎉
+          <div class="msg-time">09:02</div>
+        </div>
+        <div class="msg out">
+          Who was absent from the welfare team?
+          <div class="msg-time">09:03</div>
+        </div>
+        <div class="msg in">
+          3 members were absent: <strong>Adaeze, Kunle, and Miriam.</strong> Should I send them a welfare check message?
+          <div class="msg-time">09:03</div>
+        </div>
+        <div class="msg out">
+          Yes please
+          <div class="msg-time">09:04</div>
+        </div>
+        <div class="galaxy-response">
+          <div class="gr-label">✓ Done — 3 messages sent</div>
+          <div class="gr-item"><div class="gr-dot" style="background:var(--success)"></div>Adaeze Okoye — welfare message sent</div>
+          <div class="gr-item"><div class="gr-dot" style="background:var(--success)"></div>Kunle Adeyemi — welfare message sent</div>
+          <div class="gr-item"><div class="gr-dot" style="background:var(--success)"></div>Miriam Essien — welfare message sent</div>
+        </div>
+        <div class="msg in" style="margin-top:4px">
+          All done. I've also logged this in the welfare record. Anything else?
+          <div class="msg-time">09:04</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dashboard Side -->
+    <div class="dashboard-card">
+      <div class="dc-topbar">
+        <div class="dc-title">GRACE CHAPEL — LIVE DASHBOARD</div>
+        <div class="dc-live"><div class="dc-live-dot"></div>LIVE</div>
+      </div>
+      <div class="dc-body">
+        <div class="dc-stat-row">
+          <div class="dc-stat">
+            <div class="dc-stat-n" id="h-members">214</div>
+            <div class="dc-stat-l">Present Today</div>
+            <div class="dc-stat-d">↑ 16 vs last week</div>
+          </div>
+          <div class="dc-stat">
+            <div class="dc-stat-n">₦840k</div>
+            <div class="dc-stat-l">Offerings Recorded</div>
+            <div class="dc-stat-d">↑ 12% this month</div>
+          </div>
+        </div>
+        <div class="dc-row"><span class="dc-row-name">Leave — Deacon Emeka (3 days)</span><span class="dc-badge approved">Approved</span></div>
+        <div class="dc-row"><span class="dc-row-name">Budget Request — Media Dept</span><span class="dc-badge pending">Pending ⏳</span></div>
+        <div class="dc-row"><span class="dc-row-name">New member — Mrs. Folasade B.</span><span class="dc-badge new">Added</span></div>
+        <div class="dc-row"><span class="dc-row-name">Welfare check — Zone C (3 members)</span><span class="dc-badge approved">Sent ✓</span></div>
+        <div style="background:rgba(109,93,252,0.08);border:1px solid rgba(109,93,252,0.18);border-radius:8px;padding:12px;margin-top:4px">
+          <div style="font-size:11px;color:var(--accent);font-family:var(--font-mono);margin-bottom:6px">GALAXY INSIGHT</div>
+          <div style="font-size:13px;color:var(--text-secondary);line-height:1.5">Zone B attendance has dropped 18% over 3 weeks. <strong style="color:var(--text-primary)">Consider a follow-up this week.</strong></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS BAND -->
+<div class="stats-band">
+  <div class="stats-inner fade-up">
+    <div>
+      <div class="stat-big" id="stat-orgs">0</div>
+      <div class="stat-desc">Organizations already using Galaxy</div>
+    </div>
+    <div>
+      <div class="stat-big" id="stat-time">0</div>
+      <div class="stat-desc">Hours saved per organization each month</div>
+    </div>
+    <div>
+      <div class="stat-big" id="stat-countries">0</div>
+      <div class="stat-desc">Countries across 4 continents</div>
+    </div>
+    <div>
+      <div class="stat-big" id="stat-nps">0</div>
+      <div class="stat-desc">of members say Galaxy made their work easier</div>
+    </div>
+  </div>
+</div>
+
+<!-- HOW IT WORKS -->
+<section id="how">
+  <div class="section-wrap">
+    <div class="fade-up">
+      <div class="eyebrow">How Galaxy Works</div>
+      <h2 class="section-title">Your people stay on WhatsApp.<br>You finally get control.</h2>
+      <p class="section-sub">Galaxy works quietly behind the scenes. Your team never has to learn a new tool — they just chat. You get organized results.</p>
+    </div>
+
+    <div class="story-steps">
+      <div class="story-step fade-up">
+        <div>
+          <div class="step-num">01 — GETTING STARTED</div>
+          <h3 class="step-title">You connect Galaxy to your existing WhatsApp groups.</h3>
+          <p class="step-body">No migration. No new app. Galaxy connects to the groups you already have — your staff group, your committee group, your members group. Setup takes under 10 minutes.</p>
+          <div class="step-proof">
+            <div class="step-proof-item"><div class="sp-check">✓</div>Works with your existing groups — no new numbers to add</div>
+            <div class="step-proof-item"><div class="sp-check">✓</div>Galaxy sets up your org structure through a simple questionnaire</div>
+            <div class="step-proof-item"><div class="sp-check">✓</div>Members don't need to do anything — it just starts working</div>
+          </div>
+        </div>
+        <div class="step-visual" style="padding:32px;display:flex;align-items:center;justify-content:center;min-height:260px">
+          <div style="text-align:center">
+            <div style="font-size:56px;margin-bottom:20px">⏱️</div>
+            <div style="font-family:var(--font-display);font-size:48px;font-weight:800;color:var(--accent)">10 min</div>
+            <div style="font-size:15px;color:var(--text-dim);margin-top:8px">Average setup time</div>
+            <div style="margin-top:24px;display:flex;flex-direction:column;gap:8px">
+              <div style="background:rgba(34,199,169,0.1);border:1px solid rgba(34,199,169,0.2);border-radius:8px;padding:10px 16px;font-size:13px;color:var(--success)">✓ Connect your WhatsApp groups</div>
+              <div style="background:rgba(109,93,252,0.1);border:1px solid rgba(109,93,252,0.2);border-radius:8px;padding:10px 16px;font-size:13px;color:#a89dff">✓ Tell Galaxy about your organization</div>
+              <div style="background:rgba(77,124,254,0.1);border:1px solid rgba(77,124,254,0.2);border-radius:8px;padding:10px 16px;font-size:13px;color:#7BA9FE">✓ Galaxy is live and listening</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="story-step flip fade-up">
+        <div>
+          <div class="step-num">02 — DAY TO DAY</div>
+          <h3 class="step-title">Your team keeps chatting. Galaxy quietly captures everything.</h3>
+          <p class="step-body">When Emeka sends "I'm taking 2 days off," Galaxy turns it into a leave request — automatically routed for approval, logged, and tracked. No forms. No follow-up chasing.</p>
+          <div class="step-proof">
+            <div class="step-proof-item"><div class="sp-check">✓</div>Attendance tracked when members check in via WhatsApp</div>
+            <div class="step-proof-item"><div class="sp-check">✓</div>Leave, approval, and expense requests created automatically</div>
+            <div class="step-proof-item"><div class="sp-check">✓</div>Donations, fees, and contributions recorded and confirmed</div>
+          </div>
+        </div>
+        <div class="step-visual" style="padding:20px;min-height:300px">
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <div style="font-size:11px;color:var(--text-dim);font-family:var(--font-mono);margin-bottom:4px;letter-spacing:0.05em">STAFF GROUP · REAL-TIME</div>
+            <div style="background:rgba(26,34,53,0.9);border:1px solid rgba(109,93,252,0.1);border-radius:4px 12px 12px 12px;padding:10px 14px;font-size:13px;color:var(--text-secondary);max-width:88%">Emeka: I need to take Thursday and Friday off for a family matter</div>
+            <div style="background:rgba(109,93,252,0.08);border:1px solid rgba(109,93,252,0.2);border-radius:10px;padding:12px 14px;font-size:12px;margin:4px 0">
+              <div style="color:var(--accent);font-family:var(--font-mono);font-size:10px;margin-bottom:8px;letter-spacing:0.06em">GALAXY · LEAVE REQUEST CREATED</div>
+              <div style="color:var(--text-secondary)"><strong style="color:var(--text-primary)">Emeka Okafor</strong> · 2 days leave · Thu–Fri</div>
+              <div style="margin-top:8px;display:flex;gap:8px">
+                <div style="background:rgba(34,199,169,0.15);color:var(--success);padding:4px 12px;border-radius:100px;font-size:11px;cursor:pointer;border:1px solid rgba(34,199,169,0.25)">✓ Approve</div>
+                <div style="background:rgba(248,113,113,0.1);color:#F87171;padding:4px 12px;border-radius:100px;font-size:11px;cursor:pointer;border:1px solid rgba(248,113,113,0.2)">✗ Decline</div>
+              </div>
+            </div>
+            <div style="background:rgba(26,34,53,0.9);border:1px solid rgba(109,93,252,0.1);border-radius:4px 12px 12px 12px;padding:10px 14px;font-size:13px;color:var(--text-secondary);max-width:88%">Pastor James: thanks for letting me know Emeka, approved ✓</div>
+            <div style="background:rgba(34,199,169,0.06);border:1px solid rgba(34,199,169,0.15);border-radius:10px;padding:10px 14px;font-size:12px;color:var(--success)">✓ Galaxy logged: Leave approved · HR record updated · Emeka notified</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="story-step fade-up">
+        <div>
+          <div class="step-num">03 — FOR LEADERS</div>
+          <h3 class="step-title">You see everything in one place. No chasing, no guessing.</h3>
+          <p class="step-body">Your dashboard shows you what's happening across your whole organization in real time — who's present, what needs approval, how much was collected, and what needs your attention today.</p>
+          <div class="step-proof">
+            <div class="step-proof-item"><div class="sp-check">✓</div>Morning summary sent to you every day via WhatsApp</div>
+            <div class="step-proof-item"><div class="sp-check">✓</div>Approve or decline requests without leaving WhatsApp</div>
+            <div class="step-proof-item"><div class="sp-check">✓</div>Ask Galaxy anything: "Who was absent last Sunday?"</div>
+          </div>
+        </div>
+        <div class="step-visual" style="padding:20px;min-height:280px">
+          <div style="font-size:11px;color:var(--text-dim);font-family:var(--font-mono);margin-bottom:12px;letter-spacing:0.05em">YOUR MORNING BRIEFING · 7:30 AM</div>
+          <div style="background:rgba(109,93,252,0.08);border:1px solid rgba(109,93,252,0.2);border-radius:12px;padding:16px;font-size:13px">
+            <div style="color:var(--accent);font-family:var(--font-mono);font-size:10px;margin-bottom:12px;letter-spacing:0.06em">GALAXY DAILY BRIEFING · MONDAY</div>
+            <div style="color:var(--text-secondary);line-height:1.8">Good morning, Pastor James 👋<br><br>
+            <strong style="color:var(--text-primary)">Yesterday at a glance:</strong><br>
+            📊 Attendance: 214 members (86% rate)<br>
+            💰 Offerings: ₦840,000 recorded<br>
+            ✅ Approvals: 6 done, <strong style="color:#FBB924">2 still pending</strong><br>
+            👥 New members: 1 added<br><br>
+            <strong style="color:var(--text-primary)">Needs your attention:</strong><br>
+            ⏳ Budget request from Media Dept — ₦120k<br>
+            ⏳ Procurement approval — Chairs for Hall B</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="story-step flip fade-up">
+        <div>
+          <div class="step-num">04 — OVER TIME</div>
+          <h3 class="step-title">Galaxy learns your organization and helps you run it better.</h3>
+          <p class="step-body">After a few weeks, Galaxy starts noticing patterns you might miss — a zone with declining attendance, a member who hasn't contributed in months, or a team that keeps missing deadlines. It tells you before problems grow.</p>
+          <div class="step-proof">
+            <div class="step-proof-item"><div class="sp-check">✓</div>Weekly and monthly reports generated automatically</div>
+            <div class="step-proof-item"><div class="sp-check">✓</div>Trends surfaced before they become crises</div>
+            <div class="step-proof-item"><div class="sp-check">✓</div>Your org gets smarter with every message</div>
+          </div>
+        </div>
+        <div class="step-visual" style="padding:24px;min-height:260px;display:flex;align-items:center;justify-content:center">
+          <div style="width:100%">
+            <div style="font-size:11px;color:var(--text-dim);font-family:var(--font-mono);margin-bottom:16px;letter-spacing:0.05em">GALAXY INSIGHTS · THIS WEEK</div>
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <div style="background:rgba(251,191,36,0.06);border:1px solid rgba(251,191,36,0.2);border-radius:10px;padding:14px 16px">
+                <div style="font-size:11px;color:#FBB924;font-family:var(--font-mono);margin-bottom:6px">PATTERN DETECTED</div>
+                <div style="font-size:13px;color:var(--text-secondary);line-height:1.5">Zone B attendance dropped <strong style="color:var(--text-primary)">18% over 3 weeks.</strong> 4 members haven't checked in once this month.</div>
+              </div>
+              <div style="background:rgba(34,199,169,0.06);border:1px solid rgba(34,199,169,0.2);border-radius:10px;padding:14px 16px">
+                <div style="font-size:11px;color:var(--success);font-family:var(--font-mono);margin-bottom:6px">GOOD NEWS</div>
+                <div style="font-size:13px;color:var(--text-secondary);line-height:1.5">Youth department has had <strong style="color:var(--text-primary)">100% attendance</strong> for 5 straight weeks. 🎉</div>
+              </div>
+              <div style="background:rgba(109,93,252,0.06);border:1px solid rgba(109,93,252,0.18);border-radius:10px;padding:14px 16px">
+                <div style="font-size:11px;color:var(--accent);font-family:var(--font-mono);margin-bottom:6px">SUGGESTION</div>
+                <div style="font-size:13px;color:var(--text-secondary);line-height:1.5">3 members' welfare check is overdue. <strong style="color:var(--text-primary)">Want me to send them a message?</strong></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DEMO VIDEO SECTION -->
+<section id="demo" class="demo-section">
+  <div class="demo-wrap fade-up">
+    <div class="eyebrow">Watch Galaxy in Action</div>
+    <h2 class="section-title">See 2 minutes that will<br>change how you manage.</h2>
+    <p class="section-sub">Watch a real organization go from messy WhatsApp chaos to clean, organized management — in a single demo.</p>
+
+    <div class="demo-video-container">
+      <div class="demo-inner" id="demo-inner">
+        <div class="demo-play-btn" onclick="playDemo()" title="Play demo"></div>
+        <div class="demo-caption">
+          <strong>Galaxy — 2 Minute Walkthrough</strong>
+          See attendance, approvals, reporting & AI insights in action
+        </div>
+      </div>
+    </div>
+
+    <div class="demo-chapters">
+      <div class="demo-chapter active" onclick="seekDemo(0,this)">
+        <div class="dc-time">0:00</div>
+        <div class="dc-name">The Problem</div>
+        <div class="dc-desc">What your WhatsApp groups look like today — and what's being lost</div>
+      </div>
+      <div class="demo-chapter" onclick="seekDemo(28,this)">
+        <div class="dc-time">0:28</div>
+        <div class="dc-name">Attendance & Check-in</div>
+        <div class="dc-desc">See how members check in and how leaders see it instantly</div>
+      </div>
+      <div class="demo-chapter" onclick="seekDemo(68,this)">
+        <div class="dc-time">1:08</div>
+        <div class="dc-name">Approvals & Requests</div>
+        <div class="dc-desc">Leave, budget, and procurement — approved in seconds from WhatsApp</div>
+      </div>
+      <div class="demo-chapter" onclick="seekDemo(108,this)">
+        <div class="dc-time">1:48</div>
+        <div class="dc-name">Dashboard & Reports</div>
+        <div class="dc-desc">Your live view of everything happening across your organization</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHO IT'S FOR -->
+<section id="who" class="for-section">
+  <div class="section-wrap">
+    <div class="fade-up">
+      <div class="eyebrow">Who Galaxy Is For</div>
+      <h2 class="section-title">If your organization runs<br>on WhatsApp, this is for you.</h2>
+      <p class="section-sub">Galaxy is built for the kinds of organizations that power communities across Africa, the Caribbean, and beyond.</p>
+    </div>
+
+    <div class="for-grid fade-up">
+      <div class="for-item">
+        <div class="for-icon">⛪</div>
+        <div class="for-name">Churches & Faith Communities</div>
+        <div class="for-pain">Attendance registers get lost. Offerings aren't tracked. Welfare visits are forgotten.</div>
+        <div class="for-win">→ Know who was present, what was given, and who needs a visit — every week.</div>
+      </div>
+      <div class="for-item">
+        <div class="for-icon">🏫</div>
+        <div class="for-name">Schools & Education</div>
+        <div class="for-pain">Fee reminders are sent manually. Parent messages get no response. Staff schedules are chaos.</div>
+        <div class="for-win">→ Automate fee tracking, parent updates, and staff management from WhatsApp.</div>
+      </div>
+      <div class="for-item">
+        <div class="for-icon">🤝</div>
+        <div class="for-name">NGOs & Community Groups</div>
+        <div class="for-pain">Donors ask for updates that take days to compile. Beneficiary records are in spreadsheets nobody maintains.</div>
+        <div class="for-win">→ Real-time beneficiary tracking, donor reports, and field updates — all automatic.</div>
+      </div>
+      <div class="for-item">
+        <div class="for-icon">🌾</div>
+        <div class="for-name">Cooperatives & Associations</div>
+        <div class="for-pain">Contribution records are disputed. Loan tracking is a nightmare. Members chase you for updates.</div>
+        <div class="for-win">→ Transparent records. Automatic reminders. Members check their own status via WhatsApp.</div>
+      </div>
+      <div class="for-item">
+        <div class="for-icon">🏢</div>
+        <div class="for-name">Small & Mid-Sized Teams</div>
+        <div class="for-pain">HR requests live in chats. Approvals go missing. Nobody knows who approved what or when.</div>
+        <div class="for-win">→ Every request tracked, approved, and logged — without leaving WhatsApp.</div>
+      </div>
+      <div class="for-item">
+        <div class="for-icon">🌍</div>
+        <div class="for-name">Diaspora & Hometown Unions</div>
+        <div class="for-pain">Meetings happen in different time zones. Contributions aren't tracked. Minutes disappear in chats.</div>
+        <div class="for-win">→ Run your union with full financial visibility and member records, wherever you are.</div>
+      </div>
+      <div class="for-item">
+        <div class="for-icon">🏛️</div>
+        <div class="for-name">Government & Public Offices</div>
+        <div class="for-pain">Staff attendance is manual. Approvals require physical presence. Nothing is auditable.</div>
+        <div class="for-win">→ Digital attendance, traceable approvals, and automated reports for accountability.</div>
+      </div>
+      <div class="for-item">
+        <div class="for-icon">🎨</div>
+        <div class="for-name">Creator Communities</div>
+        <div class="for-pain">Managing a paid community over WhatsApp is chaos. Subscriptions aren't tracked. Access isn't controlled.</div>
+        <div class="for-win">→ Member management, subscription tracking, and engagement — all in one place.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BEFORE / AFTER -->
+<section>
+  <div class="section-wrap">
+    <div class="fade-up">
+      <div class="eyebrow">The Difference</div>
+      <h2 class="section-title">Life before Galaxy.<br>Life after.</h2>
+    </div>
+    <div class="compare-grid fade-up">
+      <div class="compare-card before">
+        <div class="compare-header">
+          <span class="c-badge">Before Galaxy</span>
+        </div>
+        <div class="compare-body">
+          <div class="ci"><div class="ci-icon">😩</div><div class="ci-text">"Did Emeka send in his leave request? Let me scroll up 200 messages..."</div></div>
+          <div class="ci"><div class="ci-icon">📋</div><div class="ci-text">Attendance is written in a notebook that gets lost every other month</div></div>
+          <div class="ci"><div class="ci-icon">💸</div><div class="ci-text">Someone asks how much was collected last month — nobody knows for sure</div></div>
+          <div class="ci"><div class="ci-icon">⏳</div><div class="ci-text">You approved something weeks ago. The person still hasn't heard back.</div></div>
+          <div class="ci"><div class="ci-icon">🔕</div><div class="ci-text">Members who drift away go unnoticed for months</div></div>
+          <div class="ci"><div class="ci-icon">🤯</div><div class="ci-text">Writing the monthly report takes 2 days and is still incomplete</div></div>
+        </div>
+      </div>
+      <div class="compare-card after">
+        <div class="compare-header">
+          <span class="c-badge">With Galaxy</span>
+        </div>
+        <div class="compare-body">
+          <div class="ci"><div class="ci-icon">✅</div><div class="ci-text">Galaxy found the request, logged it, and sent approval in 30 seconds</div></div>
+          <div class="ci"><div class="ci-icon">📊</div><div class="ci-text">Attendance is tracked automatically — with percentages, trends, and names</div></div>
+          <div class="ci"><div class="ci-icon">💰</div><div class="ci-text">Every contribution is logged in real time. Ask Galaxy anytime.</div></div>
+          <div class="ci"><div class="ci-icon">🔔</div><div class="ci-text">Approvals are routed instantly and you're nudged if something is overdue</div></div>
+          <div class="ci"><div class="ci-icon">❤️</div><div class="ci-text">Galaxy flags declining members and suggests a welfare check</div></div>
+          <div class="ci"><div class="ci-icon">📄</div><div class="ci-text">Monthly report is ready in your inbox every first Monday. Automatic.</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section style="background:var(--deep);border-top:1px solid var(--border);border-bottom:1px solid var(--border)">
+  <div class="section-wrap fade-up">
+    <div class="eyebrow">Real Organizations. Real Results.</div>
+    <h2 class="section-title">They said it changed<br>how they run everything.</h2>
+
+    <div class="testimonials">
+      <div class="tcard">
+        <div class="tquote">"I used to spend every Sunday afternoon typing up the attendance register. Now Galaxy sends it to me before I finish greeting members. I cried the first time it worked."</div>
+        <div class="tattrib">
+          <div class="tavatar">PJ</div>
+          <div><div class="tname">Pastor James Obi</div><div class="trole">Senior Pastor, Grace Chapel · Lagos</div></div>
+        </div>
+      </div>
+      <div class="tcard featured">
+        <div class="tquote">"Our cooperative had 847 members and zero proper records. Within a week of using Galaxy, every member could check their contribution history just by sending a WhatsApp message. No more arguments."</div>
+        <div class="tattrib">
+          <div class="tavatar">AA</div>
+          <div><div class="tname">Amina Adeyemi</div><div class="trole">Secretary General, Ikorodu Farmers Coop</div></div>
+        </div>
+      </div>
+      <div class="tcard">
+        <div class="tquote">"Our NGO operates across 6 states. Before Galaxy, field teams reported by voice note — which meant nothing got recorded. Now every beneficiary visit is automatically logged and I can see reports in real time from Abuja."</div>
+        <div class="tattrib">
+          <div class="tavatar">SK</div>
+          <div><div class="tname">Sarah Kamau</div><div class="trole">Programs Director, BrightPath Foundation</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section id="faq" class="faq-section">
+  <div class="section-wrap fade-up">
+    <div class="eyebrow">Questions & Answers</div>
+    <h2 class="section-title">Everything you want<br>to know about Galaxy.</h2>
+
+    <div class="faq-cols">
+      <div class="faq-sticky">
+        <div class="faq-side-title">Still not sure? Let's clear it up.</div>
+        <div class="faq-side-sub">We've answered the questions we hear most from church leaders, cooperative secretaries, school principals, and NGO directors across Africa.</div>
+        <div class="faq-contact">
+          <div class="faq-contact-label">Still have questions?</div>
+          <p>We're happy to talk you through it — personally, on WhatsApp of course.</p>
+          <a href="#">Chat with the Galaxy team →</a>
+        </div>
+      </div>
+
+      <div class="faq-list" id="faq-list">
+
+        <span class="faq-category">Getting Started</span>
+
+        <div class="faq-item">
+          <button class="faq-q" onclick="toggleFaq(this)">
+            <span class="faq-q-text">Do my members need to download a new app?</span>
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-a">
+            <div class="faq-a-text">No — and this is one of the most important things about Galaxy. <strong>Your members never have to download anything or learn a new tool.</strong> Galaxy works entirely inside WhatsApp, the app they already have and use every day. For your members, nothing changes. For you and your leadership team, everything gets organized.</div>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-q" onclick="toggleFaq(this)">
+            <span class="faq-q-text">How long does it take to set up?</span>
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-a">
+            <div class="faq-a-text">Most organizations are fully set up in <strong>under 10 minutes.</strong> You connect your WhatsApp groups, answer a few questions about your organization's structure, and Galaxy starts working immediately. There's no long implementation process, no IT department needed, and no training sessions to schedule.</div>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-q" onclick="toggleFaq(this)">
+            <span class="faq-q-text">Can Galaxy work with the WhatsApp groups I already have?</span>
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-a">
+            <div class="faq-a-text"><strong>Yes, absolutely.</strong> You don't need to create new groups or ask members to join anything new. Galaxy connects to your existing groups — your staff group, your deacons group, your general members group, your finance committee group — and starts organizing the activity that's already happening there.</div>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-q" onclick="toggleFaq(this)">
+            <span class="faq-q-text">Do I need to be technical to use Galaxy?</span>
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-a">
+            <div class="faq-a-text">Not at all. If you can use WhatsApp, you can use Galaxy. <strong>There's no software to install, no coding, no complicated settings.</strong> We've designed Galaxy for pastors, school principals, cooperative secretaries, and community leaders — not software engineers. And if you ever get stuck, our team is available to help via — you guessed it — WhatsApp.</div>
+          </div>
+        </div>
+
+        <span class="faq-category">What Galaxy Does</span>
+
+        <div class="faq-item">
+          <button class="faq-q" onclick="toggleFaq(this)">
+            <span class="faq-q-text">What exactly can Galaxy track and manage?</span>
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-a">
+            <div class="faq-a-text">Galaxy handles the full operational life of your organization:
+              <ul>
+                <li><strong>Attendance</strong> — who showed up, who was absent, trends over time</li>
+                <li><strong>Approvals</strong> — leave requests, budget requests, purchases, any decision that needs sign-off</li>
+                <li><strong>Financial records</strong> — offerings, dues, donations, contributions, and expenses</li>
+                <li><strong>Member management</strong> — profiles, contact info, groups, status, and history</li>
+                <li><strong>Welfare tracking</strong> — who needs a follow-up, who hasn't been seen in a while</li>
+                <li><strong>Reporting</strong> — weekly, monthly, and custom reports generated automatically</li>
+                <li><strong>AI insights</strong> — patterns and suggestions surfaced without you having to ask</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-q" onclick="toggleFaq(this)">
+            <span class="faq-q-text">How does attendance tracking work?</span>
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-a">
+            <div class="faq-a-text">Members simply send a message in your WhatsApp group — "I'm here," "Present," or even just their name — and Galaxy captures it as attendance. For in-person events, you can also use a check-in link or QR code. <strong>Galaxy then compiles this automatically into an attendance report</strong> with member names, percentages, trends, and flagged absences. No manual counting, no spreadsheets, no register to maintain.</div>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-q" onclick="toggleFaq(this)">
+            <span class="faq-q-text">How do approvals work for requests like leave or budget?</span>
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-a">
+            <div class="faq-a-text">When someone sends a request in a WhatsApp group — "I need Thursday off" or "We need ₦80,000 for the event" — Galaxy automatically recognizes it as a request and turns it into a structured approval. <strong>The right person is notified</strong> with the request details and simple Approve/Decline options, all within WhatsApp. Once decided, Galaxy logs the outcome, notifies the requester, and records everything with a timestamp. Nothing gets lost. Everything is auditable.</div>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-q" onclick="toggleFaq(this)">
+            <span class="faq-q-text">Can I ask Galaxy questions about my organization?</span>
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-a">
+            <div class="faq-a-text">Yes — this is one of the most powerful features. <strong>You can message Galaxy directly and ask anything:</strong> "Who was absent last Sunday?" "How much did we collect in offerings this month?" "Who hasn't paid their dues in 3 months?" "How many leave days has Emeka taken this year?" Galaxy searches your organization's records and answers you instantly, right in WhatsApp.</div>
+          </div>
+        </div>
+
+        <span class="faq-category">Privacy & Safety</span>
+
+        <div class="faq-item">
+          <button class="faq-q" onclick="toggleFaq(this)">
+            <span class="faq-q-text">Is our data safe? Who can see our organization's information?</span>
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-a">
+            <div class="faq-a-text"><strong>Your organization's data belongs entirely to you.</strong> Galaxy uses bank-grade encryption, and your data is never shared with other organizations or used for advertising. Only the people you authorize within your organization can access your records. We comply with data protection regulations and store data on secure servers. You can export or delete your data at any time.</div>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-q" onclick="toggleFaq(this)">
+            <span class="faq-q-text">Does Galaxy read all our WhatsApp conversations?</span>
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-a">
+            <div class="faq-a-text">Galaxy only processes messages in the specific groups you've connected to it. <strong>It doesn't access any other WhatsApp conversations, personal chats, or groups you haven't authorized.</strong> Within connected groups, it reads messages to identify organizational activities (like attendance, requests, and approvals) and ignores regular conversation. Think of it like a very attentive admin who only listens for the things that matter to running your organization.</div>
+          </div>
+        </div>
+
+        <span class="faq-category">Pricing & Support</span>
+
+        <div class="faq-item">
+          <button class="faq-q" onclick="toggleFaq(this)">
+            <span class="faq-q-text">How much does Galaxy cost?</span>
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-a">
+            <div class="faq-a-text">Galaxy is <strong>free to start</strong> — no credit card required. During early access, you get full access to all features for 30 days to see the difference it makes. After that, pricing is based on the size of your organization and starts at a level that's accessible even for small churches and community groups. We'll never charge your members directly. <a href="#cta" style="color:var(--accent)">Get started free →</a></div>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-q" onclick="toggleFaq(this)">
+            <span class="faq-q-text">What if we need help setting things up?</span>
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-a">
+            <div class="faq-a-text">Every organization that signs up gets a <strong>dedicated onboarding session</strong> — a real person (via WhatsApp or video call) who walks you through setup and makes sure Galaxy is configured perfectly for how your organization works. Beyond that, our support team is available via WhatsApp during business hours. We also have video guides, a help center, and a community of other Galaxy organizations you can learn from.</div>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-q" onclick="toggleFaq(this)">
+            <span class="faq-q-text">What if we want to stop using Galaxy?</span>
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-a">
+            <div class="faq-a-text">You can cancel at any time with no penalty. <strong>Before you leave, we'll export all your organization's data</strong> — every record, attendance log, financial entry, and report — in a format you can keep forever. Your data is yours. We never hold it hostage. That said, we're confident that once you see Galaxy working, leaving won't feel like an option you want to take.</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section id="cta" class="cta-section">
+  <div class="cta-bg"></div>
+  <div class="hero-eyebrow" style="display:inline-flex;margin-bottom:32px"><span class="hero-eyebrow-dot"></span>Free for 30 days · No card required</div>
+  <h2 class="cta-title">Your organization<br>deserves better than<br>messy group chats.</h2>
+  <p class="cta-sub">Join 1,200+ organizations already running on Galaxy.</p>
+  <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap">
+    <a href="#" class="btn-primary" style="font-size:17px;padding:18px 48px">Get Started Free</a>
+    <a href="#" class="btn-secondary" style="font-size:17px;padding:18px 48px">Book a Personal Demo</a>
+  </div>
+  <div class="cta-note">Works in WhatsApp · No app download · Setup in 10 minutes</div>
+</section>
+
+<!-- FOOTER -->
+<div style="border-top:1px solid var(--border)">
+<footer>
+  <div class="nav-logo">Galaxy</div>
+  <div class="footer-links">
+    <a href="#">How It Works</a>
+    <a href="#">Pricing</a>
+    <a href="#faq">FAQ</a>
+    <a href="#">Privacy Policy</a>
+    <a href="#">Contact</a>
+  </div>
+  <div class="footer-copy">© 2025 Galaxy. Built for organizations that run on WhatsApp.</div>
+</footer>
+</div>
+
+<script>
+// STAR FIELD
+(function(){
+  const c=document.createElement('canvas');
+  c.style.cssText='position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:0';
+  document.getElementById('hero').prepend(c);
+  const ctx=c.getContext('2d');
+  let stars=[];
+  function resize(){
+    c.width=c.offsetWidth;c.height=c.offsetHeight;stars=[];
+    for(let i=0;i<180;i++) stars.push({x:Math.random()*c.width,y:Math.random()*c.height,r:Math.random()*1.4,a:Math.random(),s:Math.random()*0.002+0.001});
+  }
+  resize();window.addEventListener('resize',resize);
+  function draw(){
+    ctx.clearRect(0,0,c.width,c.height);
+    stars.forEach(s=>{s.a+=s.s;if(s.a>1)s.a=0;ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fillStyle=`rgba(180,170,255,${Math.sin(s.a*Math.PI)*0.7})`;ctx.fill()});
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+// STATS COUNTER
+function animStat(id,target,fmt,delay){
+  setTimeout(()=>{
+    let cur=0;const el=document.getElementById(id);const inc=target/80;
+    const t=setInterval(()=>{cur=Math.min(cur+inc,target);el.textContent=fmt(Math.round(cur));if(cur>=target)clearInterval(t)},20);
+  },delay);
+}
+const obs=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      if(e.target.closest('.stats-band')){
+        animStat('stat-orgs',1200,v=>v.toLocaleString()+'+'  ,0);
+        animStat('stat-time',160,v=>v+'h',200);
+        animStat('stat-countries',34,v=>v,400);
+        animStat('stat-nps',93,v=>v+'%',600);
+      }
+      e.target.classList.add('visible');obs.unobserve(e.target);
+    }
+  });
+},{threshold:0.15});
+document.querySelectorAll('.fade-up,.stats-band').forEach(el=>obs.observe(el));
+
+// FAQ ACCORDION
+function toggleFaq(btn){
+  const item=btn.closest('.faq-item');
+  const isOpen=item.classList.contains('open');
+  document.querySelectorAll('.faq-item.open').forEach(i=>i.classList.remove('open'));
+  if(!isOpen) item.classList.add('open');
+}
+
+// DEMO CHAPTERS
+function playDemo(){
+  const inner=document.getElementById('demo-inner');
+  inner.innerHTML=`<div style="color:var(--text-secondary);font-size:15px;text-align:center;padding:40px">
+    <div style="font-size:48px;margin-bottom:20px">🎬</div>
+    <div style="font-family:var(--font-display);font-size:20px;font-weight:600;color:var(--text-primary);margin-bottom:10px">Demo Video Coming Soon</div>
+    <div style="max-width:400px;line-height:1.7;color:var(--text-secondary)">We're putting the finishing touches on our walkthrough video. In the meantime, <a href="#cta" style="color:var(--accent)">book a personal demo</a> and we'll walk you through Galaxy live — in your WhatsApp.</div>
+  </div>`;
+}
+
+function seekDemo(time,el){
+  document.querySelectorAll('.demo-chapter').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+}
+</script>
+</body>
+</html>
