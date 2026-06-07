@@ -7,6 +7,14 @@ import * as migration005 from './migrations/005_create_departments_teams.js';
 import * as migration006 from './migrations/006_create_events.js';
 import * as migration007 from './migrations/007_create_audit_logs.js';
 import * as migration008 from './migrations/008_enable_rls.js';
+import * as migration009 from './migrations/009_create_channels_messages.js';
+import * as migration010 from './migrations/010_create_announcements_broadcasts.js';
+import * as migration011 from './migrations/011_create_notifications.js';
+import * as migration012 from './migrations/012_create_workflows.js';
+import * as migration013 from './migrations/013_create_tasks.js';
+import * as migration014 from './migrations/014_create_approvals.js';
+import * as migration015 from './migrations/015_create_automations.js';
+import * as migration016 from './migrations/016_enable_rls_sprint2.js';
 
 interface Migration {
   up: (pool: Pool) => Promise<void>;
@@ -22,6 +30,14 @@ const migrations: Array<{ name: string; migration: Migration }> = [
   { name: '006_create_events', migration: migration006 },
   { name: '007_create_audit_logs', migration: migration007 },
   { name: '008_enable_rls', migration: migration008 },
+  { name: '009_create_channels_messages', migration: migration009 },
+  { name: '010_create_announcements_broadcasts', migration: migration010 },
+  { name: '011_create_notifications', migration: migration011 },
+  { name: '012_create_workflows', migration: migration012 },
+  { name: '013_create_tasks', migration: migration013 },
+  { name: '014_create_approvals', migration: migration014 },
+  { name: '015_create_automations', migration: migration015 },
+  { name: '016_enable_rls_sprint2', migration: migration016 },
 ];
 
 async function ensureMigrationsTable(pool: Pool): Promise<void> {
