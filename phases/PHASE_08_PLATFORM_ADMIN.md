@@ -120,22 +120,22 @@ Implement the Platform Admin module, which gives the Galaxy platform operators t
 
 ## Risks
 
-| Risk | Likelihood | Impact | Mitigation |
-|------|-----------|--------|-----------|
-| Billing provider API changes breaking tier management | Low | Medium | Abstract billing provider behind an interface; use Stripe's versioned API with pinned version |
-| Self-service sign-up creates fraudulent organizations | Medium | Medium | CAPTCHA on the public sign-up endpoint; email/phone verification required before org is activated |
-| Platform Admin console security misconfiguration (exposed to non-admins) | Low | High | 404 for non-admins (not 403, to avoid information disclosure); middleware enforces platform:admin role at the router level |
-| Alert storms during infrastructure incidents | Medium | Low | Implement alert deduplication and grouping (e.g., don't fire 500 individual DLQ alerts — fire one with a count) |
-| GDPR deletion request complexity with multi-table tenant data | Medium | Medium | Implement a `DataDeletionJob` that traverses all tenant tables in dependency order; test with a full tenant deletion in the staging environment |
+| Risk                                                                     | Likelihood | Impact | Mitigation                                                                                                                                      |
+| ------------------------------------------------------------------------ | ---------- | ------ | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| Billing provider API changes breaking tier management                    | Low        | Medium | Abstract billing provider behind an interface; use Stripe's versioned API with pinned version                                                   |
+| Self-service sign-up creates fraudulent organizations                    | Medium     | Medium | CAPTCHA on the public sign-up endpoint; email/phone verification required before org is activated                                               |
+| Platform Admin console security misconfiguration (exposed to non-admins) | Low        | High   | 404 for non-admins (not 403, to avoid information disclosure); middleware enforces platform:admin role at the router level                      |
+| Alert storms during infrastructure incidents                             | Medium     | Low    | Implement alert deduplication and grouping (e.g., don't fire 500 individual DLQ alerts — fire one with a count)                                 |
+| GDPR deletion request complexity with multi-table tenant data            | Medium     | Medium | Implement a `DataDeletionJob` that traverses all tenant tables in dependency order; test with a full tenant deletion in the staging environment |
 
 ---
 
 ## Success Metrics
 
-| Metric | Target |
-|--------|--------|
-| Organization provisioning time | New organization fully provisioned and owner notified in under 2 minutes |
-| Admin console page load time | Under 1 second for all admin pages (including organization list with 1000 orgs) |
-| Platform health detection latency | Under 2 minutes from a health issue occurring to alert firing |
-| DLQ visibility | 100% of DLQ jobs visible and replayable within 5 minutes of entering the DLQ |
-| Pre-launch security checklist | 100% of items completed and verified |
+| Metric                            | Target                                                                          |
+| --------------------------------- | ------------------------------------------------------------------------------- |
+| Organization provisioning time    | New organization fully provisioned and owner notified in under 2 minutes        |
+| Admin console page load time      | Under 1 second for all admin pages (including organization list with 1000 orgs) |
+| Platform health detection latency | Under 2 minutes from a health issue occurring to alert firing                   |
+| DLQ visibility                    | 100% of DLQ jobs visible and replayable within 5 minutes of entering the DLQ    |
+| Pre-launch security checklist     | 100% of items completed and verified                                            |

@@ -148,6 +148,7 @@ Scheduled jobs are seeded with an explicit `organizationId` in the job data at e
 #### Public Routes (No Tenant Context)
 
 Only two routes bypass tenant context resolution:
+
 - `GET /health` — infrastructure health check; no data access
 - `GET /api/v1/webhooks/whatsapp` — Meta webhook verification challenge (no data access, only returns the challenge token)
 
@@ -192,13 +193,13 @@ For Tier 3 (Dedicated Database), session-pooling mode is acceptable because each
 
 The following conditions are treated as security anomalies and trigger immediate high-severity audit log entries and platform alerts:
 
-| Condition | Detection Point | Response |
-|-----------|----------------|---------|
-| JWT `tenantId` does not match the organization resolved from resource ID | `PermissionGuard` | 403 + `auth` category audit log at `critical` severity |
-| BullMQ job `organizationId` does not match the tenant derived from the job's resource IDs | Worker processor | Job fails non-retryable + `admin` category audit log |
-| Query returns rows with `organization_id` not matching current RLS context (should be impossible) | Integration test assertion | CI fails; schema migration blocked |
-| Platform Admin reads organization operational data without declared incident context | API handler | Permitted but logged at `critical` severity with justification requirement |
-| Agent tool call targets a resource outside the session's `organizationId` scope | `AutomationGovernanceGuard` | Blocked; `agent.action.blocked` event emitted; audit log written |
+| Condition                                                                                         | Detection Point             | Response                                                                   |
+| ------------------------------------------------------------------------------------------------- | --------------------------- | -------------------------------------------------------------------------- |
+| JWT `tenantId` does not match the organization resolved from resource ID                          | `PermissionGuard`           | 403 + `auth` category audit log at `critical` severity                     |
+| BullMQ job `organizationId` does not match the tenant derived from the job's resource IDs         | Worker processor            | Job fails non-retryable + `admin` category audit log                       |
+| Query returns rows with `organization_id` not matching current RLS context (should be impossible) | Integration test assertion  | CI fails; schema migration blocked                                         |
+| Platform Admin reads organization operational data without declared incident context              | API handler                 | Permitted but logged at `critical` severity with justification requirement |
+| Agent tool call targets a resource outside the session's `organizationId` scope                   | `AutomationGovernanceGuard` | Blocked; `agent.action.blocked` event emitted; audit log written           |
 
 ### Cross-Tenant Isolation Test
 

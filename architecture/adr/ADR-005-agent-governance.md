@@ -1,11 +1,11 @@
 # ADR-005: Agent Governance Model
 
-| Field | Value |
-|-------|-------|
-| **Status** | Accepted |
-| **Date** | 2026-06-07 |
-| **Review Date** | Sprint 5 |
-| **Deciders** | CTO, Platform Lead Engineer |
+| Field                 | Value                                                                                    |
+| --------------------- | ---------------------------------------------------------------------------------------- |
+| **Status**            | Accepted                                                                                 |
+| **Date**              | 2026-06-07                                                                               |
+| **Review Date**       | Sprint 5                                                                                 |
+| **Deciders**          | CTO, Platform Lead Engineer                                                              |
 | **Related Documents** | `architecture/DOMAIN_MODEL.md` (Agent OS), `security/RBAC.md`, `security/AUDIT_MODEL.md` |
 
 ---
@@ -34,11 +34,11 @@ Galaxy's Agent OS enables AI agents (powered by Anthropic Claude) to perform act
 
 ### Impact Tier Classification
 
-| Tier | Classification | Examples | Governance |
-|------|---------------|---------|-----------|
-| **Tier 1** | Read-only | Fetch member list, query workflow status, search knowledge base | Auto-approved |
-| **Tier 2** | Low-risk write | Create a task for a specific member, add a comment, send a notification to one person | Auto-approved |
-| **Tier 3** | Significant write | Trigger a workflow on behalf of a member, send notifications to multiple members (>5), update department settings | Requires human approval |
+| Tier       | Classification              | Examples                                                                                                                                 | Governance                                           |
+| ---------- | --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------- |
+| **Tier 1** | Read-only                   | Fetch member list, query workflow status, search knowledge base                                                                          | Auto-approved                                        |
+| **Tier 2** | Low-risk write              | Create a task for a specific member, add a comment, send a notification to one person                                                    | Auto-approved                                        |
+| **Tier 3** | Significant write           | Trigger a workflow on behalf of a member, send notifications to multiple members (>5), update department settings                        | Requires human approval                              |
 | **Tier 4** | Irreversible or high-impact | Delete a knowledge document, trigger a payroll-related workflow, modify RBAC role assignments, any action affecting more than 20 members | Requires human approval; 24-hour cancellation window |
 
 ### AutomationGovernanceGuard
@@ -109,6 +109,7 @@ Every tool registered in the `ToolRegistryService` must declare its `impactTier`
 ## Review Notes
 
 At Sprint 5, this decision will be reviewed to assess:
+
 1. Whether the Tier 3 approval timeout is appropriate (are approvers responding within the window?)
 2. Whether any tools have been misclassified and caused governance incidents
 3. Whether the WhatsApp-based approval UX is providing acceptable usability for approvers

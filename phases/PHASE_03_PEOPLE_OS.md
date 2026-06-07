@@ -93,22 +93,22 @@ Implement the People OS module, which models the organizational hierarchy (depar
 
 ## Risks
 
-| Risk | Likelihood | Impact | Mitigation |
-|------|-----------|--------|-----------|
-| Circular department hierarchy (department A is parent of B, B is parent of A) | Low | Medium | Add a cycle-detection check in `DepartmentService` before saving a parent assignment |
-| Bulk import file parsing failures (malformed CSV, encoding issues) | Medium | Low | Validate file format before processing; return clear error message with row number |
-| WhatsApp file size limit for import CSV | Low | Low | Document the 500-member batch limit; split large imports into multiple batches |
-| Org chart query performance with deep hierarchies | Low | Medium | Add an index on `members.manager_id`; use a recursive CTE with depth limit |
-| Avatar upload to S3 failure mid-request | Low | Low | Separate avatar upload from profile update; avatar_url is updated only after S3 confirms success |
+| Risk                                                                          | Likelihood | Impact | Mitigation                                                                                       |
+| ----------------------------------------------------------------------------- | ---------- | ------ | ------------------------------------------------------------------------------------------------ |
+| Circular department hierarchy (department A is parent of B, B is parent of A) | Low        | Medium | Add a cycle-detection check in `DepartmentService` before saving a parent assignment             |
+| Bulk import file parsing failures (malformed CSV, encoding issues)            | Medium     | Low    | Validate file format before processing; return clear error message with row number               |
+| WhatsApp file size limit for import CSV                                       | Low        | Low    | Document the 500-member batch limit; split large imports into multiple batches                   |
+| Org chart query performance with deep hierarchies                             | Low        | Medium | Add an index on `members.manager_id`; use a recursive CTE with depth limit                       |
+| Avatar upload to S3 failure mid-request                                       | Low        | Low    | Separate avatar upload from profile update; avatar_url is updated only after S3 confirms success |
 
 ---
 
 ## Success Metrics
 
-| Metric | Target |
-|--------|--------|
-| Org chart query latency | Under 200ms for organizations up to 500 members |
-| Bulk import throughput | 500 members imported in under 30 seconds |
-| Cross-tenant isolation | Passes for all People OS tables |
-| RBAC scope enforcement | Department Head cannot access another department's resources |
-| Audit log coverage | 100% of People OS domain events produce audit log entries |
+| Metric                  | Target                                                       |
+| ----------------------- | ------------------------------------------------------------ |
+| Org chart query latency | Under 200ms for organizations up to 500 members              |
+| Bulk import throughput  | 500 members imported in under 30 seconds                     |
+| Cross-tenant isolation  | Passes for all People OS tables                              |
+| RBAC scope enforcement  | Department Head cannot access another department's resources |
+| Audit log coverage      | 100% of People OS domain events produce audit log entries    |

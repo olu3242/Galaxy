@@ -1,11 +1,11 @@
 # ADR-003: RBAC Strategy
 
-| Field | Value |
-|-------|-------|
-| **Status** | Accepted |
-| **Date** | 2026-06-07 |
-| **Review Date** | Sprint 2 |
-| **Deciders** | CTO, Platform Lead Engineer |
+| Field                 | Value                                              |
+| --------------------- | -------------------------------------------------- |
+| **Status**            | Accepted                                           |
+| **Date**              | 2026-06-07                                         |
+| **Review Date**       | Sprint 2                                           |
+| **Deciders**          | CTO, Platform Lead Engineer                        |
 | **Related Documents** | `security/RBAC.md`, `architecture/DOMAIN_MODEL.md` |
 
 ---
@@ -62,6 +62,7 @@ This produces a hierarchical permission evaluation without the complexity of a f
 ### Agent Governance as a Separate Concern
 
 Agent write actions go through two gates:
+
 1. **RBAC gate:** Does the agent session's delegated scope allow this action type at all?
 2. **Governance gate:** What is the impact tier of this specific action instance? (AutomationGovernanceGuard)
 
@@ -112,6 +113,7 @@ These two gates are independent. An agent may have RBAC permission to create a t
 ## Review Notes
 
 At Sprint 2, this decision will be reviewed to assess:
+
 1. Whether the eight roles cover all organizational use cases encountered during onboarding
 2. Whether any organizations have requested fine-grained resource-instance permissions that the flat RBAC model cannot express
 3. Whether scope overlap edge cases have caused any permission evaluation bugs in testing

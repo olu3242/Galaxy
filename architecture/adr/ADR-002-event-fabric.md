@@ -1,11 +1,11 @@
 # ADR-002: Event Fabric Architecture
 
-| Field | Value |
-|-------|-------|
-| **Status** | Accepted |
-| **Date** | 2026-06-07 |
-| **Review Date** | Sprint 3 |
-| **Deciders** | CTO, Platform Lead Engineer |
+| Field                 | Value                                                                 |
+| --------------------- | --------------------------------------------------------------------- |
+| **Status**            | Accepted                                                              |
+| **Date**              | 2026-06-07                                                            |
+| **Review Date**       | Sprint 3                                                              |
+| **Deciders**          | CTO, Platform Lead Engineer                                           |
 | **Related Documents** | `architecture/EVENT_FABRIC.md`, `architecture/SYSTEM_ARCHITECTURE.md` |
 
 ---
@@ -39,6 +39,7 @@ Key context factors:
 ### MVP: BullMQ
 
 BullMQ, backed by Redis, is the job queue for all asynchronous operations. Queues are defined per domain:
+
 - `workflow-execution` — workflow run state machine advancement
 - `notification-dispatch` — outbound WhatsApp message delivery
 - `agent-session` — AI agent session execution
@@ -111,6 +112,7 @@ The `GalaxyEvent` type is defined in `packages/types/src/events.ts` and is the c
 ## Review Notes
 
 At Sprint 3, this decision will be reviewed to assess:
+
 1. Whether BullMQ + Redis durability has been sufficient (any jobs lost?)
 2. Whether queue depth and throughput are approaching Redis limits
 3. Whether the V1 Kafka migration timeline needs to be accelerated

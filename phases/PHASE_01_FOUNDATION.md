@@ -103,22 +103,22 @@ Establish the technical foundation that all subsequent phases depend on. This ph
 
 ## Risks
 
-| Risk | Likelihood | Impact | Mitigation |
-|------|-----------|--------|-----------|
-| TypeScript strict mode breaks third-party library types | Medium | Medium | Pin library versions; add `@types/*` for untyped libs; use `unknown` with narrowing where types are unavailable |
-| CI pipeline secrets not configured correctly (GitHub Actions secrets) | Low | High | Document all required secrets in `CONTRIBUTING.md`; test CI with a test secret before relying on production secrets |
-| Docker Compose version incompatibility across developer machines | Low | Low | Document minimum Docker Desktop version; provide fallback native installation instructions |
-| gitleaks false positives blocking CI | Medium | Low | Configure `.gitleaks.toml` allowlist for known false positives; review on a case-by-case basis |
-| Monorepo build cache invalidation issues with Turborepo | Low | Low | Configure Turborepo `outputs` correctly; clear turbo cache if stale |
+| Risk                                                                  | Likelihood | Impact | Mitigation                                                                                                          |
+| --------------------------------------------------------------------- | ---------- | ------ | ------------------------------------------------------------------------------------------------------------------- |
+| TypeScript strict mode breaks third-party library types               | Medium     | Medium | Pin library versions; add `@types/*` for untyped libs; use `unknown` with narrowing where types are unavailable     |
+| CI pipeline secrets not configured correctly (GitHub Actions secrets) | Low        | High   | Document all required secrets in `CONTRIBUTING.md`; test CI with a test secret before relying on production secrets |
+| Docker Compose version incompatibility across developer machines      | Low        | Low    | Document minimum Docker Desktop version; provide fallback native installation instructions                          |
+| gitleaks false positives blocking CI                                  | Medium     | Low    | Configure `.gitleaks.toml` allowlist for known false positives; review on a case-by-case basis                      |
+| Monorepo build cache invalidation issues with Turborepo               | Low        | Low    | Configure Turborepo `outputs` correctly; clear turbo cache if stale                                                 |
 
 ---
 
 ## Success Metrics
 
-| Metric | Target |
-|--------|--------|
-| CI pipeline duration | Under 5 minutes for full `install + typecheck + lint + test + build` |
-| TypeScript strict mode violations | Zero (0) |
-| High/critical CVEs in production dependencies | Zero (0) |
-| Security documentation coverage | All 23 architecture and governance documents present |
-| Developer onboarding time | A new engineer can run the full local stack from a fresh checkout in under 30 minutes |
+| Metric                                        | Target                                                                                |
+| --------------------------------------------- | ------------------------------------------------------------------------------------- |
+| CI pipeline duration                          | Under 5 minutes for full `install + typecheck + lint + test + build`                  |
+| TypeScript strict mode violations             | Zero (0)                                                                              |
+| High/critical CVEs in production dependencies | Zero (0)                                                                              |
+| Security documentation coverage               | All 23 architecture and governance documents present                                  |
+| Developer onboarding time                     | A new engineer can run the full local stack from a fresh checkout in under 30 minutes |

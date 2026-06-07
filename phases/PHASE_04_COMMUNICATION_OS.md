@@ -100,22 +100,22 @@ Implement the Communication OS module, which is Galaxy's core interface layer wi
 
 ## Risks
 
-| Risk | Likelihood | Impact | Mitigation |
-|------|-----------|--------|-----------|
-| Meta webhook delivery delays or replays during testing | Medium | Low | Idempotency check on wamid prevents duplicate processing |
-| WABA rate limits during bulk notification testing | Medium | Medium | Rate limiting at the `notification-dispatch` queue level (concurrency limit per org) |
-| Template submission rejected by Meta | Medium | Low | Use test templates that follow Meta's guidelines; document template requirements |
-| Webhook signature verification fails due to raw body parsing issue in Fastify | Low | High | Test signature verification with a real Meta webhook before marking acceptance criteria green |
-| Delivery status callbacks arriving out of order (delivered before sent status) | Low | Low | Status update is idempotent; always apply the most recently received status |
+| Risk                                                                           | Likelihood | Impact | Mitigation                                                                                    |
+| ------------------------------------------------------------------------------ | ---------- | ------ | --------------------------------------------------------------------------------------------- |
+| Meta webhook delivery delays or replays during testing                         | Medium     | Low    | Idempotency check on wamid prevents duplicate processing                                      |
+| WABA rate limits during bulk notification testing                              | Medium     | Medium | Rate limiting at the `notification-dispatch` queue level (concurrency limit per org)          |
+| Template submission rejected by Meta                                           | Medium     | Low    | Use test templates that follow Meta's guidelines; document template requirements              |
+| Webhook signature verification fails due to raw body parsing issue in Fastify  | Low        | High   | Test signature verification with a real Meta webhook before marking acceptance criteria green |
+| Delivery status callbacks arriving out of order (delivered before sent status) | Low        | Low    | Status update is idempotent; always apply the most recently received status                   |
 
 ---
 
 ## Success Metrics
 
-| Metric | Target |
-|--------|--------|
-| Webhook to job enqueue latency | Under 100ms p95 (must return 200 to Meta quickly) |
-| Message dispatch to wamid confirmation | Under 2 seconds p95 |
-| Template sync latency | Template approval reflected within 1 polling cycle (4 hours) |
-| Audit log coverage | 100% of Communication OS domain events produce audit log entries |
-| Webhook signature rejection rate | 100% of forged signatures rejected |
+| Metric                                 | Target                                                           |
+| -------------------------------------- | ---------------------------------------------------------------- |
+| Webhook to job enqueue latency         | Under 100ms p95 (must return 200 to Meta quickly)                |
+| Message dispatch to wamid confirmation | Under 2 seconds p95                                              |
+| Template sync latency                  | Template approval reflected within 1 polling cycle (4 hours)     |
+| Audit log coverage                     | 100% of Communication OS domain events produce audit log entries |
+| Webhook signature rejection rate       | 100% of forged signatures rejected                               |

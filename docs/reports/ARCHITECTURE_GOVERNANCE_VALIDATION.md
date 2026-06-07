@@ -14,16 +14,16 @@
 
 Every OS module defined in `DOMAIN_MODEL.md` has corresponding event ownership entries in `EVENT_FABRIC.md`. The domain event lists in `DOMAIN_MODEL.md` are consistent with the canonical event catalog in `EVENT_FABRIC.md`. Specific checks:
 
-| Check | Result |
-|-------|--------|
-| Identity OS owns `identity.*` events | Consistent across both documents |
-| Workflow OS owns `workflow.*` events (including `workflow.task.*` and `workflow.approval.*`) | Consistent |
-| Communication OS owns `communication.*` events | Consistent |
-| Agent OS owns `agent.*` events | Consistent |
-| Governance OS owns `governance.*` events | Consistent |
-| Analytics OS owns `analytics.*` events | Consistent |
-| People OS owns `people.*` events | Consistent |
-| Knowledge OS owns `knowledge.*` events | Consistent |
+| Check                                                                                        | Result                           |
+| -------------------------------------------------------------------------------------------- | -------------------------------- |
+| Identity OS owns `identity.*` events                                                         | Consistent across both documents |
+| Workflow OS owns `workflow.*` events (including `workflow.task.*` and `workflow.approval.*`) | Consistent                       |
+| Communication OS owns `communication.*` events                                               | Consistent                       |
+| Agent OS owns `agent.*` events                                                               | Consistent                       |
+| Governance OS owns `governance.*` events                                                     | Consistent                       |
+| Analytics OS owns `analytics.*` events                                                       | Consistent                       |
+| People OS owns `people.*` events                                                             | Consistent                       |
+| Knowledge OS owns `knowledge.*` events                                                       | Consistent                       |
 
 **Minor note:** `DOMAIN_MODEL.md` lists `knowledge.document.accessed` as a Knowledge OS event. `EVENT_FABRIC.md`'s ownership table covers prefixes only (not individual events), so this is implicitly covered by `knowledge.*`. No conflict.
 
@@ -35,22 +35,22 @@ Every OS module defined in `DOMAIN_MODEL.md` has corresponding event ownership e
 
 All aggregates and entities in `DOMAIN_MODEL.md` have corresponding tables in `DATA_MODEL.md`. Specific checks:
 
-| Aggregate (DOMAIN_MODEL) | Table(s) (DATA_MODEL) | Consistent? |
-|--------------------------|----------------------|-------------|
-| Organization | organizations | Yes |
-| Member | members | Yes |
-| RoleAssignment | role_assignments (implicit in DATA_MODEL conventions) | Yes |
-| Department | departments | Yes |
-| Team | teams | Yes |
-| Conversation | conversations (referenced in messages section) | Yes — conversations table referenced |
-| WorkflowDefinition | workflows | Yes |
-| WorkflowRun | workflow_runs | Yes |
-| Task | tasks | Yes |
-| ApprovalRequest | approvals | Yes |
-| KnowledgeDocument | knowledge_documents | Yes |
-| AgentSession | agent_sessions (referenced in agent_actions) | Yes — agent_sessions referenced |
-| AgentAction | agent_actions | Yes |
-| LoopInsight / AiInsight | ai_insights | Yes — naming difference noted below |
+| Aggregate (DOMAIN_MODEL) | Table(s) (DATA_MODEL)                                 | Consistent?                          |
+| ------------------------ | ----------------------------------------------------- | ------------------------------------ |
+| Organization             | organizations                                         | Yes                                  |
+| Member                   | members                                               | Yes                                  |
+| RoleAssignment           | role_assignments (implicit in DATA_MODEL conventions) | Yes                                  |
+| Department               | departments                                           | Yes                                  |
+| Team                     | teams                                                 | Yes                                  |
+| Conversation             | conversations (referenced in messages section)        | Yes — conversations table referenced |
+| WorkflowDefinition       | workflows                                             | Yes                                  |
+| WorkflowRun              | workflow_runs                                         | Yes                                  |
+| Task                     | tasks                                                 | Yes                                  |
+| ApprovalRequest          | approvals                                             | Yes                                  |
+| KnowledgeDocument        | knowledge_documents                                   | Yes                                  |
+| AgentSession             | agent_sessions (referenced in agent_actions)          | Yes — agent_sessions referenced      |
+| AgentAction              | agent_actions                                         | Yes                                  |
+| LoopInsight / AiInsight  | ai_insights                                           | Yes — naming difference noted below  |
 
 **Terminology inconsistency noted:** `DOMAIN_MODEL.md` uses `LoopInsight` as the aggregate name; `DATA_MODEL.md` uses `ai_insights` as the table name. This is a deliberate convention: aggregate names use PascalCase domain terminology; table names use snake_case reflecting the storage layer. No functional conflict. However, the `LoopInsight` aggregate could be renamed to `AiInsight` in the Domain Model for consistency with the table name. Flagged as a recommendation.
 
@@ -81,6 +81,7 @@ All aggregates and entities in `DOMAIN_MODEL.md` have corresponding tables in `D
 `RBAC.md` defines 8 roles with scoping across platform, org, department, and team. `TENANT_ISOLATION.md` defines how tenant context is resolved and enforced at the database layer. These are complementary layers: RBAC controls what an actor can do; RLS controls what data they can see. Neither document contradicts the other.
 
 `RBAC.md`'s cross-tenant protection section aligns with `TENANT_ISOLATION.md`'s audit tripwires:
+
 - Both documents state Platform Admin cross-tenant access is audit-logged at `critical` severity
 - Both documents specify that JWT `tenantId` mismatch triggers a security response
 
@@ -106,12 +107,12 @@ Both documents reference INSERT-only RLS on `audit_logs`. Both reference hash ch
 
 ## 3. Terminology Consistency Findings
 
-| Term | DOMAIN_MODEL | EVENT_FABRIC | DATA_MODEL | SYSTEM_ARCHITECTURE | RBAC | Phase Docs |
-|------|-------------|-------------|-----------|---------------------|------|-----------|
-| `LoopInsight` vs `AiInsight` | LoopInsight (aggregate) | Not named individually | ai_insights (table) | Not named | Not named | Loop Engine Insights |
-| `WorkflowRun` vs `workflow_run` | WorkflowRun | workflow.run.* | workflow_runs | WorkflowRun | workflow_runs | workflow run |
-| `approval` vs `ApprovalRequest` | ApprovalRequest (aggregate), ApprovalDecision (entity) | workflow.approval.* | approvals (table) | approval | approval | approval |
-| `phone_number_id` | WABAConfig entity | Not in event payloads | waba_phone_number_id (column) | Integration Layer | Not named | WABA phone number |
+| Term                            | DOMAIN_MODEL                                           | EVENT_FABRIC           | DATA_MODEL                    | SYSTEM_ARCHITECTURE | RBAC          | Phase Docs           |
+| ------------------------------- | ------------------------------------------------------ | ---------------------- | ----------------------------- | ------------------- | ------------- | -------------------- |
+| `LoopInsight` vs `AiInsight`    | LoopInsight (aggregate)                                | Not named individually | ai_insights (table)           | Not named           | Not named     | Loop Engine Insights |
+| `WorkflowRun` vs `workflow_run` | WorkflowRun                                            | workflow.run.\*        | workflow_runs                 | WorkflowRun         | workflow_runs | workflow run         |
+| `approval` vs `ApprovalRequest` | ApprovalRequest (aggregate), ApprovalDecision (entity) | workflow.approval.\*   | approvals (table)             | approval            | approval      | approval             |
+| `phone_number_id`               | WABAConfig entity                                      | Not in event payloads  | waba_phone_number_id (column) | Integration Layer   | Not named     | WABA phone number    |
 
 **Recommendation:** Standardize on `AiInsight` (not `LoopInsight`) in the Domain Model to match the table name and reduce cognitive overhead. The Loop Engine is the _source_ of insights, not a synonym for the insight artifact itself.
 
@@ -123,16 +124,16 @@ Both documents reference INSERT-only RLS on `audit_logs`. Both reference hash ch
 
 Event ownership is defined in `EVENT_FABRIC.md` as a table of prefixes and also implicitly in `DOMAIN_MODEL.md`'s per-domain event lists. Spot-check of ownership consistency:
 
-| Event | DOMAIN_MODEL Owner | EVENT_FABRIC Owner | Consistent? |
-|-------|-------------------|-------------------|-------------|
-| `identity.organization.created` | Identity OS | Identity OS | Yes |
-| `workflow.approval.granted` | Workflow OS | Workflow OS | Yes |
-| `communication.message.received` | Communication OS | Communication OS | Yes |
-| `governance.audit.recorded` | Governance OS | Governance OS | Yes |
-| `agent.action.executed` | Agent OS | Agent OS | Yes |
-| `analytics.sla.breached` | Analytics OS | Analytics OS | Yes |
-| `people.department.created` | People OS | People OS (via `people.*`) | Yes |
-| `knowledge.document.published` | Knowledge OS | Knowledge OS (via `knowledge.*`) | Yes |
+| Event                            | DOMAIN_MODEL Owner | EVENT_FABRIC Owner               | Consistent? |
+| -------------------------------- | ------------------ | -------------------------------- | ----------- |
+| `identity.organization.created`  | Identity OS        | Identity OS                      | Yes         |
+| `workflow.approval.granted`      | Workflow OS        | Workflow OS                      | Yes         |
+| `communication.message.received` | Communication OS   | Communication OS                 | Yes         |
+| `governance.audit.recorded`      | Governance OS      | Governance OS                    | Yes         |
+| `agent.action.executed`          | Agent OS           | Agent OS                         | Yes         |
+| `analytics.sla.breached`         | Analytics OS       | Analytics OS                     | Yes         |
+| `people.department.created`      | People OS          | People OS (via `people.*`)       | Yes         |
+| `knowledge.document.published`   | Knowledge OS       | Knowledge OS (via `knowledge.*`) | Yes         |
 
 **Finding:** All 15 canonical events in `EVENT_FABRIC.md` have their ownership correctly attributed to the OS that produces them. No cross-ownership conflicts detected.
 
@@ -140,16 +141,16 @@ Event ownership is defined in `EVENT_FABRIC.md` as a table of prefixes and also 
 
 ## 5. Roadmap Consistency (Phases ↔ OS Modules)
 
-| Phase | OS Module | CLAUDE.md Sprint Assignment | Consistent? |
-|-------|----------|---------------------------|-------------|
-| Phase 01 | Foundation | Sprint 0 (foundation/geos branch) | Yes |
-| Phase 02 | Identity OS | Sprint 1 | Yes |
-| Phase 03 | People OS | Sprint 2 | Yes |
-| Phase 04 | Communication OS | Sprint 1 | Note: CLAUDE.md places Comm OS in Sprint 1; Phase 04 is sequenced after People OS (Phase 03) which is Sprint 2. Resolution: Communication OS basic webhook infrastructure can be Sprint 1; full Comm OS (Phase 04) is Sprint 2/3. |
-| Phase 05 | Workflow OS | Sprint 1 | Note: CLAUDE.md places Workflow OS in Sprint 1; Phase 05 depends on Phases 02–04. Resolution: Sprint 1 for skeleton; full delivery is Sprint 2–3. |
-| Phase 06 | Analytics OS | Sprint 3 | Yes |
-| Phase 07 | Agent OS | V1 | Note: Phase 07 positions Agent OS as a late phase (after Analytics); CLAUDE.md marks it as V1. Consistent with post-MVP positioning. |
-| Phase 08 | Platform Admin | Not explicitly listed in CLAUDE.md | Phase 08 is an unlisted module. It is implicitly required for production operations. No conflict with existing assignments. |
+| Phase    | OS Module        | CLAUDE.md Sprint Assignment        | Consistent?                                                                                                                                                                                                                       |
+| -------- | ---------------- | ---------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Phase 01 | Foundation       | Sprint 0 (foundation/geos branch)  | Yes                                                                                                                                                                                                                               |
+| Phase 02 | Identity OS      | Sprint 1                           | Yes                                                                                                                                                                                                                               |
+| Phase 03 | People OS        | Sprint 2                           | Yes                                                                                                                                                                                                                               |
+| Phase 04 | Communication OS | Sprint 1                           | Note: CLAUDE.md places Comm OS in Sprint 1; Phase 04 is sequenced after People OS (Phase 03) which is Sprint 2. Resolution: Communication OS basic webhook infrastructure can be Sprint 1; full Comm OS (Phase 04) is Sprint 2/3. |
+| Phase 05 | Workflow OS      | Sprint 1                           | Note: CLAUDE.md places Workflow OS in Sprint 1; Phase 05 depends on Phases 02–04. Resolution: Sprint 1 for skeleton; full delivery is Sprint 2–3.                                                                                 |
+| Phase 06 | Analytics OS     | Sprint 3                           | Yes                                                                                                                                                                                                                               |
+| Phase 07 | Agent OS         | V1                                 | Note: Phase 07 positions Agent OS as a late phase (after Analytics); CLAUDE.md marks it as V1. Consistent with post-MVP positioning.                                                                                              |
+| Phase 08 | Platform Admin   | Not explicitly listed in CLAUDE.md | Phase 08 is an unlisted module. It is implicitly required for production operations. No conflict with existing assignments.                                                                                                       |
 
 **Governance OS** is listed in `CLAUDE.md` with Sprint 2 status but does not have a dedicated phase in the phase documents. Governance OS capabilities (audit writer, loop engine, policy enforcement) are distributed across Phases 02, 06, and the security documents. This is intentional — Governance OS is a cross-cutting concern, not a standalone user-facing module.
 
@@ -231,16 +232,16 @@ Move the WhatsApp webhook receiver (HMAC verification, phone_number_id routing, 
 
 ### Scoring Justification
 
-| Dimension | Weight | Score | Weighted |
-|-----------|--------|-------|---------|
-| Domain Model completeness (8 OS domains fully defined) | 20% | 95/100 | 19.0 |
-| Event Fabric completeness (standards + 15 canonical events) | 15% | 90/100 | 13.5 |
-| Data Model completeness (18 entities fully defined) | 15% | 90/100 | 13.5 |
-| Security documentation (RBAC, Tenant Isolation, Audit, Governance) | 20% | 92/100 | 18.4 |
-| ADR coverage (5 ADRs covering key decisions) | 10% | 85/100 | 8.5 |
-| Phase plan completeness (8 phases with full sections) | 10% | 88/100 | 8.8 |
-| Cross-document consistency | 10% | 70/100 | 7.0 |
-| **Total** | | | **88.7 → 87** |
+| Dimension                                                          | Weight | Score  | Weighted      |
+| ------------------------------------------------------------------ | ------ | ------ | ------------- |
+| Domain Model completeness (8 OS domains fully defined)             | 20%    | 95/100 | 19.0          |
+| Event Fabric completeness (standards + 15 canonical events)        | 15%    | 90/100 | 13.5          |
+| Data Model completeness (18 entities fully defined)                | 15%    | 90/100 | 13.5          |
+| Security documentation (RBAC, Tenant Isolation, Audit, Governance) | 20%    | 92/100 | 18.4          |
+| ADR coverage (5 ADRs covering key decisions)                       | 10%    | 85/100 | 8.5           |
+| Phase plan completeness (8 phases with full sections)              | 10%    | 88/100 | 8.8           |
+| Cross-document consistency                                         | 10%    | 70/100 | 7.0           |
+| **Total**                                                          |        |        | **88.7 → 87** |
 
 ### Deductions from Perfect Score
 

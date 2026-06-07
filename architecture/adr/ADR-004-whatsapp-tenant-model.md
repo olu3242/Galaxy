@@ -1,11 +1,11 @@
 # ADR-004: WhatsApp Tenant Model
 
-| Field | Value |
-|-------|-------|
-| **Status** | Accepted |
-| **Date** | 2026-06-07 |
-| **Review Date** | Sprint 4 |
-| **Deciders** | CTO, Platform Lead Engineer |
+| Field                 | Value                                                                 |
+| --------------------- | --------------------------------------------------------------------- |
+| **Status**            | Accepted                                                              |
+| **Date**              | 2026-06-07                                                            |
+| **Review Date**       | Sprint 4                                                              |
+| **Deciders**          | CTO, Platform Lead Engineer                                           |
 | **Related Documents** | `architecture/SYSTEM_ARCHITECTURE.md`, `security/TENANT_ISOLATION.md` |
 
 ---
@@ -93,6 +93,7 @@ Message templates are managed per-WABA. Each organization's templates are submit
 **Approach:** All organizations share a single WhatsApp number. Members identify their organization by starting messages with a keyword or code (e.g., "ACME: submit leave request").
 
 **Rejected because:**
+
 - Keyword parsing is fragile and creates a poor user experience (members must remember codes)
 - There is no cryptographic way to verify which organization a message belongs to based on content
 - All organizations' employees know the single Galaxy number, creating a confused brand experience
@@ -104,6 +105,7 @@ Message templates are managed per-WABA. Each organization's templates are submit
 **Approach:** A single WABA serves all organizations. Routing is determined by sender phone number — the platform maps the sender's phone number to an organization based on which organization the member belongs to.
 
 **Rejected because:**
+
 - Routing by sender phone number requires looking up the sender in the members table before the tenant context is known, creating a chicken-and-egg problem
 - If a member's phone number is not yet registered (new member), routing fails
 - An attacker could potentially route their messages to a different organization by spoofing a known employee's number (social engineering risk)
@@ -115,6 +117,7 @@ Message templates are managed per-WABA. Each organization's templates are submit
 ## Review Notes
 
 At Sprint 4, this decision will be reviewed to assess:
+
 1. Whether the WABA provisioning flow is sufficiently automated for the expected organization onboarding rate
 2. Whether Meta BSP compliance requirements have created any operational friction
 3. Whether the per-organization token rotation and WABA management tooling is adequate

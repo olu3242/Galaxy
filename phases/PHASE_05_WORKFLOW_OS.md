@@ -110,23 +110,23 @@ Implement the Workflow OS module, which is the operational core of Galaxy. Workf
 
 ## Risks
 
-| Risk | Likelihood | Impact | Mitigation |
-|------|-----------|--------|-----------|
-| State machine race condition: two concurrent step completions advance past a step simultaneously | Low | High | Use database row-level locking on `workflow_runs.current_step_id` during step advancement; BullMQ job concurrency limit of 1 per workflow run |
-| Routing rule misconfiguration routes task to wrong member | Medium | Medium | Add routing rule dry-run validation in the workflow definition editor; log routing decisions |
-| Escalation loop if manager chain has cycles | Low | Medium | Cycle detection in `OrgChartService.getReportingLine`; enforce maximum escalation depth of 3 |
-| WhatsApp keyword collision (same keyword matches multiple workflows) | Low | Medium | Validate keyword uniqueness at workflow publish time; first-match-wins determinism if collision exists |
-| Delay step: BullMQ delayed job precision | Low | Low | Document that delay steps have a minimum precision of the job processing interval (typically seconds) |
+| Risk                                                                                             | Likelihood | Impact | Mitigation                                                                                                                                    |
+| ------------------------------------------------------------------------------------------------ | ---------- | ------ | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| State machine race condition: two concurrent step completions advance past a step simultaneously | Low        | High   | Use database row-level locking on `workflow_runs.current_step_id` during step advancement; BullMQ job concurrency limit of 1 per workflow run |
+| Routing rule misconfiguration routes task to wrong member                                        | Medium     | Medium | Add routing rule dry-run validation in the workflow definition editor; log routing decisions                                                  |
+| Escalation loop if manager chain has cycles                                                      | Low        | Medium | Cycle detection in `OrgChartService.getReportingLine`; enforce maximum escalation depth of 3                                                  |
+| WhatsApp keyword collision (same keyword matches multiple workflows)                             | Low        | Medium | Validate keyword uniqueness at workflow publish time; first-match-wins determinism if collision exists                                        |
+| Delay step: BullMQ delayed job precision                                                         | Low        | Low    | Document that delay steps have a minimum precision of the job processing interval (typically seconds)                                         |
 
 ---
 
 ## Success Metrics
 
-| Metric | Target |
-|--------|--------|
-| Workflow trigger to first step execution | Under 5 seconds p95 |
-| Task completion to next step advancement | Under 3 seconds p95 |
-| Approval response processing | Under 3 seconds p95 |
-| End-to-end 3-step workflow (trigger → task → approval → complete) | Under 10 minutes for a manually executed test scenario |
-| Audit log coverage | 100% of Workflow OS domain events produce audit log entries |
-| Cross-tenant isolation | Passes for all Workflow OS tables |
+| Metric                                                            | Target                                                      |
+| ----------------------------------------------------------------- | ----------------------------------------------------------- |
+| Workflow trigger to first step execution                          | Under 5 seconds p95                                         |
+| Task completion to next step advancement                          | Under 3 seconds p95                                         |
+| Approval response processing                                      | Under 3 seconds p95                                         |
+| End-to-end 3-step workflow (trigger → task → approval → complete) | Under 10 minutes for a manually executed test scenario      |
+| Audit log coverage                                                | 100% of Workflow OS domain events produce audit log entries |
+| Cross-tenant isolation                                            | Passes for all Workflow OS tables                           |

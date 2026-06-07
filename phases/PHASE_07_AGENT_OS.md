@@ -28,22 +28,22 @@ Implement the Agent OS module, which brings AI-powered automation to Galaxy. Thi
 - `ToolRegistryService`: maintains the catalog of available agent tools
 - Initial tool catalog:
 
-| Tool | Description | Impact Tier |
-|------|-------------|-------------|
-| `list_my_tasks` | List the current member's open tasks | 1 |
-| `get_workflow_status` | Get the status of a specific workflow run | 1 |
-| `search_knowledge` | Semantic search over published knowledge documents | 1 |
-| `get_org_member` | Look up a member's profile and contact info | 1 |
-| `complete_task` | Mark a task as completed | 2 |
-| `create_task` | Create a new task for a specific member | 2 |
-| `add_task_comment` | Add a comment to a task | 2 |
-| `send_notification` | Send a WhatsApp notification to a specific member | 2 |
-| `trigger_workflow` | Trigger a specific workflow definition with input data | 3 |
-| `send_bulk_notification` | Send a notification to multiple members (>5) | 3 |
-| `update_department_settings` | Update a department's configuration | 3 |
-| `grant_approval` | Grant a pending approval on behalf of the member | 3 |
-| `delete_knowledge_document` | Archive a knowledge document | 4 |
-| `update_member_role` | Change a member's role assignment | 4 |
+| Tool                         | Description                                            | Impact Tier |
+| ---------------------------- | ------------------------------------------------------ | ----------- |
+| `list_my_tasks`              | List the current member's open tasks                   | 1           |
+| `get_workflow_status`        | Get the status of a specific workflow run              | 1           |
+| `search_knowledge`           | Semantic search over published knowledge documents     | 1           |
+| `get_org_member`             | Look up a member's profile and contact info            | 1           |
+| `complete_task`              | Mark a task as completed                               | 2           |
+| `create_task`                | Create a new task for a specific member                | 2           |
+| `add_task_comment`           | Add a comment to a task                                | 2           |
+| `send_notification`          | Send a WhatsApp notification to a specific member      | 2           |
+| `trigger_workflow`           | Trigger a specific workflow definition with input data | 3           |
+| `send_bulk_notification`     | Send a notification to multiple members (>5)           | 3           |
+| `update_department_settings` | Update a department's configuration                    | 3           |
+| `grant_approval`             | Grant a pending approval on behalf of the member       | 3           |
+| `delete_knowledge_document`  | Archive a knowledge document                           | 4           |
+| `update_member_role`         | Change a member's role assignment                      | 4           |
 
 - Tool input and output schemas are defined using Zod; validated before dispatch
 - New tools can be registered without code changes to the runtime (schema-driven registration)
@@ -129,22 +129,22 @@ Implement the Agent OS module, which brings AI-powered automation to Galaxy. Thi
 
 ## Risks
 
-| Risk | Likelihood | Impact | Mitigation |
-|------|-----------|--------|-----------|
-| Anthropic API latency impacting WhatsApp UX | Medium | Medium | Send "thinking..." acknowledgment immediately; agent response is delivered asynchronously |
-| Agent hallucination causing incorrect tool parameters | Medium | Medium | Zod schema validation on all tool inputs; Tier 2+ actions include a confirmation step in the agent's output message before execution |
-| Human-in-the-loop approver unresponsive | Medium | Low | Fallback approver configuration; timeout with clear member notification |
-| pgvector nearest-neighbor query performance at scale | Low | Low | Index embeddings with IVFFlat or HNSW; limit search to published documents in tenant scope |
-| Anthropic API key exhaustion from uncontrolled agent session volume | Low | Medium | Rate limiting at the `agent-session` queue level per tenant (max concurrent sessions per org) |
+| Risk                                                                | Likelihood | Impact | Mitigation                                                                                                                           |
+| ------------------------------------------------------------------- | ---------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------ |
+| Anthropic API latency impacting WhatsApp UX                         | Medium     | Medium | Send "thinking..." acknowledgment immediately; agent response is delivered asynchronously                                            |
+| Agent hallucination causing incorrect tool parameters               | Medium     | Medium | Zod schema validation on all tool inputs; Tier 2+ actions include a confirmation step in the agent's output message before execution |
+| Human-in-the-loop approver unresponsive                             | Medium     | Low    | Fallback approver configuration; timeout with clear member notification                                                              |
+| pgvector nearest-neighbor query performance at scale                | Low        | Low    | Index embeddings with IVFFlat or HNSW; limit search to published documents in tenant scope                                           |
+| Anthropic API key exhaustion from uncontrolled agent session volume | Low        | Medium | Rate limiting at the `agent-session` queue level per tenant (max concurrent sessions per org)                                        |
 
 ---
 
 ## Success Metrics
 
-| Metric | Target |
-|--------|--------|
-| Agent response latency (Tier 1 tool, no approval) | Under 10 seconds p95 end-to-end from WhatsApp send to WhatsApp response |
-| Tier 3 approval request delivery | Approver receives WhatsApp message within 30 seconds of agent proposing the action |
-| Governance guard false-block rate | Zero (no legitimate Tier 1–2 actions blocked by governance guard) |
-| Agent session audit log completeness | 100% of agent sessions and actions have audit log entries |
-| Knowledge search relevance (manual evaluation) | Top-3 results contain the expected document in >80% of test queries |
+| Metric                                            | Target                                                                             |
+| ------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| Agent response latency (Tier 1 tool, no approval) | Under 10 seconds p95 end-to-end from WhatsApp send to WhatsApp response            |
+| Tier 3 approval request delivery                  | Approver receives WhatsApp message within 30 seconds of agent proposing the action |
+| Governance guard false-block rate                 | Zero (no legitimate Tier 1–2 actions blocked by governance guard)                  |
+| Agent session audit log completeness              | 100% of agent sessions and actions have audit log entries                          |
+| Knowledge search relevance (manual evaluation)    | Top-3 results contain the expected document in >80% of test queries                |

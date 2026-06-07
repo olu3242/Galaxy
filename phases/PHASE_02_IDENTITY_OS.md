@@ -101,22 +101,22 @@ Implement the Identity OS module, which is the security and access foundation fo
 
 ## Risks
 
-| Risk | Likelihood | Impact | Mitigation |
-|------|-----------|--------|-----------|
-| WhatsApp OTP delivery failure during testing | Medium | Low | Use a test phone number; implement fallback email OTP for early adopters |
-| JWT RS256 key management complexity in local dev | Medium | Low | Provide a local dev key pair in `.env.example` with clear instructions |
-| RLS policy not applied to a new table | Low | High | Cross-tenant isolation test in CI catches missing policies immediately |
-| Role seeding race condition on first organization creation | Low | Medium | Wrap org creation and role seeding in a database transaction |
-| Token refresh race condition (two requests simultaneously refreshing) | Low | Medium | Redis-based refresh token locking: new token is only issued if old token is present and valid |
+| Risk                                                                  | Likelihood | Impact | Mitigation                                                                                    |
+| --------------------------------------------------------------------- | ---------- | ------ | --------------------------------------------------------------------------------------------- |
+| WhatsApp OTP delivery failure during testing                          | Medium     | Low    | Use a test phone number; implement fallback email OTP for early adopters                      |
+| JWT RS256 key management complexity in local dev                      | Medium     | Low    | Provide a local dev key pair in `.env.example` with clear instructions                        |
+| RLS policy not applied to a new table                                 | Low        | High   | Cross-tenant isolation test in CI catches missing policies immediately                        |
+| Role seeding race condition on first organization creation            | Low        | Medium | Wrap org creation and role seeding in a database transaction                                  |
+| Token refresh race condition (two requests simultaneously refreshing) | Low        | Medium | Redis-based refresh token locking: new token is only issued if old token is present and valid |
 
 ---
 
 ## Success Metrics
 
-| Metric | Target |
-|--------|--------|
-| Cross-tenant isolation test | Passes (zero cross-tenant rows returned) |
-| JWT authentication | Login + refresh + logout round trip under 300ms p95 |
-| RLS coverage | 100% of Identity OS tables have RLS policies |
-| Audit log coverage | 100% of Identity OS domain events produce audit log entries |
-| Test coverage | Unit tests for all pure functions; integration tests for all API routes |
+| Metric                      | Target                                                                  |
+| --------------------------- | ----------------------------------------------------------------------- |
+| Cross-tenant isolation test | Passes (zero cross-tenant rows returned)                                |
+| JWT authentication          | Login + refresh + logout round trip under 300ms p95                     |
+| RLS coverage                | 100% of Identity OS tables have RLS policies                            |
+| Audit log coverage          | 100% of Identity OS domain events produce audit log entries             |
+| Test coverage               | Unit tests for all pure functions; integration tests for all API routes |

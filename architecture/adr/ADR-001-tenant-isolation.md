@@ -1,11 +1,11 @@
 # ADR-001: Tenant Isolation Strategy
 
-| Field | Value |
-|-------|-------|
-| **Status** | Accepted |
-| **Date** | 2026-06-07 |
-| **Review Date** | Sprint 2 |
-| **Deciders** | CTO, Platform Lead Engineer |
+| Field                 | Value                                                        |
+| --------------------- | ------------------------------------------------------------ |
+| **Status**            | Accepted                                                     |
+| **Date**              | 2026-06-07                                                   |
+| **Review Date**       | Sprint 2                                                     |
+| **Deciders**          | CTO, Platform Lead Engineer                                  |
 | **Related Documents** | `security/TENANT_ISOLATION.md`, `architecture/DATA_MODEL.md` |
 
 ---
@@ -104,6 +104,7 @@ Enterprise organizations with the strictest isolation requirements receive a ded
 ## Review Notes
 
 At Sprint 2, this decision will be reviewed to assess:
+
 1. Whether any cross-tenant isolation test gaps have been identified
 2. Whether query performance is impacting smaller tenants due to shared schema growth
 3. Whether any organization has reached the Dedicated Schema migration criteria

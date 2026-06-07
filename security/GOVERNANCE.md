@@ -8,37 +8,37 @@ This document defines the security governance structure, policy review process, 
 
 ### Security Ownership
 
-| Role | Security Responsibility |
-|------|------------------------|
-| **Founding Engineer / CTO** | Ultimate security accountability; approves security architecture decisions; signs off on ADRs with security implications |
-| **Platform Lead Engineer** | Day-to-day security owner; triages vulnerabilities; chairs security review for each sprint; owns RBAC and RLS implementation |
-| **Engineering Team** | Implements security controls; participates in code review with security lens; responsible for not introducing new vulnerabilities |
-| **External Auditor (future)** | Annual penetration test and SOC 2 audit engagement |
+| Role                          | Security Responsibility                                                                                                           |
+| ----------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| **Founding Engineer / CTO**   | Ultimate security accountability; approves security architecture decisions; signs off on ADRs with security implications          |
+| **Platform Lead Engineer**    | Day-to-day security owner; triages vulnerabilities; chairs security review for each sprint; owns RBAC and RLS implementation      |
+| **Engineering Team**          | Implements security controls; participates in code review with security lens; responsible for not introducing new vulnerabilities |
+| **External Auditor (future)** | Annual penetration test and SOC 2 audit engagement                                                                                |
 
 ### Security Decision Process
 
 Security decisions are categorized by impact and follow the appropriate decision path:
 
-| Decision Type | Owner | Process |
-|--------------|-------|---------|
-| Architecture-level security decision | CTO + Platform Lead | ADR required; reviewed before implementation begins |
-| New permission or RBAC change | Platform Lead | Security review PR checklist item; cross-tenant isolation test must pass |
-| Dependency with known CVE | Platform Lead | Triage within 24 hours; remediation per SLA below |
-| Incident declaration | Platform Lead | Incident response playbook activates; CTO notified within 1 hour |
-| Schema migration | Engineering Team | Cross-tenant isolation test must pass in CI; Platform Lead approves |
+| Decision Type                        | Owner               | Process                                                                  |
+| ------------------------------------ | ------------------- | ------------------------------------------------------------------------ |
+| Architecture-level security decision | CTO + Platform Lead | ADR required; reviewed before implementation begins                      |
+| New permission or RBAC change        | Platform Lead       | Security review PR checklist item; cross-tenant isolation test must pass |
+| Dependency with known CVE            | Platform Lead       | Triage within 24 hours; remediation per SLA below                        |
+| Incident declaration                 | Platform Lead       | Incident response playbook activates; CTO notified within 1 hour         |
+| Schema migration                     | Engineering Team    | Cross-tenant isolation test must pass in CI; Platform Lead approves      |
 
 ---
 
 ## Policy Review Cadence
 
-| Policy Document | Review Frequency | Owner |
-|----------------|-----------------|-------|
-| Security Governance (this document) | Quarterly | Platform Lead |
-| RBAC Model (`security/RBAC.md`) | Each sprint where roles change | Platform Lead |
-| Tenant Isolation (`security/TENANT_ISOLATION.md`) | Each sprint where schema changes | Platform Lead |
-| Audit Model (`security/AUDIT_MODEL.md`) | Quarterly | Platform Lead |
-| Threat Model (`docs/security/THREAT_MODEL.md`) | Before each major version release | CTO + Platform Lead |
-| Secrets Management (`docs/security/SECRETS_MANAGEMENT.md`) | Quarterly | Platform Lead |
+| Policy Document                                            | Review Frequency                  | Owner               |
+| ---------------------------------------------------------- | --------------------------------- | ------------------- |
+| Security Governance (this document)                        | Quarterly                         | Platform Lead       |
+| RBAC Model (`security/RBAC.md`)                            | Each sprint where roles change    | Platform Lead       |
+| Tenant Isolation (`security/TENANT_ISOLATION.md`)          | Each sprint where schema changes  | Platform Lead       |
+| Audit Model (`security/AUDIT_MODEL.md`)                    | Quarterly                         | Platform Lead       |
+| Threat Model (`docs/security/THREAT_MODEL.md`)             | Before each major version release | CTO + Platform Lead |
+| Secrets Management (`docs/security/SECRETS_MANAGEMENT.md`) | Quarterly                         | Platform Lead       |
 
 Any security incident triggers an out-of-band review of the relevant policies within 5 business days of the incident postmortem.
 
@@ -57,21 +57,21 @@ Any security incident triggers an out-of-band review of the relevant policies wi
 
 ### Severity Classification
 
-| Severity | CVSS Score | Definition |
-|----------|-----------|-----------|
-| **Critical** | 9.0–10.0 | Remote code execution, authentication bypass, cross-tenant data exposure |
-| **High** | 7.0–8.9 | Privilege escalation, SQL injection potential, significant data exposure |
-| **Medium** | 4.0–6.9 | Information disclosure, CSRF, limited scope data access |
-| **Low** | 0.1–3.9 | Minor information leakage, low-risk configuration issues |
+| Severity     | CVSS Score | Definition                                                               |
+| ------------ | ---------- | ------------------------------------------------------------------------ |
+| **Critical** | 9.0–10.0   | Remote code execution, authentication bypass, cross-tenant data exposure |
+| **High**     | 7.0–8.9    | Privilege escalation, SQL injection potential, significant data exposure |
+| **Medium**   | 4.0–6.9    | Information disclosure, CSRF, limited scope data access                  |
+| **Low**      | 0.1–3.9    | Minor information leakage, low-risk configuration issues                 |
 
 ### Remediation SLA
 
-| Severity | Triage SLA | Remediation SLA | Deployment SLA |
-|----------|-----------|----------------|---------------|
-| **Critical** | 2 hours | 24 hours | Immediate (emergency deploy) |
-| **High** | 24 hours | 7 days | Next scheduled deploy or emergency if actively exploited |
-| **Medium** | 5 business days | 30 days | Next sprint release |
-| **Low** | 2 weeks | 90 days | Next available sprint |
+| Severity     | Triage SLA      | Remediation SLA | Deployment SLA                                           |
+| ------------ | --------------- | --------------- | -------------------------------------------------------- |
+| **Critical** | 2 hours         | 24 hours        | Immediate (emergency deploy)                             |
+| **High**     | 24 hours        | 7 days          | Next scheduled deploy or emergency if actively exploited |
+| **Medium**   | 5 business days | 30 days         | Next sprint release                                      |
+| **Low**      | 2 weeks         | 90 days         | Next available sprint                                    |
 
 ### Triage Process
 
@@ -92,6 +92,7 @@ Any security incident triggers an out-of-band review of the relevant policies wi
 ### Phase 1: Detect
 
 **Triggers for incident declaration:**
+
 - `governance.audit.integrity_violation` event fires
 - Cross-tenant data access anomaly detected by audit tripwires
 - Security alert from CodeQL, gitleaks, or dependency scanner with Critical severity
@@ -100,6 +101,7 @@ Any security incident triggers an out-of-band review of the relevant policies wi
 - Automated monitoring detects anomalous query patterns
 
 **Detection actions:**
+
 1. Platform Lead is paged via on-call alert.
 2. Platform Lead reviews the alert and determines if an incident should be declared.
 3. If declared: a named incident is created in the incident tracker with a severity level and a unique `incident_id`.
@@ -115,6 +117,7 @@ Any security incident triggers an out-of-band review of the relevant policies wi
 **Actions by incident type:**
 
 **Cross-tenant data exposure:**
+
 1. Identify the affected organizations (A exposed to B).
 2. Revoke all active JWTs for the affected member(s) if the exposure was via a compromised credential.
 3. If RLS misconfiguration: disable the affected query path or table access at the API layer immediately (feature flag or deploy).
@@ -122,18 +125,21 @@ Any security incident triggers an out-of-band review of the relevant policies wi
 5. Notify the affected organization owners within 1 hour.
 
 **Authentication bypass:**
+
 1. Rotate the JWT signing key immediately (via Secrets Manager rotation).
 2. All active sessions are immediately invalidated.
 3. Force re-authentication for all members.
 4. Identify how many sessions may have been active under the bypass.
 
 **Secret leakage (committed to repository):**
+
 1. Rotate the leaked secret immediately in AWS Secrets Manager.
 2. If the secret was a WABA token, notify Meta and request a new token.
 3. Scrub the secret from git history using `git filter-repo` (coordinated with team to avoid rebase conflicts).
 4. Audit all systems that may have used the leaked secret.
 
 **Compromised dependency (supply chain attack):**
+
 1. Remove or pin the affected dependency version immediately.
 2. Identify any production systems running the compromised version.
 3. Assess whether the malicious code was executed and what data it could have accessed.
@@ -145,6 +151,7 @@ Any security incident triggers an out-of-band review of the relevant policies wi
 **Goal:** Remove the root cause. Ensure the vulnerability no longer exists in any form.
 
 **Actions:**
+
 1. Develop and test a fix for the root cause (not just the symptom).
 2. Review all code paths that share the same vulnerability pattern — fix all instances, not just the reported one.
 3. Add a regression test that would have caught this issue before it reached production.
@@ -159,6 +166,7 @@ Any security incident triggers an out-of-band review of the relevant policies wi
 **Goal:** Restore normal operations with confidence.
 
 **Actions:**
+
 1. Verify the fix is deployed and the regression test is passing in production.
 2. Restore any disabled query paths or feature flags.
 3. Re-enable affected organization access if it was suspended during containment.
@@ -175,6 +183,7 @@ Any security incident triggers an out-of-band review of the relevant policies wi
 **Timeline:** Postmortem must be completed within 5 business days of recovery.
 
 **Postmortem document must include:**
+
 1. Incident timeline (detection → containment → eradication → recovery, with timestamps)
 2. Root cause analysis (5-Whys or equivalent)
 3. Impact assessment (organizations affected, data exposed, duration of exposure)
@@ -193,18 +202,18 @@ The following checklist must be completed and signed off by the Platform Lead be
 
 ### OWASP Top 10 (2021)
 
-| OWASP Risk | Galaxy Control | Status |
-|-----------|---------------|--------|
-| A01 — Broken Access Control | RBAC + RLS enforced; cross-tenant isolation test in CI | Required |
-| A02 — Cryptographic Failures | JWT RS256; HMAC-SHA256 webhook verification; TLS 1.2+ enforced; secrets in Secrets Manager | Required |
-| A03 — Injection | Parameterized queries everywhere; Zod input validation; no string interpolation in SQL | Required |
-| A04 — Insecure Design | Threat model reviewed; security ADRs in place; agent governance guard required for writes | Required |
-| A05 — Security Misconfiguration | No default credentials; security headers (HSTS, CSP, X-Frame-Options) on web; RLS on all tables | Required |
-| A06 — Vulnerable Components | `pnpm audit` green; Dependabot enabled; no high/critical CVEs in production deps | Required |
-| A07 — Authentication Failures | JWT expiry enforced; token revocation on logout; rate limiting on auth endpoints | Required |
-| A08 — Software and Data Integrity | gitleaks secret scanning; CodeQL in CI; signed audit log exports | Required |
-| A09 — Security Logging and Monitoring | Structured audit logging for all categories; DLQ alerting; SLA breach alerting | Required |
-| A10 — SSRF | Outbound HTTP calls restricted to allowlisted domains (Meta API, AWS); WABA URLs validated | Required |
+| OWASP Risk                            | Galaxy Control                                                                                  | Status   |
+| ------------------------------------- | ----------------------------------------------------------------------------------------------- | -------- |
+| A01 — Broken Access Control           | RBAC + RLS enforced; cross-tenant isolation test in CI                                          | Required |
+| A02 — Cryptographic Failures          | JWT RS256; HMAC-SHA256 webhook verification; TLS 1.2+ enforced; secrets in Secrets Manager      | Required |
+| A03 — Injection                       | Parameterized queries everywhere; Zod input validation; no string interpolation in SQL          | Required |
+| A04 — Insecure Design                 | Threat model reviewed; security ADRs in place; agent governance guard required for writes       | Required |
+| A05 — Security Misconfiguration       | No default credentials; security headers (HSTS, CSP, X-Frame-Options) on web; RLS on all tables | Required |
+| A06 — Vulnerable Components           | `pnpm audit` green; Dependabot enabled; no high/critical CVEs in production deps                | Required |
+| A07 — Authentication Failures         | JWT expiry enforced; token revocation on logout; rate limiting on auth endpoints                | Required |
+| A08 — Software and Data Integrity     | gitleaks secret scanning; CodeQL in CI; signed audit log exports                                | Required |
+| A09 — Security Logging and Monitoring | Structured audit logging for all categories; DLQ alerting; SLA breach alerting                  | Required |
+| A10 — SSRF                            | Outbound HTTP calls restricted to allowlisted domains (Meta API, AWS); WABA URLs validated      | Required |
 
 ### RLS Validation
 
@@ -249,6 +258,7 @@ The following checklist must be completed and signed off by the Platform Lead be
 ### CodeQL Analysis
 
 GitHub CodeQL analysis runs on every PR targeting `main` or `develop`. The following query suites are enabled:
+
 - `security-and-quality` (TypeScript/JavaScript)
 - `security-extended` (TypeScript/JavaScript)
 
@@ -260,11 +270,11 @@ gitleaks is configured as a pre-commit hook (via `husky`) and as a CI step. It s
 
 ### Penetration Testing Schedule
 
-| Test Type | Frequency | Provider |
-|-----------|----------|---------|
-| Internal security review | Every sprint | Platform Lead |
-| External penetration test (web application) | Annually | Third-party security firm |
-| External penetration test (API) | Annually | Third-party security firm |
+| Test Type                                          | Frequency       | Provider                  |
+| -------------------------------------------------- | --------------- | ------------------------- |
+| Internal security review                           | Every sprint    | Platform Lead             |
+| External penetration test (web application)        | Annually        | Third-party security firm |
+| External penetration test (API)                    | Annually        | Third-party security firm |
 | Red team exercise (social engineering + technical) | Every 18 months | Third-party security firm |
 
 Penetration test reports are stored in `docs/security/pentest/` (not committed to the public repository). Findings are triaged and remediated per the vulnerability management SLA.
@@ -273,22 +283,22 @@ Penetration test reports are stored in `docs/security/pentest/` (not committed t
 
 The web dashboard (`apps/web`) and API (`apps/api`) enforce the following HTTP security headers:
 
-| Header | Value |
-|--------|-------|
+| Header                      | Value                                          |
+| --------------------------- | ---------------------------------------------- |
 | `Strict-Transport-Security` | `max-age=31536000; includeSubDomains; preload` |
-| `Content-Security-Policy` | Defined per-app to restrict script sources |
-| `X-Frame-Options` | `DENY` |
-| `X-Content-Type-Options` | `nosniff` |
-| `Referrer-Policy` | `strict-origin-when-cross-origin` |
-| `Permissions-Policy` | Restricts camera, microphone, geolocation |
+| `Content-Security-Policy`   | Defined per-app to restrict script sources     |
+| `X-Frame-Options`           | `DENY`                                         |
+| `X-Content-Type-Options`    | `nosniff`                                      |
+| `Referrer-Policy`           | `strict-origin-when-cross-origin`              |
+| `Permissions-Policy`        | Restricts camera, microphone, geolocation      |
 
 ### Rate Limiting
 
 API rate limits are enforced per-tenant and per-endpoint using a Redis sliding window counter:
 
-| Endpoint Class | Limit |
-|---------------|-------|
-| Auth endpoints (`/api/v1/auth/*`) | 10 requests per minute per IP |
-| Webhook receiver | 1000 requests per minute per `phone_number_id` |
-| General API | 300 requests per minute per tenant |
-| Analytics queries | 60 requests per minute per tenant |
+| Endpoint Class                    | Limit                                          |
+| --------------------------------- | ---------------------------------------------- |
+| Auth endpoints (`/api/v1/auth/*`) | 10 requests per minute per IP                  |
+| Webhook receiver                  | 1000 requests per minute per `phone_number_id` |
+| General API                       | 300 requests per minute per tenant             |
+| Analytics queries                 | 60 requests per minute per tenant              |

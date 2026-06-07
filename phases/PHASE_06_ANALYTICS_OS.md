@@ -113,22 +113,22 @@ Implement the Analytics OS module and the Loop Engine, which transform Galaxy's 
 
 ## Risks
 
-| Risk | Likelihood | Impact | Mitigation |
-|------|-----------|--------|-----------|
-| Analytics aggregation lag if event queue is large | Medium | Low | Use a dedicated high-concurrency analytics queue; dashboard data is eventually consistent by design |
-| Loop Engine false-positive insights causing noise | Medium | Low | Tune thresholds conservatively; provide dismiss functionality; note that insights are recommendations not actions |
-| Metric snapshot table growing large over time | Medium | Medium | Partition the table by month; add a data retention policy (delete snapshots >2 years old) |
-| Report generation for large date ranges timing out | Low | Medium | Enforce a maximum report date range of 90 days; use streaming CSV generation for large reports |
-| Dashboard cache serving stale data after a data correction | Low | Low | Cache TTL of 5 minutes is acceptable for dashboard data; provide a manual cache-invalidation endpoint for admins |
+| Risk                                                       | Likelihood | Impact | Mitigation                                                                                                        |
+| ---------------------------------------------------------- | ---------- | ------ | ----------------------------------------------------------------------------------------------------------------- |
+| Analytics aggregation lag if event queue is large          | Medium     | Low    | Use a dedicated high-concurrency analytics queue; dashboard data is eventually consistent by design               |
+| Loop Engine false-positive insights causing noise          | Medium     | Low    | Tune thresholds conservatively; provide dismiss functionality; note that insights are recommendations not actions |
+| Metric snapshot table growing large over time              | Medium     | Medium | Partition the table by month; add a data retention policy (delete snapshots >2 years old)                         |
+| Report generation for large date ranges timing out         | Low        | Medium | Enforce a maximum report date range of 90 days; use streaming CSV generation for large reports                    |
+| Dashboard cache serving stale data after a data correction | Low        | Low    | Cache TTL of 5 minutes is acceptable for dashboard data; provide a manual cache-invalidation endpoint for admins  |
 
 ---
 
 ## Success Metrics
 
-| Metric | Target |
-|--------|--------|
-| Analytics API response time | Under 200ms p95 for pre-aggregated endpoints |
-| Loop Engine run time | Under 5 minutes for an organization with 1000 workflow runs in the analysis window |
-| SLA breach detection latency | Within 1 monitoring cycle (5 minutes) of the SLA breach occurring |
-| Report generation time | Under 60 seconds for a 30-day report covering up to 500 workflow runs |
-| Dashboard cache hit rate | Greater than 90% (cache TTL 5 minutes; most dashboards are viewed continuously) |
+| Metric                       | Target                                                                             |
+| ---------------------------- | ---------------------------------------------------------------------------------- |
+| Analytics API response time  | Under 200ms p95 for pre-aggregated endpoints                                       |
+| Loop Engine run time         | Under 5 minutes for an organization with 1000 workflow runs in the analysis window |
+| SLA breach detection latency | Within 1 monitoring cycle (5 minutes) of the SLA breach occurring                  |
+| Report generation time       | Under 60 seconds for a 30-day report covering up to 500 workflow runs              |
+| Dashboard cache hit rate     | Greater than 90% (cache TTL 5 minutes; most dashboards are viewed continuously)    |
