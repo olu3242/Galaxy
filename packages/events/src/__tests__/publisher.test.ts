@@ -45,7 +45,7 @@ describe('EventPublisher', () => {
       await publisher.publish(event);
 
       const mockQuery = vi.mocked(pool.query);
-      const firstCall = mockQuery.mock.calls[0] as [string, string[]];
+      const firstCall = mockQuery.mock.calls[0] as unknown as [string, string[]];
       expect(firstCall[0]).toContain('set_config');
       expect(firstCall[1]).toContain('app.current_tenant');
       expect(firstCall[1]).toContain(event.tenantId);
@@ -72,7 +72,7 @@ describe('EventPublisher', () => {
       await publisher.publish(event);
 
       const mockQuery = vi.mocked(pool.query);
-      const insertCall = mockQuery.mock.calls[1] as [string, unknown[]];
+      const insertCall = mockQuery.mock.calls[1] as unknown as [string, unknown[]];
       expect(insertCall[0]).toContain('INSERT INTO events');
       expect(insertCall[0]).toContain('$1');
       expect(insertCall[1]).toContain(event.id);
