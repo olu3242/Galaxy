@@ -2,7 +2,7 @@
 
 **Date:** 2026-06-07
 **Branch:** foundation/geos
-**Commit:** TBD (updated after commit)
+**Commit:** 8cf8ec5
 
 ---
 
