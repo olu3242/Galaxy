@@ -15,9 +15,9 @@
     "test:ci": "vitest run --passWithNoTests",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "db:migrate": "node --loader tsx src/db/migrate.ts",
-    "db:migrate:rollback": "node --loader tsx src/db/migrate.ts rollback",
-    "db:seed": "node --loader tsx src/db/seed.ts",
+    "db:migrate": "tsx src/db/migrate.ts",
+    "db:migrate:rollback": "tsx src/db/migrate.ts rollback",
+    "db:seed": "tsx src/db/seed.ts",
     "clean": "rm -rf dist *.tsbuildinfo"
   },
   "dependencies": {
