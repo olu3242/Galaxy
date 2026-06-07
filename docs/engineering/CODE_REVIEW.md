@@ -3,6 +3,7 @@
 ## Goals
 
 Code review at Galaxy has two objectives:
+
 1. **Correctness** — Does the code do what it's supposed to do? Are there bugs?
 2. **Security** — Does the code introduce any security vulnerabilities?
 
@@ -70,10 +71,10 @@ Style, formatting, and linting are handled by automated tools (ESLint, Prettier)
 
 ## Turnaround Expectations
 
-| PR Size | Expected First Review |
-|---|---|
-| Small (< 100 lines) | Within 4 hours |
-| Medium (100–500 lines) | Within 1 business day |
-| Large (> 500 lines) | Within 2 business days |
+| PR Size                | Expected First Review  |
+| ---------------------- | ---------------------- |
+| Small (< 100 lines)    | Within 4 hours         |
+| Medium (100–500 lines) | Within 1 business day  |
+| Large (> 500 lines)    | Within 2 business days |
 
 Large PRs should be split if possible. If unavoidable, notify the reviewer in advance.

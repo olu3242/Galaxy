@@ -22,12 +22,7 @@
     "test": {
       "dependsOn": ["^build"],
       "outputs": ["coverage/**"],
-      "env": [
-        "DATABASE_URL_TEST",
-        "REDIS_URL",
-        "JWT_SECRET",
-        "WHATSAPP_APP_SECRET"
-      ]
+      "env": ["DATABASE_URL_TEST", "REDIS_URL", "JWT_SECRET", "WHATSAPP_APP_SECRET"]
     },
     "dev": {
       "cache": false,

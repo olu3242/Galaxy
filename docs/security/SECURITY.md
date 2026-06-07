@@ -7,12 +7,14 @@
 To report a security vulnerability, email: **security@galaxy.com** (placeholder — update before launch)
 
 Include:
+
 - Description of the vulnerability
 - Steps to reproduce
 - Potential impact assessment
 - Any suggested remediation
 
 You will receive an acknowledgement within 48 hours. We commit to:
+
 - Triage within 5 business days
 - Regular updates on remediation progress
 - Credit in the security advisory (unless you prefer anonymity)
@@ -24,23 +26,23 @@ You will receive an acknowledgement within 48 hours. We commit to:
 
 ### Encryption
 
-| Data State | Requirement |
-|---|---|
-| Data at rest | AES-256 (AWS RDS encryption enabled) |
-| Data in transit | TLS 1.3 minimum (TLS 1.2 permitted for legacy clients, 1.0/1.1 prohibited) |
-| Secrets at rest | AWS Secrets Manager or column-level encryption (pgcrypto) |
-| WhatsApp access tokens | Column-level encryption in database |
-| Backup data | Encrypted with same key as primary data |
+| Data State             | Requirement                                                                |
+| ---------------------- | -------------------------------------------------------------------------- |
+| Data at rest           | AES-256 (AWS RDS encryption enabled)                                       |
+| Data in transit        | TLS 1.3 minimum (TLS 1.2 permitted for legacy clients, 1.0/1.1 prohibited) |
+| Secrets at rest        | AWS Secrets Manager or column-level encryption (pgcrypto)                  |
+| WhatsApp access tokens | Column-level encryption in database                                        |
+| Backup data            | Encrypted with same key as primary data                                    |
 
 ### Authentication
 
-| Requirement | Standard |
-|---|---|
+| Requirement        | Standard                                                             |
+| ------------------ | -------------------------------------------------------------------- |
 | API authentication | JWT (HS256, 24h expiry), signed with `JWT_SECRET` (minimum 32 bytes) |
-| WhatsApp identity | Phone number verified via OTP on first interaction |
-| Admin web access | JWT + (V1: MFA via Auth0) |
-| Service-to-service | Internal API keys, rotated quarterly |
-| Webhook validation | HMAC-SHA256 signature on all WhatsApp webhooks |
+| WhatsApp identity  | Phone number verified via OTP on first interaction                   |
+| Admin web access   | JWT + (V1: MFA via Auth0)                                            |
+| Service-to-service | Internal API keys, rotated quarterly                                 |
+| Webhook validation | HMAC-SHA256 signature on all WhatsApp webhooks                       |
 
 ### Authorization
 
@@ -108,13 +110,13 @@ You will receive an acknowledgement within 48 hours. We commit to:
 
 ## GDPR Compliance
 
-| Right | Implementation |
-|---|---|
-| Right of access | Admin dashboard exports member data (V1) |
-| Right to erasure | Member PII pseudonymized on request; audit logs retain pseudonymized IDs only |
-| Right to portability | Data export in JSON format (V1) |
-| Data minimization | Profile data collection defined per industry template; no fields beyond necessity |
-| Privacy by design | RLS prevents cross-tenant access by architecture, not by policy |
+| Right                | Implementation                                                                    |
+| -------------------- | --------------------------------------------------------------------------------- |
+| Right of access      | Admin dashboard exports member data (V1)                                          |
+| Right to erasure     | Member PII pseudonymized on request; audit logs retain pseudonymized IDs only     |
+| Right to portability | Data export in JSON format (V1)                                                   |
+| Data minimization    | Profile data collection defined per industry template; no fields beyond necessity |
+| Privacy by design    | RLS prevents cross-tenant access by architecture, not by policy                   |
 
 **GDPR vs. Immutable Audit Logs Reconciliation:**
 Audit log entries store `actor_id` and `resource_id` as UUIDs. When a member exercises erasure rights, their personal data is pseudonymized in the `members` table; the UUID references in `audit_logs` remain (pointing to a now-anonymized record). The audit log's integrity is preserved; the PII is removed from the referenced record.
@@ -139,8 +141,8 @@ Audit log entries store `actor_id` and `resource_id` as UUIDs. When a member exe
 
 ## Security Contacts
 
-| Role | Contact |
-|---|---|
-| Security reports | security@galaxy.com |
-| Data protection officer | dpo@galaxy.com |
-| Incident response | security@galaxy.com |
+| Role                    | Contact             |
+| ----------------------- | ------------------- |
+| Security reports        | security@galaxy.com |
+| Data protection officer | dpo@galaxy.com      |
+| Incident response       | security@galaxy.com |

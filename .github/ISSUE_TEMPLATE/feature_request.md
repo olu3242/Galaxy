@@ -15,6 +15,7 @@ labels: enhancement, triage
 ## OS Module
 
 <!-- Which Galaxy OS module does this belong to? -->
+
 - [ ] Identity OS
 - [ ] People OS
 - [ ] Communication OS
@@ -35,6 +36,7 @@ labels: enhancement, triage
 ## Acceptance Criteria
 
 <!-- How do we know when this feature is done? -->
+
 - [ ] ...
 - [ ] ...
 

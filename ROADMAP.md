@@ -10,6 +10,7 @@
 Galaxy is built as a **vertically complete slice first**. Rather than building all 9 OS modules to partial completion simultaneously, each sprint delivers one end-to-end flow that is production-safe before moving to the next.
 
 The minimum viable slice is:
+
 ```
 Member sends WhatsApp message
   → Webhook receives and validates
@@ -30,6 +31,7 @@ Everything else is additive.
 **Goal:** Zero to production-grade repository structure
 
 Deliverables:
+
 - [x] Monorepo foundation (pnpm + Turborepo)
 - [x] TypeScript configuration (strict mode)
 - [x] ESLint + Prettier
@@ -52,6 +54,7 @@ Deliverables:
 **Goal:** One working workflow via WhatsApp, end to end
 
 ### Identity OS (Core)
+
 - Organization CRUD (create, read, update)
 - Department + team structure
 - Member invitation via WhatsApp link
@@ -61,12 +64,14 @@ Deliverables:
 - Tenant context middleware (RLS-safe)
 
 ### Communication OS (Core)
+
 - WhatsApp webhook handler (signature validation)
 - Message Event Factory (intent classification — basic)
 - Outbound message engine (text + interactive buttons)
 - Phone number → organization routing
 
 ### Workflow OS (Core — Leave Request only)
+
 - Workflow definition schema
 - Leave Request workflow template
 - Workflow state machine (submitted → approved/rejected → completed)
@@ -74,6 +79,7 @@ Deliverables:
 - Approver notification via WhatsApp
 
 ### Infrastructure
+
 - Database schema v1 (organizations, members, roles, permissions, workflows, workflow_instances)
 - Migration system
 - RLS policies + cross-tenant isolation tests
@@ -83,6 +89,7 @@ Deliverables:
 - Health check endpoint
 
 **Exit Criteria:**
+
 - A member can send "LEAVE" to their organization's WhatsApp number
 - The leave request workflow completes (submit → manager approval → member notification)
 - Zero cross-tenant RLS test failures
@@ -95,6 +102,7 @@ Deliverables:
 **Goal:** Every workflow has verification and feedback; governance enforced
 
 ### Loop OS (Verification Phase)
+
 - Loop instance lifecycle (created → verifying → collecting_feedback → completed)
 - Verification engine: manager confirmation, photo evidence
 - WhatsApp follow-up automation (SLA breach reminders)
@@ -102,6 +110,7 @@ Deliverables:
 - Outcome score recording
 
 ### Governance OS (Core)
+
 - Policy engine (approval limits, escalation paths)
 - Multi-level approval chain management
 - Compliance check on workflow completion
@@ -109,16 +118,19 @@ Deliverables:
 - Escalation: SLA breach → department head notification
 
 ### People OS (Core)
+
 - 360° member record
 - Member profile + status management
 - Activity timeline (last active, response rate)
 - Attendance check-in via WhatsApp
 
 ### Workflow OS (Additional Templates)
+
 - Expense Approval workflow (amount-based routing)
 - Incident Report workflow
 
 **Exit Criteria:**
+
 - Leave request workflow has Loop verification + feedback
 - SLA breaches auto-escalate
 - Compliance check runs on every completed workflow
@@ -131,28 +143,33 @@ Deliverables:
 **Goal:** Organizations can see what's happening and communicate at scale
 
 ### Analytics OS (MVP)
+
 - Executive dashboard (org health score, workflow velocity)
 - Operations dashboard (active workflows, SLA compliance)
 - Real-time dashboard updates via WebSocket
 
 ### Communication OS (Broadcast)
+
 - Broadcast engine (mass messaging to org/department/group)
 - Rate limiting per WABA tier
 - Delivery tracking (sent/delivered/read)
 - Message template library
 
 ### Identity OS (Onboarding)
+
 - Organization onboarding flow (WABA setup wizard)
 - Member bulk invite
 - Department/team setup
 
 ### Mission Control (Web Dashboard — basic)
+
 - Organization overview
 - Active workflows list
 - Member directory
 - Broadcast composer
 
 **Exit Criteria:**
+
 - Org admin can see live org health on web dashboard
 - Admin can broadcast to all members via web
 - Onboarding takes < 30 minutes for a new organization
@@ -164,6 +181,7 @@ Deliverables:
 **Goal:** All 9 industry templates, full Loop OS, 5 AI agents
 
 ### OS Modules
+
 - All 9 industry templates (Church, NGO, School, Cooperative, Political, Association, Creator, Public Safety, Government)
 - Full Loop OS: Learning Phase + Optimization Phase
 - Agent OS: Executive, HR, Finance, Operations, Compliance agents
@@ -172,6 +190,7 @@ Deliverables:
 - ABAC authorization layer
 
 ### Infrastructure
+
 - Auth0 SSO integration
 - Kafka event bus (replacing BullMQ for event distribution at scale)
 - Elasticsearch for audit log search
@@ -179,6 +198,7 @@ Deliverables:
 - pgvector embeddings pipeline
 
 **Exit Criteria:**
+
 - 200 organizations onboarded
 - 5,000 active members
 - 50,000 messages/day capacity tested
@@ -202,8 +222,8 @@ Deliverables:
 
 ## Success Metrics
 
-| Phase | Orgs | Members | Messages/Day | Completion Rate | MRR |
-|---|---|---|---|---|---|
-| MVP (Sprint 1–3) | 25 | 500 | 1,000 | 70% | $5K |
-| V1 (Month 4–6) | 200 | 5,000 | 50,000 | 85% | $50K |
-| Enterprise (Year 1) | 1,000 | 50,000 | 500,000 | 90% | $500K |
+| Phase               | Orgs  | Members | Messages/Day | Completion Rate | MRR   |
+| ------------------- | ----- | ------- | ------------ | --------------- | ----- |
+| MVP (Sprint 1–3)    | 25    | 500     | 1,000        | 70%             | $5K   |
+| V1 (Month 4–6)      | 200   | 5,000   | 50,000       | 85%             | $50K  |
+| Enterprise (Year 1) | 1,000 | 50,000  | 500,000      | 90%             | $500K |

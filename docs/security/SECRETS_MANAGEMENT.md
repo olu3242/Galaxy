@@ -15,13 +15,13 @@ Violations of this principle are treated as security incidents — not code revi
 
 ## Secret Classification
 
-| Classification | Examples | Storage |
-|---|---|---|
-| Platform secrets | JWT_SECRET, internal API keys | AWS Secrets Manager |
-| Tenant credentials | WhatsApp access tokens, per-org API keys | Database (column-level encryption) |
-| Infrastructure credentials | Database URL, Redis URL | AWS Secrets Manager |
-| AI API keys | Anthropic API key | AWS Secrets Manager |
-| Third-party service keys | S3 credentials, Sentry DSN | AWS Secrets Manager |
+| Classification             | Examples                                 | Storage                            |
+| -------------------------- | ---------------------------------------- | ---------------------------------- |
+| Platform secrets           | JWT_SECRET, internal API keys            | AWS Secrets Manager                |
+| Tenant credentials         | WhatsApp access tokens, per-org API keys | Database (column-level encryption) |
+| Infrastructure credentials | Database URL, Redis URL                  | AWS Secrets Manager                |
+| AI API keys                | Anthropic API key                        | AWS Secrets Manager                |
+| Third-party service keys   | S3 credentials, Sentry DSN               | AWS Secrets Manager                |
 
 ---
 
@@ -38,6 +38,7 @@ Violations of this principle are treated as security incidents — not code revi
 ### CI/CD (GitHub Actions)
 
 All secrets are stored as **GitHub Actions Secrets** (not environment variables in YAML files). Reference them in workflows as:
+
 ```yaml
 env:
   JWT_SECRET: ${{ secrets.JWT_SECRET }}
@@ -48,6 +49,7 @@ CI uses a dedicated set of test secrets — never production values.
 ### Staging / Production
 
 Secrets are stored in **AWS Secrets Manager** and injected at runtime via:
+
 1. IAM instance role for EC2/EKS pods (no credentials stored on the machine)
 2. AWS SDK auto-discovers credentials from the instance metadata service
 3. Application loads secrets at startup via `@aws-sdk/client-secrets-manager`
@@ -58,13 +60,13 @@ The `packages/config/src/index.ts` environment loader is the single source of tr
 
 ## Secret Rotation
 
-| Secret | Rotation Frequency | Rotation Method |
-|---|---|---|
-| JWT_SECRET | 90 days | Rolling rotation (old key valid for 24h after new key active) |
-| Anthropic API key | 90 days | Manual rotation via Anthropic dashboard → Secrets Manager update |
-| WhatsApp access tokens (per tenant) | As required by Meta (or on suspected compromise) | Automated via Meta Graph API token refresh |
-| Database password | 180 days | AWS RDS password rotation (zero-downtime via Secrets Manager rotation Lambda) |
-| Internal service API keys | 90 days | Automated rotation script |
+| Secret                              | Rotation Frequency                               | Rotation Method                                                               |
+| ----------------------------------- | ------------------------------------------------ | ----------------------------------------------------------------------------- |
+| JWT_SECRET                          | 90 days                                          | Rolling rotation (old key valid for 24h after new key active)                 |
+| Anthropic API key                   | 90 days                                          | Manual rotation via Anthropic dashboard → Secrets Manager update              |
+| WhatsApp access tokens (per tenant) | As required by Meta (or on suspected compromise) | Automated via Meta Graph API token refresh                                    |
+| Database password                   | 180 days                                         | AWS RDS password rotation (zero-downtime via Secrets Manager rotation Lambda) |
+| Internal service API keys           | 90 days                                          | Automated rotation script                                                     |
 
 ---
 
@@ -117,6 +119,7 @@ If a secret is exposed (committed to git, logged, leaked via API):
 6. Post-incident review: how did the exposure happen? Update controls.
 
 For **git commits containing secrets:**
+
 1. Rotate the secret immediately
 2. The commit history cannot be trusted to be private — assume the secret is compromised
 3. Use `git filter-repo` to rewrite history and force-push (requires team coordination)

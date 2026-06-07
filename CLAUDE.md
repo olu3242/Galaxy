@@ -5,6 +5,7 @@
 Galaxy is a **multi-tenant Organization Operating System** that runs on WhatsApp. Organizations submit workflows, approvals, and reports through WhatsApp; Galaxy governs, audits, and continuously improves every operation via the Loop Engine.
 
 This is a **TypeScript monorepo** (pnpm workspaces + Turborepo) containing:
+
 - `apps/api` — Fastify REST + WebSocket API
 - `apps/web` — Next.js 14 web dashboard (Mission Control)
 - `apps/worker` — BullMQ background workers
@@ -75,17 +76,17 @@ WhatsApp / API / Cron
 
 ### OS Modules
 
-| Module | Package path (planned) | Status |
-|---|---|---|
-| Identity OS | `packages/modules/identity` | Sprint 1 |
-| People OS | `packages/modules/people` | Sprint 2 |
+| Module           | Package path (planned)           | Status   |
+| ---------------- | -------------------------------- | -------- |
+| Identity OS      | `packages/modules/identity`      | Sprint 1 |
+| People OS        | `packages/modules/people`        | Sprint 2 |
 | Communication OS | `packages/modules/communication` | Sprint 1 |
-| Workflow OS | `packages/modules/workflow` | Sprint 1 |
-| Governance OS | `packages/modules/governance` | Sprint 2 |
-| Knowledge OS | `packages/modules/knowledge` | V1 |
-| Analytics OS | `packages/modules/analytics` | Sprint 3 |
-| Agent OS | `packages/modules/agents` | V1 |
-| Loop OS | `packages/modules/loop` | Sprint 2 |
+| Workflow OS      | `packages/modules/workflow`      | Sprint 1 |
+| Governance OS    | `packages/modules/governance`    | Sprint 2 |
+| Knowledge OS     | `packages/modules/knowledge`     | V1       |
+| Analytics OS     | `packages/modules/analytics`     | Sprint 3 |
+| Agent OS         | `packages/modules/agents`        | V1       |
+| Loop OS          | `packages/modules/loop`          | Sprint 2 |
 
 ---
 
@@ -94,6 +95,7 @@ WhatsApp / API / Cron
 ### 1. NEVER use string interpolation in SQL queries
 
 **Wrong — SQL injection vulnerability:**
+
 ```typescript
 // ❌ NEVER DO THIS
 await db.query(`SET LOCAL app.current_tenant = '${tenantId}'`);
@@ -101,6 +103,7 @@ await db.query(`SELECT * FROM members WHERE id = '${memberId}'`);
 ```
 
 **Correct — always use parameterized queries or the pg driver's options API:**
+
 ```typescript
 // ✅ Parameterized
 await db.query('SELECT * FROM members WHERE id = $1', [memberId]);
@@ -118,7 +121,8 @@ Every database query must run within an established tenant context. The `TenantC
 ```typescript
 // ✅ Required — validate Meta's HMAC-SHA256 signature before processing
 const signature = request.headers['x-hub-signature-256'];
-const expected = crypto.createHmac('sha256', env.WHATSAPP_APP_SECRET)
+const expected = crypto
+  .createHmac('sha256', env.WHATSAPP_APP_SECRET)
   .update(request.rawBody)
   .digest('hex');
 if (!crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(`sha256=${expected}`))) {
@@ -156,6 +160,7 @@ Before any AI agent performs a write operation (create, update, delete, trigger)
 ## Event System
 
 All state changes emit a `GalaxyEvent`. The event envelope is defined in `packages/types/src/events.ts`. Every event must include:
+
 - `id` — UUID
 - `version` — semver string (currently `"1.0"`)
 - `type` — dot-separated string (e.g., `workflow.submitted`)
@@ -207,6 +212,7 @@ Never push directly to `main` or `develop`.
 All environment variables are documented in `.env.example`. Never commit `.env` files. Never hardcode secrets. In production, secrets are loaded from AWS Secrets Manager (see `docs/security/SECRETS_MANAGEMENT.md`).
 
 Required variables for local development:
+
 ```
 DATABASE_URL, REDIS_URL, JWT_SECRET,
 WHATSAPP_APP_SECRET, WHATSAPP_ACCESS_TOKEN, WHATSAPP_PHONE_NUMBER_ID,

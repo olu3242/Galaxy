@@ -15,30 +15,33 @@ main          Production-ready code. Protected. Never commit directly.
 
 ## Branch Types
 
-| Prefix | Purpose | Base | PR Target |
-|---|---|---|---|
-| `feat/` | New feature or capability | `develop` | `develop` |
-| `fix/` | Bug fix | `develop` | `develop` |
-| `foundation/` | Infrastructure, tooling, repo setup | `main` or `develop` | `develop` |
-| `security/` | Security fixes or hardening | `develop` | `develop` |
-| `sprint/<n>` | Sprint integration branch | `develop` | `develop` |
-| `hotfix/` | Critical production fix | `main` | `main` + `develop` |
-| `release/<version>` | Release preparation | `develop` | `main` |
+| Prefix              | Purpose                             | Base                | PR Target          |
+| ------------------- | ----------------------------------- | ------------------- | ------------------ |
+| `feat/`             | New feature or capability           | `develop`           | `develop`          |
+| `fix/`              | Bug fix                             | `develop`           | `develop`          |
+| `foundation/`       | Infrastructure, tooling, repo setup | `main` or `develop` | `develop`          |
+| `security/`         | Security fixes or hardening         | `develop`           | `develop`          |
+| `sprint/<n>`        | Sprint integration branch           | `develop`           | `develop`          |
+| `hotfix/`           | Critical production fix             | `main`              | `main` + `develop` |
+| `release/<version>` | Release preparation                 | `develop`           | `main`             |
 
 ## Rules
 
 ### `main`
+
 - Protected branch — direct pushes prohibited
 - Requires PR + 1 approval + CI green
 - Only merges from `release/*` or `hotfix/*` branches
 - Every merge to main creates a tag
 
 ### `develop`
+
 - Protected branch — direct pushes prohibited
 - Requires PR + 1 approval + CI green
 - All feature and fix work lands here first
 
 ### Feature Branches
+
 - Branch from `develop`
 - Name format: `feat/<ticket-id>-<short-slug>` (e.g., `feat/GALAXY-001-rbac-engine`)
 - Delete after merge
@@ -46,6 +49,7 @@ main          Production-ready code. Protected. Never commit directly.
 - Rebase on `develop` before opening PR (not merge commits)
 
 ### Hotfixes
+
 - Branch from `main`
 - Must be merged to BOTH `main` AND `develop`
 - Tag `main` after merge: `v0.x.y+1`

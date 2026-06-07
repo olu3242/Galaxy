@@ -38,7 +38,7 @@
 
 ## Architecture
 
-- [ ] Change is consistent with relevant ADR(s) (list: ADR-___)
+- [ ] Change is consistent with relevant ADR(s) (list: ADR-\_\_\_)
 - [ ] New ADR created if this PR makes a significant architectural decision
 - [ ] No new patterns introduced that conflict with existing ADRs
 

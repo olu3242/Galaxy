@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main, develop, "sprint/**", "foundation/**"]
+    branches: [main, develop, 'sprint/**', 'foundation/**']
   pull_request:
     branches: [main, develop]
 
@@ -11,7 +11,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  NODE_VERSION: "20"
+  NODE_VERSION: '20'
 
 jobs:
   # ──────────────────────────────────────────────────────────────────────────

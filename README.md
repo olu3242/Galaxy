@@ -8,15 +8,15 @@ Galaxy is a self-improving Organization Operating System (Org OS). Organizations
 
 ## Status
 
-| Layer | Status |
-|---|---|
-| Repository Foundation | ✅ Sprint 0 — In Progress |
-| Core Infrastructure | 🔲 Sprint 1 |
-| Identity + Communication OS | 🔲 Sprint 1 |
-| Workflow + Loop OS (Verification) | 🔲 Sprint 2 |
-| Governance + Analytics OS | 🔲 Sprint 2–3 |
-| Agent OS | 🔲 V1 |
-| Full Loop OS (Learning + Optimization) | 🔲 V1 |
+| Layer                                  | Status                    |
+| -------------------------------------- | ------------------------- |
+| Repository Foundation                  | ✅ Sprint 0 — In Progress |
+| Core Infrastructure                    | 🔲 Sprint 1               |
+| Identity + Communication OS            | 🔲 Sprint 1               |
+| Workflow + Loop OS (Verification)      | 🔲 Sprint 2               |
+| Governance + Analytics OS              | 🔲 Sprint 2–3             |
+| Agent OS                               | 🔲 V1                     |
+| Full Loop OS (Learning + Optimization) | 🔲 V1                     |
 
 ---
 

@@ -27,6 +27,7 @@ pnpm dev
 See `docs/engineering/BRANCH_STRATEGY.md` for the full strategy.
 
 Quick reference:
+
 - Branch from `develop` (not `main`)
 - Name: `feat/<ticket>-<slug>` or `fix/<ticket>-<slug>`
 - PR targets `develop`
@@ -55,6 +56,7 @@ Types: `feat`, `fix`, `refactor`, `test`, `docs`, `chore`, `security`
 Scopes: `api`, `web`, `worker`, `types`, `config`, `utils`, `identity-os`, `workflow-os`, `loop-os`, etc.
 
 Examples:
+
 ```
 feat(workflow-os): add leave request workflow template
 fix(api): use parameterized query in tenant context middleware

@@ -21,10 +21,10 @@ Why this decision? What options were considered? What are the trade-offs?
 
 ### Options Considered
 
-| Option | Pros | Cons |
-|---|---|---|
-| Option A | ... | ... |
-| Option B | ... | ... |
+| Option   | Pros | Cons |
+| -------- | ---- | ---- |
+| Option A | ...  | ...  |
+| Option B | ...  | ...  |
 
 ### Chosen Option: [Name]
 
@@ -33,12 +33,15 @@ Why this one over the alternatives.
 ## Consequences
 
 ### Positive
+
 - ...
 
 ### Negative / Trade-offs
+
 - ...
 
 ### Neutral
+
 - ...
 
 ## Implementation Notes
@@ -51,4 +54,4 @@ Under what conditions should this decision be revisited? (e.g., reaching 100K me
 
 ---
 
-*ADR process based on Michael Nygard's Architecture Decision Records.*
+_ADR process based on Michael Nygard's Architecture Decision Records._

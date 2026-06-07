@@ -12,6 +12,7 @@
 Galaxy's primary interaction channel is WhatsApp. Members send messages to their organization's WhatsApp number; Galaxy processes those messages and sends responses.
 
 The Meta WhatsApp Business API has two structural patterns for multi-tenant use:
+
 1. **Shared WABA:** Galaxy operates a single WhatsApp Business Account; all tenant organizations share Galaxy's phone number(s)
 2. **Per-tenant WABA:** Each Galaxy customer organization registers their own WhatsApp Business Account with their own phone number(s); Galaxy manages these on their behalf
 
@@ -29,10 +30,10 @@ Tenant WABA credentials (Phone Number ID, Access Token) are stored encrypted in 
 
 ### Options Considered
 
-| Option | Pros | Cons |
-|---|---|---|
-| Shared WABA (Galaxy's number) | Simpler setup; one set of credentials | Members message a generic number — no org identity; shared rate limits across all tenants; compliance risk (one org's violation affects all) |
-| Per-tenant WABA | Org's own number; independent limits; org controls their identity | More complex onboarding; Galaxy must be approved as BSP |
+| Option                        | Pros                                                              | Cons                                                                                                                                         |
+| ----------------------------- | ----------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| Shared WABA (Galaxy's number) | Simpler setup; one set of credentials                             | Members message a generic number — no org identity; shared rate limits across all tenants; compliance risk (one org's violation affects all) |
+| Per-tenant WABA               | Org's own number; independent limits; org controls their identity | More complex onboarding; Galaxy must be approved as BSP                                                                                      |
 
 ### Chosen Option: Per-Tenant WABA
 
@@ -41,12 +42,14 @@ Organizations use WhatsApp because they want members to message **their** number
 ## Consequences
 
 ### Positive
+
 - Each organization maintains their own WhatsApp identity
 - Rate limits are per-organization, not shared
 - One org's policy violation does not affect other orgs
 - Organizations can migrate away from Galaxy and keep their phone number
 
 ### Negative / Trade-offs
+
 - Galaxy must apply for and maintain Meta BSP status
 - Onboarding flow requires organization admin to complete Meta's WABA verification process
 - Each tenant's WABA token expires and must be refreshed — token rotation system required
@@ -57,6 +60,7 @@ Organizations use WhatsApp because they want members to message **their** number
 ### Webhook Architecture
 
 Galaxy registers a single webhook endpoint with Meta:
+
 ```
 POST /api/v1/webhooks/whatsapp
 ```
@@ -78,10 +82,12 @@ The platform-level `WHATSAPP_APP_SECRET` is used to validate ALL incoming webhoo
 ```typescript
 // ✅ Always validate before processing
 const sig = request.headers['x-hub-signature-256'] as string;
-const expected = 'sha256=' + crypto
-  .createHmac('sha256', env.WHATSAPP_APP_SECRET)
-  .update(request.rawBody as Buffer)
-  .digest('hex');
+const expected =
+  'sha256=' +
+  crypto
+    .createHmac('sha256', env.WHATSAPP_APP_SECRET)
+    .update(request.rawBody as Buffer)
+    .digest('hex');
 if (!crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(expected))) {
   throw new ForbiddenError('Invalid webhook signature');
 }

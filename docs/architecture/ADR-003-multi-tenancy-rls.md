@@ -18,6 +18,7 @@ This is the most security-critical architectural decision in the platform. A mis
 We will use **PostgreSQL Row-Level Security (RLS)** as the primary tenant isolation mechanism for standard and growth tier tenants, with the tenant identifier propagated to PostgreSQL via `set_config()` at the start of every database transaction.
 
 **Isolation tiers:**
+
 - **Starter / Growth:** Shared database, shared schema, RLS enforced per row
 - **Enterprise:** Dedicated schema per tenant within shared database
 - **Government / Sovereign:** Dedicated database per tenant
@@ -26,12 +27,12 @@ We will use **PostgreSQL Row-Level Security (RLS)** as the primary tenant isolat
 
 ### Options Considered
 
-| Option | Pros | Cons |
-|---|---|---|
-| Application-layer WHERE clauses | Simple, no DB config | Completely defeated by any missed WHERE clause; requires 100% developer discipline |
-| Database-level RLS | Enforced at the database engine; cannot be bypassed by application bugs | Requires correct session variable setup on every connection; pooler compatibility requirements |
-| Dedicated schema per tenant (all tiers) | Strong isolation | Expensive; schema proliferation; complex migration management |
-| Dedicated database per tenant (all tiers) | Strongest isolation | Prohibitively expensive at starter/growth tier |
+| Option                                    | Pros                                                                    | Cons                                                                                           |
+| ----------------------------------------- | ----------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| Application-layer WHERE clauses           | Simple, no DB config                                                    | Completely defeated by any missed WHERE clause; requires 100% developer discipline             |
+| Database-level RLS                        | Enforced at the database engine; cannot be bypassed by application bugs | Requires correct session variable setup on every connection; pooler compatibility requirements |
+| Dedicated schema per tenant (all tiers)   | Strong isolation                                                        | Expensive; schema proliferation; complex migration management                                  |
+| Dedicated database per tenant (all tiers) | Strongest isolation                                                     | Prohibitively expensive at starter/growth tier                                                 |
 
 ### Chosen Option: RLS with Parameterized Session Variable
 
@@ -40,11 +41,13 @@ RLS provides a defense-in-depth guarantee that application-layer WHERE clauses c
 ## Consequences
 
 ### Positive
+
 - Tenant isolation is enforced at the database engine — application bugs cannot bypass it
 - Single schema simplifies migration management at standard/growth tier
 - Upgrade path to dedicated schema/database is defined
 
 ### Negative / Trade-offs
+
 - RLS adds query planning overhead (minimal, but measurable at very high volume)
 - Connection poolers (PgBouncer) must use **transaction-mode pooling** — session-mode pooling would allow the tenant session variable to leak between connections
 - `SECURITY DEFINER` functions bypass RLS — this pattern is PROHIBITED unless explicitly reviewed
@@ -87,13 +90,14 @@ Before any schema migration ships, a cross-tenant isolation test MUST pass:
 test('tenant A cannot read tenant B members', async () => {
   await setTenantContext(tenantAId);
   const members = await db.query('SELECT * FROM members');
-  expect(members.rows.every(m => m.organization_id === tenantAId)).toBe(true);
+  expect(members.rows.every((m) => m.organization_id === tenantAId)).toBe(true);
 });
 ```
 
 ### Connection Pooler Configuration
 
 PgBouncer must be configured in `transaction` mode:
+
 ```ini
 pool_mode = transaction
 ```
@@ -115,6 +119,7 @@ CREATE POLICY audit_select ON audit_logs FOR SELECT
 ## Review Trigger
 
 Revisit when:
+
 - Any enterprise customer requires dedicated schema isolation
 - Government customer requires dedicated database
 - Query performance degrades and RLS overhead is identified as the cause

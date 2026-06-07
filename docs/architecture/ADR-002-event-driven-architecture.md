@@ -10,6 +10,7 @@
 ## Context
 
 Galaxy's architecture requires that every state change emit an event. These events drive:
+
 - Loop OS observations (watching every workflow step)
 - Agent triggers (agents react to events)
 - Audit log entries (immutable record of what happened)
@@ -30,12 +31,12 @@ The choice of event bus technology has significant operational cost implications
 
 ### Options Considered
 
-| Option | Pros | Cons |
-|---|---|---|
-| Kafka from day one | True event streaming, replay, partitioning | High operational overhead at MVP scale; 25 orgs, 1K messages/day does not need Kafka |
-| BullMQ only | Simple, Redis-backed, familiar, low ops overhead | Not a true event log; no indefinite replay; limited for large-scale fan-out |
-| BullMQ (MVP) → Kafka (V1) | Right-size tooling per phase; avoid premature complexity | Requires migration work at V1; event consumers must be written for both |
-| Redis Streams | Built into Redis, append-only, consumer groups | Less ecosystem tooling than Kafka; awkward at scale |
+| Option                    | Pros                                                     | Cons                                                                                 |
+| ------------------------- | -------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| Kafka from day one        | True event streaming, replay, partitioning               | High operational overhead at MVP scale; 25 orgs, 1K messages/day does not need Kafka |
+| BullMQ only               | Simple, Redis-backed, familiar, low ops overhead         | Not a true event log; no indefinite replay; limited for large-scale fan-out          |
+| BullMQ (MVP) → Kafka (V1) | Right-size tooling per phase; avoid premature complexity | Requires migration work at V1; event consumers must be written for both              |
+| Redis Streams             | Built into Redis, append-only, consumer groups           | Less ecosystem tooling than Kafka; awkward at scale                                  |
 
 ### Chosen Option: Phased BullMQ → Kafka
 
@@ -46,16 +47,19 @@ The phased approach introduces Kafka when real traffic data justifies it, and be
 ## Consequences
 
 ### Positive
+
 - MVP can ship without Kafka operational knowledge
 - BullMQ provides retry, delay, priority, and dead-letter queues — sufficient for MVP
 - The `GalaxyEvent` envelope is infrastructure-agnostic; consumers don't know whether the carrier is BullMQ or Kafka
 
 ### Negative / Trade-offs
+
 - BullMQ does not provide indefinite event replay (events expire after retention window)
 - Migration from BullMQ to Kafka at V1 requires event producer/consumer rewrites
 - If MVP exceeds projections, Kafka introduction may be forced before V1 timeline
 
 ### Neutral
+
 - The `GalaxyEvent<T>` interface is defined in `packages/types` and is stable regardless of transport
 
 ## Implementation Notes
@@ -69,6 +73,7 @@ The phased approach introduces Kafka when real traffic data justifies it, and be
 ## Review Trigger
 
 Introduce Kafka when any of the following is true:
+
 - Event volume exceeds 10,000 events/hour sustained
 - The need for event replay (replay from time T) arises
 - The number of event consumers for a single event type exceeds 3

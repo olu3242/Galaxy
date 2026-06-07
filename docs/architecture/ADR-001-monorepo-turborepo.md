@@ -12,6 +12,7 @@
 Galaxy consists of multiple deployable units (API server, web dashboard, background workers) that share significant code: TypeScript types, configuration loaders, utility functions, and eventually domain modules. Without a structured approach, these shared concerns will be duplicated across services or managed via a complex internal package publishing workflow.
 
 The team must choose between:
+
 1. A single monorepo containing all applications and shared packages
 2. Multiple separate repositories per service
 3. A polyrepo with a shared private package registry
@@ -21,6 +22,7 @@ The team must choose between:
 We will use a **pnpm workspace monorepo** with **Turborepo** as the build orchestrator.
 
 Structure:
+
 ```
 apps/api       — Fastify API server
 apps/web       — Next.js dashboard
@@ -34,12 +36,12 @@ packages/utils  — Shared utilities
 
 ### Options Considered
 
-| Option | Pros | Cons |
-|---|---|---|
-| pnpm workspaces + Turborepo | Fast caching, parallel builds, single repo, easy cross-package changes | Requires monorepo CI discipline |
-| npm workspaces + Nx | Feature-rich, code generation | Heavier, steeper learning curve |
-| Separate repos | Full isolation, independent deploys | Duplicate config, painful cross-cutting changes, version drift on shared types |
-| Yarn Bun workspaces | Modern, fast | Less ecosystem maturity for enterprise use |
+| Option                      | Pros                                                                   | Cons                                                                           |
+| --------------------------- | ---------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| pnpm workspaces + Turborepo | Fast caching, parallel builds, single repo, easy cross-package changes | Requires monorepo CI discipline                                                |
+| npm workspaces + Nx         | Feature-rich, code generation                                          | Heavier, steeper learning curve                                                |
+| Separate repos              | Full isolation, independent deploys                                    | Duplicate config, painful cross-cutting changes, version drift on shared types |
+| Yarn Bun workspaces         | Modern, fast                                                           | Less ecosystem maturity for enterprise use                                     |
 
 ### Chosen Option: pnpm + Turborepo
 
@@ -51,15 +53,18 @@ packages/utils  — Shared utilities
 ## Consequences
 
 ### Positive
+
 - Type changes in `packages/types` break all consumers immediately — no version drift
 - One `pnpm install` sets up the entire platform
 - Turborepo cache means CI only rebuilds what changed
 
 ### Negative / Trade-offs
+
 - All apps deploy from the same repo — deploy pipeline must filter by affected workspace
 - Large git history as the project grows (mitigated by shallow clones in CI)
 
 ### Neutral
+
 - Engineers must use pnpm, not npm or yarn, in this repository
 
 ## Implementation Notes
