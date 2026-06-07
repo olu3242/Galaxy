@@ -1,0 +1,46 @@
+{
+  "name": "@galaxy/api",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Galaxy API — Fastify REST + WebSocket server",
+  "type": "module",
+  "scripts": {
+    "build": "tsc --build",
+    "dev": "tsx watch src/index.ts",
+    "start": "node dist/index.js",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src/",
+    "lint:fix": "eslint src/ --fix",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "db:migrate": "node --loader tsx src/db/migrate.ts",
+    "db:migrate:rollback": "node --loader tsx src/db/migrate.ts rollback",
+    "db:seed": "node --loader tsx src/db/seed.ts",
+    "clean": "rm -rf dist *.tsbuildinfo"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.27.0",
+    "@fastify/cors": "^9.0.0",
+    "@fastify/helmet": "^11.0.0",
+    "@fastify/jwt": "^8.0.0",
+    "@fastify/rate-limit": "^9.0.0",
+    "@fastify/swagger": "^8.0.0",
+    "@fastify/swagger-ui": "^4.0.0",
+    "@fastify/websocket": "^8.0.0",
+    "@galaxy/config": "workspace:*",
+    "@galaxy/types": "workspace:*",
+    "@galaxy/utils": "workspace:*",
+    "bullmq": "^5.0.0",
+    "fastify": "^4.28.0",
+    "ioredis": "^5.4.0",
+    "pg": "^8.12.0",
+    "pino": "^9.0.0",
+    "zod": "^3.23.0"
+  },
+  "devDependencies": {
+    "@types/pg": "^8.11.0",
+    "tsx": "^4.16.0",
+    "vitest": "^2.0.0"
+  }
+}

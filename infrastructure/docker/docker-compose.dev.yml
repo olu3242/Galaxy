@@ -1,0 +1,70 @@
+version: "3.9"
+
+# Local development infrastructure for Galaxy Loop OS
+# Provides PostgreSQL 16 and Redis 7 locally.
+# Run: docker compose -f infrastructure/docker/docker-compose.dev.yml up -d
+
+services:
+  # ──────────────────────────────────────────────────────────────────────────
+  # PostgreSQL 16 — primary database with pgvector extension
+  # ──────────────────────────────────────────────────────────────────────────
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: galaxy_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: galaxy
+      POSTGRES_PASSWORD: galaxy_dev
+      POSTGRES_DB: galaxy_dev
+    ports:
+      - "5432:5432"
+    volumes:
+      - galaxy_postgres_data:/var/lib/postgresql/data
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U galaxy -d galaxy_dev"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # Redis 7 — cache, job queue, session store
+  # ──────────────────────────────────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: galaxy_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - galaxy_redis_data:/data
+    command: redis-server --save 60 1 --loglevel warning
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # Redis Commander — optional web UI for Redis inspection
+  # Access at http://localhost:8081
+  # ──────────────────────────────────────────────────────────────────────────
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: galaxy_redis_ui
+    restart: unless-stopped
+    environment:
+      REDIS_HOSTS: local:redis:6379
+    ports:
+      - "8081:8081"
+    depends_on:
+      redis:
+        condition: service_healthy
+    profiles:
+      - tools
+
+volumes:
+  galaxy_postgres_data:
+    name: galaxy_postgres_data
+  galaxy_redis_data:
+    name: galaxy_redis_data

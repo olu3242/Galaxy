@@ -1,0 +1,28 @@
+{
+  "name": "@galaxy/utils",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Galaxy shared utilities — event factory, ID generation, logging",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc --build",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src/",
+    "test": "vitest run",
+    "clean": "rm -rf dist *.tsbuildinfo"
+  },
+  "dependencies": {
+    "@galaxy/types": "workspace:*"
+  },
+  "devDependencies": {
+    "vitest": "^2.0.0"
+  }
+}

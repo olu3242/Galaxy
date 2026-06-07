@@ -1,0 +1,25 @@
+{
+  "name": "@galaxy/types",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Galaxy shared TypeScript types — GalaxyEvent envelope, domain interfaces",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc --build",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src/",
+    "test": "vitest run",
+    "clean": "rm -rf dist *.tsbuildinfo"
+  },
+  "devDependencies": {
+    "vitest": "^2.0.0"
+  }
+}

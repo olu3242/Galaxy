@@ -1,0 +1,22 @@
+# Galaxy CODEOWNERS
+# These owners are automatically requested for review on PRs affecting their areas.
+# Format: <pattern> <owner1> <owner2>
+
+# Default owner for everything
+* @olu3242
+
+# Security-sensitive files — always require security review
+docs/security/ @olu3242
+.env.example @olu3242
+apps/api/src/middleware/ @olu3242
+apps/api/src/db/ @olu3242
+
+# Architecture decisions require senior review
+docs/architecture/ @olu3242
+
+# CI/CD pipeline changes require review
+.github/workflows/ @olu3242
+
+# Shared types — changes affect all consumers
+packages/types/ @olu3242
+packages/config/ @olu3242
