@@ -113,4 +113,4 @@ See `docs/reports/ARCHITECTURE_GOVERNANCE_VALIDATION.md` for the full scoring br
 
 ## Commit Hash
 
-TBD — to be updated after commit
+3cfc980f51e6ee26a4fa772ddc2f748a71947fbc
