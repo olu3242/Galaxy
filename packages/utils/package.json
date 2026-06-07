@@ -23,6 +23,7 @@
     "@galaxy/types": "workspace:*"
   },
   "devDependencies": {
+    "@types/node": "^20.0.0",
     "vitest": "^2.0.0"
   }
 }
