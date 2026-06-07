@@ -65,6 +65,15 @@ importers:
       '@galaxy/config':
         specifier: workspace:*
         version: link:../../packages/config
+      '@galaxy/events':
+        specifier: workspace:*
+        version: link:../../packages/events
+      '@galaxy/identity':
+        specifier: workspace:*
+        version: link:../../packages/modules/identity
+      '@galaxy/people':
+        specifier: workspace:*
+        version: link:../../packages/modules/people
       '@galaxy/types':
         specifier: workspace:*
         version: link:../../packages/types
@@ -195,6 +204,87 @@ importers:
       '@types/node':
         specifier: ^20.0.0
         version: 20.19.42
+      vitest:
+        specifier: ^2.0.0
+        version: 2.1.9(@types/node@20.19.42)
+
+  packages/events:
+    dependencies:
+      '@galaxy/types':
+        specifier: workspace:*
+        version: link:../types
+      '@galaxy/utils':
+        specifier: workspace:*
+        version: link:../utils
+      pg:
+        specifier: ^8.12.0
+        version: 8.21.0
+      zod:
+        specifier: ^3.23.0
+        version: 3.25.76
+    devDependencies:
+      '@types/node':
+        specifier: ^20.0.0
+        version: 20.19.42
+      '@types/pg':
+        specifier: ^8.11.0
+        version: 8.20.0
+      vitest:
+        specifier: ^2.0.0
+        version: 2.1.9(@types/node@20.19.42)
+
+  packages/modules/identity:
+    dependencies:
+      '@galaxy/events':
+        specifier: workspace:*
+        version: link:../../events
+      '@galaxy/types':
+        specifier: workspace:*
+        version: link:../../types
+      '@galaxy/utils':
+        specifier: workspace:*
+        version: link:../../utils
+      pg:
+        specifier: ^8.12.0
+        version: 8.21.0
+      zod:
+        specifier: ^3.23.0
+        version: 3.25.76
+    devDependencies:
+      '@types/node':
+        specifier: ^20.0.0
+        version: 20.19.42
+      '@types/pg':
+        specifier: ^8.11.0
+        version: 8.20.0
+      vitest:
+        specifier: ^2.0.0
+        version: 2.1.9(@types/node@20.19.42)
+
+  packages/modules/people:
+    dependencies:
+      '@galaxy/events':
+        specifier: workspace:*
+        version: link:../../events
+      '@galaxy/types':
+        specifier: workspace:*
+        version: link:../../types
+      '@galaxy/utils':
+        specifier: workspace:*
+        version: link:../../utils
+      pg:
+        specifier: ^8.12.0
+        version: 8.21.0
+      zod:
+        specifier: ^3.23.0
+        version: 3.25.76
+    devDependencies:
+      '@types/node':
+        specifier: ^20.0.0
+        version: 20.19.42
+      '@types/pg':
+        specifier: ^8.11.0
+        version: 8.20.0
       vitest:
         specifier: ^2.0.0
         version: 2.1.9(@types/node@20.19.42)
