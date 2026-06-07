@@ -43,12 +43,14 @@ export class InMemoryEventSubscriber implements EventSubscriber {
     this.handlers.delete(eventType);
   }
 
-  async start(): Promise<void> {
+  start(): Promise<void> {
     this.running = true;
+    return Promise.resolve();
   }
 
-  async stop(): Promise<void> {
+  stop(): Promise<void> {
     this.running = false;
+    return Promise.resolve();
   }
 
   isRunning(): boolean {
@@ -61,7 +63,7 @@ export class InMemoryEventSubscriber implements EventSubscriber {
   async dispatch<TPayload>(event: GalaxyEvent<TPayload>): Promise<void> {
     const handler = this.handlers.get(event.type);
     if (handler) {
-      await handler(event as GalaxyEvent<unknown>);
+      await handler(event);
     }
   }
 }

@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import type { z } from 'zod';
 
 type AnyZodSchema = z.ZodTypeAny;
 
@@ -12,7 +12,7 @@ export class EventRegistry {
   /**
    * Registers a payload schema for an event type.
    */
-  register<T extends AnyZodSchema>(eventType: string, schema: T): void {
+  register(eventType: string, schema: AnyZodSchema): void {
     if (this.schemas.has(eventType)) {
       throw new Error(`Event type "${eventType}" is already registered`);
     }

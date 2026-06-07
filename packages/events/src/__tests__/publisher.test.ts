@@ -44,8 +44,8 @@ describe('EventPublisher', () => {
       const event = makeEvent();
       await publisher.publish(event);
 
-      const query = pool.query as ReturnType<typeof vi.fn>;
-      const firstCall = query.mock.calls[0] as [string, string[]];
+      const mockQuery = vi.mocked(pool.query);
+      const firstCall = mockQuery.mock.calls[0] as [string, string[]];
       expect(firstCall[0]).toContain('set_config');
       expect(firstCall[1]).toContain('app.current_tenant');
       expect(firstCall[1]).toContain(event.tenantId);
@@ -60,8 +60,8 @@ describe('EventPublisher', () => {
     });
 
     it('returns failure for invalid event', async () => {
-      const invalidEvent = { ...makeEvent(), id: 'not-a-uuid' };
-      const result = await publisher.publish(invalidEvent as GalaxyEvent);
+      const invalidEvent: GalaxyEvent = { ...makeEvent(), id: 'not-a-uuid' };
+      const result = await publisher.publish(invalidEvent);
 
       expect(result.success).toBe(false);
       expect(result.error).toBeDefined();
@@ -71,8 +71,8 @@ describe('EventPublisher', () => {
       const event = makeEvent();
       await publisher.publish(event);
 
-      const query = pool.query as ReturnType<typeof vi.fn>;
-      const insertCall = query.mock.calls[1] as [string, unknown[]];
+      const mockQuery = vi.mocked(pool.query);
+      const insertCall = mockQuery.mock.calls[1] as [string, unknown[]];
       expect(insertCall[0]).toContain('INSERT INTO events');
       expect(insertCall[0]).toContain('$1');
       expect(insertCall[1]).toContain(event.id);
