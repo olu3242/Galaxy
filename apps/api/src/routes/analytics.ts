@@ -15,7 +15,7 @@ function responseEnvelope<T>(data: T, requestId: string) {
   };
 }
 
-export async function analyticsRoutes(fastify: FastifyInstance): Promise<void> {
+export function analyticsRoutes(fastify: FastifyInstance): void {
   const metricsService = new MetricsService(fastify.pg);
   const kpiService = new KPIService(fastify.pg);
   const dashboardService = new DashboardService(fastify.pg);
@@ -42,10 +42,10 @@ export async function analyticsRoutes(fastify: FastifyInstance): Promise<void> {
       }
 
       const metrics = await metricsService.getMetrics(organizationId, {
-        category,
-        period,
-        limit: limit ? parseInt(limit, 10) : undefined,
-        offset: offset ? parseInt(offset, 10) : undefined,
+        ...(category !== undefined ? { category } : {}),
+        ...(period !== undefined ? { period } : {}),
+        ...(limit ? { limit: parseInt(limit, 10) } : {}),
+        ...(offset ? { offset: parseInt(offset, 10) } : {}),
       });
 
       return reply.send(responseEnvelope(metrics, request.id));
@@ -119,7 +119,7 @@ export async function analyticsRoutes(fastify: FastifyInstance): Promise<void> {
       }>,
       reply: FastifyReply,
     ) => {
-      const { organizationId, name, category, templateId, generatedBy, data } = request.body;
+      const { organizationId, name, category, generatedBy } = request.body;
 
       if (!organizationId || !name || !category || !generatedBy) {
         return reply
@@ -131,9 +131,9 @@ export async function analyticsRoutes(fastify: FastifyInstance): Promise<void> {
         organizationId,
         name,
         category,
-        templateId,
         generatedBy,
-        data,
+        ...(request.body.templateId !== undefined ? { templateId: request.body.templateId } : {}),
+        ...(request.body.data !== undefined ? { data: request.body.data } : {}),
       });
 
       return reply.status(201).send(responseEnvelope(report, request.id));

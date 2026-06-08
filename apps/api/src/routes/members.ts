@@ -18,7 +18,7 @@ const UpdateMemberSchema = z.object({
   profileData: z.record(z.unknown()).optional(),
 });
 
-export async function memberRoutes(fastify: FastifyInstance): Promise<void> {
+export function memberRoutes(fastify: FastifyInstance): void {
   const memberService = new MemberService(fastify.pg);
 
   fastify.get(

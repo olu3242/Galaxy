@@ -1,4 +1,4 @@
-import Fastify from 'fastify';
+import Fastify, { type FastifyInstance } from 'fastify';
 import { Pool } from 'pg';
 import { organizationRoutes } from './routes/organizations.js';
 import { memberRoutes } from './routes/members.js';
@@ -16,16 +16,16 @@ declare module 'fastify' {
   }
 }
 
-async function buildApp(): Promise<ReturnType<typeof Fastify>> {
+async function buildApp(): Promise<FastifyInstance> {
   const fastify = Fastify({
     logger: {
-      level: process.env['LOG_LEVEL'] ?? 'info',
+      level: process.env.LOG_LEVEL ?? 'info',
       redact: ['req.headers.authorization', 'body.password', 'body.token', 'body.secret'],
     },
   });
 
   // Database pool
-  const databaseUrl = process.env['DATABASE_URL'];
+  const databaseUrl = process.env.DATABASE_URL;
   if (!databaseUrl) {
     throw new Error('DATABASE_URL environment variable is required');
   }
@@ -62,14 +62,14 @@ async function buildApp(): Promise<ReturnType<typeof Fastify>> {
 async function main(): Promise<void> {
   const app = await buildApp();
 
-  const port = parseInt(process.env['PORT'] ?? '3000', 10);
-  const host = process.env['HOST'] ?? '0.0.0.0';
+  const port = parseInt(process.env.PORT ?? '3000', 10);
+  const host = process.env.HOST ?? '0.0.0.0';
 
   await app.listen({ port, host });
-  app.log.info(`Galaxy API listening on ${host}:${port}`);
+  app.log.info(`Galaxy API listening on ${host}:${String(port)}`);
 }
 
-main().catch((err) => {
+main().catch((err: unknown) => {
   console.error('Fatal error:', err);
   process.exit(1);
 });

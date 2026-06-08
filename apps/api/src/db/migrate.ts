@@ -21,7 +21,7 @@ interface Migration {
   down: (pool: Pool) => Promise<void>;
 }
 
-const migrations: Array<{ name: string; migration: Migration }> = [
+const migrations: { name: string; migration: Migration }[] = [
   { name: '001_create_organizations', migration: migration001 },
   { name: '002_create_users', migration: migration002 },
   { name: '003_create_roles_permissions', migration: migration003 },
@@ -113,7 +113,7 @@ async function runDown(pool: Pool): Promise<void> {
 }
 
 async function main(): Promise<void> {
-  const databaseUrl = process.env['DATABASE_URL'];
+  const databaseUrl = process.env.DATABASE_URL;
 
   if (!databaseUrl) {
     console.error('[migrate] DATABASE_URL environment variable is required');
@@ -137,7 +137,7 @@ async function main(): Promise<void> {
   }
 }
 
-main().catch((err) => {
+main().catch((err: unknown) => {
   console.error('[migrate] Fatal error:', err);
   process.exit(1);
 });

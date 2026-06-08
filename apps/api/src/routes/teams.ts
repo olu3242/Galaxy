@@ -25,7 +25,7 @@ const AddTeamMemberSchema = z.object({
   membershipId: z.string().uuid(),
 });
 
-export async function teamRoutes(fastify: FastifyInstance): Promise<void> {
+export function teamRoutes(fastify: FastifyInstance): void {
   const teamService = new TeamService(fastify.pg);
 
   fastify.get(

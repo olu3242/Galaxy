@@ -2,8 +2,17 @@
   "extends": "../../../tsconfig.base.json",
   "compilerOptions": {
     "outDir": "./dist",
-    "rootDir": "./src"
+    "rootDir": "./src",
+    "composite": true,
+    "declaration": true,
+    "tsBuildInfoFile": "tsconfig.tsbuildinfo",
+    "types": ["node"]
   },
-  "include": ["src"],
-  "exclude": ["node_modules", "dist"]
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"],
+  "references": [
+    { "path": "../../../packages/types" },
+    { "path": "../../../packages/utils" },
+    { "path": "../../../packages/events" }
+  ]
 }

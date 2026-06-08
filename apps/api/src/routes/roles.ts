@@ -26,7 +26,7 @@ const AssignPermissionSchema = z.object({
   organizationId: z.string().uuid(),
 });
 
-export async function roleRoutes(fastify: FastifyInstance): Promise<void> {
+export function roleRoutes(fastify: FastifyInstance): void {
   const roleService = new RoleService(fastify.pg);
   const permService = new PermissionService(fastify.pg);
 

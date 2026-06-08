@@ -11,7 +11,7 @@ function responseEnvelope<T>(data: T, requestId: string) {
   };
 }
 
-export async function auditRoutes(fastify: FastifyInstance): Promise<void> {
+export function auditRoutes(fastify: FastifyInstance): void {
   // GET /audit/logs — auditor-only
   fastify.get(
     '/audit/logs',
@@ -49,13 +49,13 @@ export async function auditRoutes(fastify: FastifyInstance): Promise<void> {
       let paramIdx = 2;
 
       if (actorType) {
-        conditions.push(`actor_type = $${paramIdx}`);
+        conditions.push(`actor_type = $${String(paramIdx)}`);
         params.push(actorType);
         paramIdx++;
       }
 
       if (action) {
-        conditions.push(`action = $${paramIdx}`);
+        conditions.push(`action = $${String(paramIdx)}`);
         params.push(action);
         paramIdx++;
       }
@@ -65,7 +65,7 @@ export async function auditRoutes(fastify: FastifyInstance): Promise<void> {
       const result = await fastify.pg.query(
         `SELECT * FROM audit_logs WHERE ${conditions.join(' AND ')}
          ORDER BY created_at DESC
-         LIMIT $${paramIdx} OFFSET $${paramIdx + 1}`,
+         LIMIT $${String(paramIdx)} OFFSET $${String(paramIdx + 1)}`,
         params,
       );
 

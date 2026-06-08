@@ -15,6 +15,11 @@
     { "path": "../../packages/utils" },
     { "path": "../../packages/events" },
     { "path": "../../packages/modules/identity" },
-    { "path": "../../packages/modules/people" }
+    { "path": "../../packages/modules/people" },
+    { "path": "../../packages/modules/communication" },
+    { "path": "../../packages/modules/notifications" },
+    { "path": "../../packages/modules/analytics" },
+    { "path": "../../packages/modules/knowledge" },
+    { "path": "../../packages/modules/intelligence" }
   ]
 }

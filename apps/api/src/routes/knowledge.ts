@@ -12,7 +12,7 @@ function responseEnvelope<T>(data: T, requestId: string) {
   };
 }
 
-export async function knowledgeRoutes(fastify: FastifyInstance): Promise<void> {
+export function knowledgeRoutes(fastify: FastifyInstance): void {
   const knowledgeService = new KnowledgeService(fastify.pg);
   const searchService = new KnowledgeSearchService(fastify.pg);
 
@@ -75,10 +75,10 @@ export async function knowledgeRoutes(fastify: FastifyInstance): Promise<void> {
       }
 
       const docs = await knowledgeService.listDocuments(organizationId, {
-        status,
-        categoryId,
-        limit: limit ? parseInt(limit, 10) : undefined,
-        offset: offset ? parseInt(offset, 10) : undefined,
+        ...(status !== undefined ? { status } : {}),
+        ...(categoryId !== undefined ? { categoryId } : {}),
+        ...(limit ? { limit: parseInt(limit, 10) } : {}),
+        ...(offset ? { offset: parseInt(offset, 10) } : {}),
       });
 
       return reply.send(responseEnvelope(docs, request.id));
@@ -184,8 +184,8 @@ export async function knowledgeRoutes(fastify: FastifyInstance): Promise<void> {
       }
 
       const results = await searchService.search(organizationId, q, {
-        categoryId,
-        limit: limit ? parseInt(limit, 10) : undefined,
+        ...(categoryId !== undefined ? { categoryId } : {}),
+        ...(limit ? { limit: parseInt(limit, 10) } : {}),
       });
 
       return reply.send(responseEnvelope(results, request.id));
