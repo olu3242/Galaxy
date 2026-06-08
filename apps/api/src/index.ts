@@ -30,6 +30,7 @@ import { riskIntelligenceRoutes } from './routes/risk-intelligence.js';
 import { intelligenceNetworkRoutes } from './routes/intelligence-network.js';
 import { benchmarkingRoutes } from './routes/benchmarking.js';
 import { conversationRoutes } from './routes/conversation.js';
+import { autonomousIntelligenceRoutes } from './routes/autonomous-intelligence.js';
 
 declare module 'fastify' {
   interface FastifyInstance {
@@ -92,6 +93,7 @@ async function buildApp(): Promise<FastifyInstance> {
   await fastify.register(intelligenceNetworkRoutes, { prefix: '/api/v1' });
   await fastify.register(benchmarkingRoutes, { prefix: '/api/v1' });
   await fastify.register(conversationRoutes, { prefix: '/api/v1' });
+  await fastify.register(autonomousIntelligenceRoutes, { prefix: '/api/v1' });
 
   // Graceful shutdown
   fastify.addHook('onClose', async () => {
