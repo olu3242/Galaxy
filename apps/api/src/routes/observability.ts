@@ -59,15 +59,15 @@ export function observabilityRoutes(fastify: FastifyInstance): void {
     async (request: FastifyRequest, reply: FastifyReply) => {
       const orgId = getOrgId(request);
       const query = request.query as Record<string, string>;
-      const metricName = query['metricName'] ?? '';
-      const from = query['from'] ?? new Date(Date.now() - 3600000).toISOString();
-      const to = query['to'] ?? new Date().toISOString();
+      const metricName = query.metricName ?? '';
+      const from = query.from ?? new Date(Date.now() - 3600000).toISOString();
+      const to = query.to ?? new Date().toISOString();
       const service = new MetricsCollectorService(fastify.pg);
       const points = await service.query(orgId, {
         metricName,
         from,
         to,
-        ...(query['limit'] !== undefined ? { limit: parseInt(query['limit'], 10) } : {}),
+        ...(query.limit !== undefined ? { limit: parseInt(query.limit, 10) } : {}),
       });
       return reply.send({ points });
     },
@@ -119,10 +119,10 @@ export function observabilityRoutes(fastify: FastifyInstance): void {
     const query = request.query as Record<string, string>;
     const service = new AlertService(fastify.pg);
     const alerts = await service.listAlerts(orgId, {
-      ...(query['state'] !== undefined ? { state: query['state'] as AlertState } : {}),
-      ...(query['severity'] !== undefined ? { severity: query['severity'] as AlertSeverity } : {}),
-      ...(query['limit'] !== undefined ? { limit: parseInt(query['limit'], 10) } : {}),
-      ...(query['offset'] !== undefined ? { offset: parseInt(query['offset'], 10) } : {}),
+      ...(query.state !== undefined ? { state: query.state as AlertState } : {}),
+      ...(query.severity !== undefined ? { severity: query.severity as AlertSeverity } : {}),
+      ...(query.limit !== undefined ? { limit: parseInt(query.limit, 10) } : {}),
+      ...(query.offset !== undefined ? { offset: parseInt(query.offset, 10) } : {}),
     });
     return reply.send({ alerts });
   });
@@ -145,12 +145,12 @@ export function observabilityRoutes(fastify: FastifyInstance): void {
     const query = request.query as Record<string, string>;
     const service = new IncidentService(fastify.pg);
     const incidents = await service.listIncidents(orgId, {
-      ...(query['status'] !== undefined ? { status: query['status'] as IncidentStatus } : {}),
-      ...(query['severity'] !== undefined
-        ? { severity: query['severity'] as IncidentSeverity }
+      ...(query.status !== undefined ? { status: query.status as IncidentStatus } : {}),
+      ...(query.severity !== undefined
+        ? { severity: query.severity as IncidentSeverity }
         : {}),
-      ...(query['limit'] !== undefined ? { limit: parseInt(query['limit'], 10) } : {}),
-      ...(query['offset'] !== undefined ? { offset: parseInt(query['offset'], 10) } : {}),
+      ...(query.limit !== undefined ? { limit: parseInt(query.limit, 10) } : {}),
+      ...(query.offset !== undefined ? { offset: parseInt(query.offset, 10) } : {}),
     });
     return reply.send({ incidents });
   });

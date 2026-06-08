@@ -260,7 +260,7 @@ export function developerRoutes(fastify: FastifyInstance): void {
           body.client_secret,
           body.redirect_uri,
         );
-        return reply.send({
+        return await reply.send({
           access_token: token.accessToken,
           refresh_token: token.refreshToken,
           token_type: 'Bearer',

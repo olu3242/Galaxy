@@ -25,14 +25,14 @@ export function marketplaceRoutes(fastify: FastifyInstance): void {
     const query = request.query as Record<string, string>;
     const service = new MarketplaceItemService(fastify.pg);
     const items = await service.listItems(orgId, {
-      ...(query['category'] !== undefined
-        ? { category: query['category'] as MarketplaceItemCategory }
+      ...(query.category !== undefined
+        ? { category: query.category as MarketplaceItemCategory }
         : {}),
-      ...(query['status'] !== undefined
-        ? { status: query['status'] as 'draft' | 'pending_review' | 'published' | 'suspended' }
+      ...(query.status !== undefined
+        ? { status: query.status as 'draft' | 'pending_review' | 'published' | 'suspended' }
         : {}),
-      ...(query['limit'] !== undefined ? { limit: parseInt(query['limit'], 10) } : {}),
-      ...(query['offset'] !== undefined ? { offset: parseInt(query['offset'], 10) } : {}),
+      ...(query.limit !== undefined ? { limit: parseInt(query.limit, 10) } : {}),
+      ...(query.offset !== undefined ? { offset: parseInt(query.offset, 10) } : {}),
     });
     return reply.send({ items });
   });
@@ -71,17 +71,17 @@ export function marketplaceRoutes(fastify: FastifyInstance): void {
     const body = request.body as Record<string, unknown>;
     const service = new MarketplaceItemService(fastify.pg);
     const item = await service.updateItem(orgId, id, {
-      ...(typeof body['name'] === 'string' ? { name: body['name'] } : {}),
-      ...(typeof body['description'] === 'string' ? { description: body['description'] } : {}),
-      ...(typeof body['pricingModel'] === 'string'
-        ? { pricingModel: body['pricingModel'] as PricingModel }
+      ...(typeof body.name === 'string' ? { name: body.name } : {}),
+      ...(typeof body.description === 'string' ? { description: body.description } : {}),
+      ...(typeof body.pricingModel === 'string'
+        ? { pricingModel: body.pricingModel as PricingModel }
         : {}),
-      ...(typeof body['priceAmount'] === 'number' ? { priceAmount: body['priceAmount'] } : {}),
-      ...(Array.isArray(body['tags']) ? { tags: body['tags'] as string[] } : {}),
-      ...(body['metadata'] !== undefined &&
-      typeof body['metadata'] === 'object' &&
-      body['metadata'] !== null
-        ? { metadata: body['metadata'] as Record<string, unknown> }
+      ...(typeof body.priceAmount === 'number' ? { priceAmount: body.priceAmount } : {}),
+      ...(Array.isArray(body.tags) ? { tags: body.tags as string[] } : {}),
+      ...(body.metadata !== undefined &&
+      typeof body.metadata === 'object' &&
+      body.metadata !== null
+        ? { metadata: body.metadata as Record<string, unknown> }
         : {}),
     });
     if (!item) return reply.status(404).send({ error: 'Item not found' });
@@ -149,9 +149,9 @@ export function marketplaceRoutes(fastify: FastifyInstance): void {
       const query = request.query as Record<string, string>;
       const service = new InstallationService(fastify.pg);
       const installations = await service.listInstallations(orgId, {
-        ...(query['status'] !== undefined ? { status: query['status'] as InstallationStatus } : {}),
-        ...(query['limit'] !== undefined ? { limit: parseInt(query['limit'], 10) } : {}),
-        ...(query['offset'] !== undefined ? { offset: parseInt(query['offset'], 10) } : {}),
+        ...(query.status !== undefined ? { status: query.status as InstallationStatus } : {}),
+        ...(query.limit !== undefined ? { limit: parseInt(query.limit, 10) } : {}),
+        ...(query.offset !== undefined ? { offset: parseInt(query.offset, 10) } : {}),
       });
       return reply.send({ installations });
     },
@@ -193,9 +193,9 @@ export function marketplaceRoutes(fastify: FastifyInstance): void {
       const query = request.query as Record<string, string>;
       const service = new ReviewService(fastify.pg);
       const reviews = await service.listReviews(orgId, id, {
-        ...(query['status'] !== undefined ? { status: query['status'] as ReviewStatus } : {}),
-        ...(query['limit'] !== undefined ? { limit: parseInt(query['limit'], 10) } : {}),
-        ...(query['offset'] !== undefined ? { offset: parseInt(query['offset'], 10) } : {}),
+        ...(query.status !== undefined ? { status: query.status as ReviewStatus } : {}),
+        ...(query.limit !== undefined ? { limit: parseInt(query.limit, 10) } : {}),
+        ...(query.offset !== undefined ? { offset: parseInt(query.offset, 10) } : {}),
       });
       return reply.send({ reviews });
     },
@@ -241,9 +241,9 @@ export function marketplaceRoutes(fastify: FastifyInstance): void {
     const query = request.query as Record<string, string>;
     const service = new MarketplaceBillingService(fastify.pg);
     const billing = await service.listBilling(orgId, {
-      ...(query['installationId'] !== undefined ? { installationId: query['installationId'] } : {}),
-      ...(query['limit'] !== undefined ? { limit: parseInt(query['limit'], 10) } : {}),
-      ...(query['offset'] !== undefined ? { offset: parseInt(query['offset'], 10) } : {}),
+      ...(query.installationId !== undefined ? { installationId: query.installationId } : {}),
+      ...(query.limit !== undefined ? { limit: parseInt(query.limit, 10) } : {}),
+      ...(query.offset !== undefined ? { offset: parseInt(query.offset, 10) } : {}),
     });
     return reply.send({ billing });
   });

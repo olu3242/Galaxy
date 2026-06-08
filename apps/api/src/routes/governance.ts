@@ -166,7 +166,7 @@ export function governanceRoutes(fastify: FastifyInstance): void {
     ) => {
       const { policyId } = request.params;
       const { organizationId, context } = request.body;
-      if (!organizationId || !context) {
+      if (!organizationId) {
         return reply.status(400).send({ error: 'organizationId, context required' });
       }
 

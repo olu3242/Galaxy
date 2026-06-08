@@ -153,7 +153,7 @@ export function platformAdminRoutes(fastify: FastifyInstance): void {
       const flag = await flagService.createFlag(input);
 
       await logService.logAction({
-        adminId: adminId ?? 'system',
+        adminId,
         actionType: 'create_feature_flag',
         payload: { flagKey: input.key },
       });
@@ -188,7 +188,7 @@ export function platformAdminRoutes(fastify: FastifyInstance): void {
       if (!flag) return reply.status(404).send({ error: 'Feature flag not found' });
 
       await logService.logAction({
-        adminId: adminId ?? 'system',
+        adminId,
         actionType: 'toggle_feature_flag',
         payload: { flagKey: name, isEnabled },
       });
