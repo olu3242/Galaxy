@@ -15,6 +15,11 @@ import * as migration013 from './migrations/013_create_tasks.js';
 import * as migration014 from './migrations/014_create_approvals.js';
 import * as migration015 from './migrations/015_create_automations.js';
 import * as migration016 from './migrations/016_enable_rls_sprint2.js';
+import * as migration025 from './migrations/025_gwos_workflow_classification.js';
+import * as migration026 from './migrations/026_gwos_event_fabric.js';
+import * as migration027 from './migrations/027_gwos_ai_orchestration.js';
+import * as migration028 from './migrations/028_gwos_whatsapp_runtime.js';
+import * as migration029 from './migrations/029_gwos_rls.js';
 
 interface Migration {
   up: (pool: Pool) => Promise<void>;
@@ -38,6 +43,11 @@ const migrations: { name: string; migration: Migration }[] = [
   { name: '014_create_approvals', migration: migration014 },
   { name: '015_create_automations', migration: migration015 },
   { name: '016_enable_rls_sprint2', migration: migration016 },
+  { name: '025_gwos_workflow_classification', migration: migration025 },
+  { name: '026_gwos_event_fabric', migration: migration026 },
+  { name: '027_gwos_ai_orchestration', migration: migration027 },
+  { name: '028_gwos_whatsapp_runtime', migration: migration028 },
+  { name: '029_gwos_rls', migration: migration029 },
 ];
 
 async function ensureMigrationsTable(pool: Pool): Promise<void> {

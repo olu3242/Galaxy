@@ -20,6 +20,7 @@
     { "path": "../../packages/modules/notifications" },
     { "path": "../../packages/modules/analytics" },
     { "path": "../../packages/modules/knowledge" },
-    { "path": "../../packages/modules/intelligence" }
+    { "path": "../../packages/modules/intelligence" },
+    { "path": "../../packages/modules/workflow" }
   ]
 }

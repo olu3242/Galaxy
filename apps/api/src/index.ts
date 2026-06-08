@@ -9,6 +9,7 @@ import { auditRoutes } from './routes/audit.js';
 import { analyticsRoutes } from './routes/analytics.js';
 import { knowledgeRoutes } from './routes/knowledge.js';
 import { intelligenceRoutes } from './routes/intelligence.js';
+import { workflowOsRoutes } from './routes/workflow-os.js';
 
 declare module 'fastify' {
   interface FastifyInstance {
@@ -50,6 +51,7 @@ async function buildApp(): Promise<FastifyInstance> {
   await fastify.register(analyticsRoutes, { prefix: '/api/v1' });
   await fastify.register(knowledgeRoutes, { prefix: '/api/v1' });
   await fastify.register(intelligenceRoutes, { prefix: '/api/v1' });
+  await fastify.register(workflowOsRoutes, { prefix: '/api/v1' });
 
   // Graceful shutdown
   fastify.addHook('onClose', async () => {
