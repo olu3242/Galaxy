@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import type { Pool, QueryResult } from 'pg';
+import type { Pool } from 'pg';
 import { HealthScoreService } from '../services/HealthScoreService.js';
 
 const organizationId = '00000000-0000-0000-0000-000000000001';
@@ -22,10 +22,10 @@ describe('HealthScoreService', () => {
     it('sets tenant context before querying', async () => {
       const query = vi
         .fn()
-        .mockResolvedValueOnce({ rows: [], rowCount: 0 } as QueryResult)
-        .mockResolvedValueOnce({ rows: [{ count: '5' }], rowCount: 1 } as QueryResult)
-        .mockResolvedValueOnce({ rows: [{ count: '10' }], rowCount: 1 } as QueryResult)
-        .mockResolvedValueOnce({ rows: [makeHealthScoreRow(50)], rowCount: 1 } as QueryResult);
+        .mockResolvedValueOnce({ rows: [], rowCount: 0 })
+        .mockResolvedValueOnce({ rows: [{ count: '5' }], rowCount: 1 })
+        .mockResolvedValueOnce({ rows: [{ count: '10' }], rowCount: 1 })
+        .mockResolvedValueOnce({ rows: [makeHealthScoreRow(50)], rowCount: 1 });
 
       const pool = { query } as unknown as Pool;
       const service = new HealthScoreService(pool);
@@ -40,10 +40,10 @@ describe('HealthScoreService', () => {
     it('returns a health score with numeric score', async () => {
       const query = vi
         .fn()
-        .mockResolvedValueOnce({ rows: [], rowCount: 0 } as QueryResult)
-        .mockResolvedValueOnce({ rows: [{ count: '3' }], rowCount: 1 } as QueryResult)
-        .mockResolvedValueOnce({ rows: [{ count: '20' }], rowCount: 1 } as QueryResult)
-        .mockResolvedValueOnce({ rows: [makeHealthScoreRow(65)], rowCount: 1 } as QueryResult);
+        .mockResolvedValueOnce({ rows: [], rowCount: 0 })
+        .mockResolvedValueOnce({ rows: [{ count: '3' }], rowCount: 1 })
+        .mockResolvedValueOnce({ rows: [{ count: '20' }], rowCount: 1 })
+        .mockResolvedValueOnce({ rows: [makeHealthScoreRow(65)], rowCount: 1 });
 
       const pool = { query } as unknown as Pool;
       const service = new HealthScoreService(pool);
@@ -60,12 +60,12 @@ describe('HealthScoreService', () => {
     it('sets tenant context before computing', async () => {
       const query = vi
         .fn()
-        .mockResolvedValueOnce({ rows: [], rowCount: 0 } as QueryResult)
-        .mockResolvedValueOnce({ rows: [{ total: '10', active: '8' }], rowCount: 1 } as QueryResult)
+        .mockResolvedValueOnce({ rows: [], rowCount: 0 })
+        .mockResolvedValueOnce({ rows: [{ total: '10', active: '8' }], rowCount: 1 })
         .mockResolvedValueOnce({
           rows: [makeHealthScoreRow(80)],
           rowCount: 1,
-        } as QueryResult);
+        });
 
       const pool = { query } as unknown as Pool;
       const service = new HealthScoreService(pool);
@@ -82,15 +82,15 @@ describe('HealthScoreService', () => {
     it('returns score based on completion rate', async () => {
       const query = vi
         .fn()
-        .mockResolvedValueOnce({ rows: [], rowCount: 0 } as QueryResult)
+        .mockResolvedValueOnce({ rows: [], rowCount: 0 })
         .mockResolvedValueOnce({
           rows: [{ total: '10', completed: '8' }],
           rowCount: 1,
-        } as QueryResult)
+        })
         .mockResolvedValueOnce({
           rows: [makeHealthScoreRow(80)],
           rowCount: 1,
-        } as QueryResult);
+        });
 
       const pool = { query } as unknown as Pool;
       const service = new HealthScoreService(pool);

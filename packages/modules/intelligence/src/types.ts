@@ -10,6 +10,7 @@ export type InsightType =
   | 'department'
   | 'workflow'
   | 'engagement'
+  | 'communication'
   | 'compliance'
   | 'risk'
   | 'executive';

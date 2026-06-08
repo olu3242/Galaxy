@@ -42,7 +42,9 @@ export class InsightService {
       [organizationId, type, title, summary, JSON.stringify(data)],
     );
 
-    return rowToSnapshot(result.rows[0]!);
+    const row = result.rows[0];
+    if (!row) throw new Error('INSERT RETURNING returned no row');
+    return rowToSnapshot(row);
   }
 
   async listInsights(
@@ -64,7 +66,7 @@ export class InsightService {
     }
 
     const result = await this.pool.query<InsightSnapshotRow>(
-      `SELECT * FROM intelligence_snapshots WHERE ${conditions.join(' AND ')} ORDER BY generated_at DESC LIMIT $${params.length}`,
+      `SELECT * FROM intelligence_snapshots WHERE ${conditions.join(' AND ')} ORDER BY generated_at DESC LIMIT $${String(params.length)}`,
       params,
     );
 
@@ -77,6 +79,7 @@ export class InsightService {
       department: 'Department Health Insight',
       workflow: 'Workflow Efficiency Insight',
       engagement: 'Member Engagement Insight',
+      communication: 'Communication Effectiveness Insight',
       compliance: 'Compliance Status Insight',
       risk: 'Risk Assessment Insight',
       executive: 'Executive Summary Insight',
@@ -85,7 +88,7 @@ export class InsightService {
   }
 
   private buildSummary(type: InsightType, data: Record<string, unknown>): string {
-    const score = typeof data['score'] === 'number' ? data['score'] : null;
+    const score = typeof data.score === 'number' ? data.score : null;
     if (score !== null) {
       return `${type} score: ${score.toFixed(1)}`;
     }
