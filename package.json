@@ -2,6 +2,7 @@
   "name": "galaxy",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "description": "Galaxy Loop OS — Organization Operating System",
   "engines": {
     "node": ">=20.0.0",
