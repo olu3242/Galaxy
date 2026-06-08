@@ -22,6 +22,10 @@
     { "path": "../../packages/modules/knowledge" },
     { "path": "../../packages/modules/intelligence" },
     { "path": "../../packages/modules/workflow" },
-    { "path": "../../packages/modules/agents" }
+    { "path": "../../packages/modules/agents" },
+    { "path": "../../packages/modules/marketplace" },
+    { "path": "../../packages/modules/observability" },
+    { "path": "../../packages/modules/governance" },
+    { "path": "../../packages/modules/platform-admin" }
   ]
 }

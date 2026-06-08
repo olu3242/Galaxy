@@ -24,6 +24,17 @@ import * as migration030 from './migrations/030_agent_registry.js';
 import * as migration031 from './migrations/031_agent_memory.js';
 import * as migration032 from './migrations/032_decision_engine.js';
 import * as migration033 from './migrations/033_agent_rls.js';
+import * as migration034 from './migrations/034_marketplace.js';
+import * as migration035 from './migrations/035_observability.js';
+import * as migration036 from './migrations/036_marketplace_rls.js';
+import * as migration037 from './migrations/037_observability_rls.js';
+import * as migration038 from './migrations/038_billing.js';
+import * as migration039 from './migrations/039_developer_platform.js';
+import * as migration040 from './migrations/040_billing_rls.js';
+import * as migration041 from './migrations/041_developer_rls.js';
+import * as migration042 from './migrations/042_governance.js';
+import * as migration043 from './migrations/043_platform_admin.js';
+import * as migration044 from './migrations/044_governance_rls.js';
 
 interface Migration {
   up: (pool: Pool) => Promise<void>;
@@ -56,6 +67,17 @@ const migrations: { name: string; migration: Migration }[] = [
   { name: '031_agent_memory', migration: migration031 },
   { name: '032_decision_engine', migration: migration032 },
   { name: '033_agent_rls', migration: migration033 },
+  { name: '034_marketplace', migration: migration034 },
+  { name: '035_observability', migration: migration035 },
+  { name: '036_marketplace_rls', migration: migration036 },
+  { name: '037_observability_rls', migration: migration037 },
+  { name: '038_billing', migration: migration038 },
+  { name: '039_developer_platform', migration: migration039 },
+  { name: '040_billing_rls', migration: migration040 },
+  { name: '041_developer_rls', migration: migration041 },
+  { name: '042_governance', migration: migration042 },
+  { name: '043_platform_admin', migration: migration043 },
+  { name: '044_governance_rls', migration: migration044 },
 ];
 
 async function ensureMigrationsTable(pool: Pool): Promise<void> {
