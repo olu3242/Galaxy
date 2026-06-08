@@ -106,17 +106,13 @@ export class OrgGraphService {
 
   async removeEdge(orgId: string, edgeId: string): Promise<void> {
     await setTenantContext(this.pool, orgId);
-    await this.pool.query(
-      'DELETE FROM org_graph_edges WHERE id = $1 AND organization_id = $2',
-      [edgeId, orgId],
-    );
+    await this.pool.query('DELETE FROM org_graph_edges WHERE id = $1 AND organization_id = $2', [
+      edgeId,
+      orgId,
+    ]);
   }
 
-  async getNode(
-    orgId: string,
-    nodeType: string,
-    externalId: string,
-  ): Promise<GraphNode | null> {
+  async getNode(orgId: string, nodeType: string, externalId: string): Promise<GraphNode | null> {
     await setTenantContext(this.pool, orgId);
     const result = await this.pool.query<DbGraphNode>(
       'SELECT * FROM org_graph_nodes WHERE organization_id = $1 AND node_type = $2 AND external_id = $3',
@@ -162,14 +158,14 @@ export class OrgGraphService {
     await setTenantContext(this.pool, orgId);
 
     const visited = new Set<string>([startNodeId]);
-    const queue: Array<{ nodeId: string; d: number }> = [{ nodeId: startNodeId, d: 0 }];
+    const queue: { nodeId: string; d: number }[] = [{ nodeId: startNodeId, d: 0 }];
     const result: GraphNode[] = [];
 
     while (queue.length > 0) {
       const item = queue.shift();
       if (item === undefined || item.d >= depth) continue;
 
-      let edgeRows: Array<{ neighbor_id: string }> = [];
+      let edgeRows: { neighbor_id: string }[] = [];
 
       if (direction === 'outbound' || direction === 'both') {
         const res = await this.pool.query<{ neighbor_id: string }>(
@@ -222,7 +218,7 @@ export class OrgGraphService {
     const dist = new Map<string, number>();
     const prev = new Map<string, string>();
     const visited = new Set<string>();
-    const pq: Array<{ nodeId: string; cost: number }> = [];
+    const pq: { nodeId: string; cost: number }[] = [];
 
     dist.set(fromNodeId, 0);
     pq.push({ nodeId: fromNodeId, cost: 0 });

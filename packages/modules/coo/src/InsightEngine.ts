@@ -14,7 +14,7 @@ export class InsightEngine {
           category: 'sla_breach_risk',
           severity: nearSlaRatio > 0.6 ? 'critical' : 'warning',
           title: 'High SLA breach risk',
-          description: `${String(ctx.workflowStats.nearSla)} of ${String(ctx.workflowStats.active)} active workflow runs (${Math.round(nearSlaRatio * 100)}%) are within 24 hours of their SLA deadline.`,
+          description: `${String(ctx.workflowStats.nearSla)} of ${String(ctx.workflowStats.active)} active workflow runs (${String(Math.round(nearSlaRatio * 100))}%) are within 24 hours of their SLA deadline.`,
           affectedEntityIds: [],
           pointDeduction: nearSlaRatio > 0.6 ? 25 : 15,
         });

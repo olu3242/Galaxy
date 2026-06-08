@@ -134,7 +134,7 @@ export class OrgMemoryService {
 
     return {
       total,
-      byType: byType as Record<MemoryType, number>,
+      byType: byType as unknown as Record<MemoryType, number>,
       averageConfidence: total > 0 ? totalConfidence / total : 0,
       invalidCount,
     };

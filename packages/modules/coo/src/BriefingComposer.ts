@@ -36,11 +36,7 @@ export class BriefingComposer {
     };
   }
 
-  private buildSummary(
-    healthScore: number,
-    critical: Insight[],
-    warnings: Insight[],
-  ): string {
+  private buildSummary(healthScore: number, critical: Insight[], warnings: Insight[]): string {
     const parts: string[] = [];
 
     const status =

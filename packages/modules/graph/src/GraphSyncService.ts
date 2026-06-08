@@ -21,15 +21,10 @@ export class GraphSyncService {
     const deptNode = await this.graphService.upsertNode(orgId, 'Department', deptId, deptProps);
 
     if (memberIds !== undefined && Array.isArray(memberIds)) {
-      for (const memberId of memberIds as string[]) {
+      for (const memberId of memberIds) {
         const memberNode = await this.graphService.getNode(orgId, 'Member', memberId);
         if (memberNode !== null) {
-          await this.graphService.addEdge(
-            orgId,
-            'BELONGS_TO',
-            memberNode.id,
-            deptNode.id,
-          );
+          await this.graphService.addEdge(orgId, 'BELONGS_TO', memberNode.id, deptNode.id);
         }
       }
     }
@@ -83,21 +78,11 @@ export class GraphSyncService {
     approvedByMemberId: string,
     props: Record<string, unknown>,
   ): Promise<GraphNode> {
-    const approvalNode = await this.graphService.upsertNode(
-      orgId,
-      'Approval',
-      approvalId,
-      props,
-    );
+    const approvalNode = await this.graphService.upsertNode(orgId, 'Approval', approvalId, props);
 
     const memberNode = await this.graphService.getNode(orgId, 'Member', approvedByMemberId);
     if (memberNode !== null) {
-      await this.graphService.addEdge(
-        orgId,
-        'APPROVED_BY',
-        approvalNode.id,
-        memberNode.id,
-      );
+      await this.graphService.addEdge(orgId, 'APPROVED_BY', approvalNode.id, memberNode.id);
     }
 
     return approvalNode;
@@ -109,12 +94,7 @@ export class GraphSyncService {
     agentId: string,
     props: Record<string, unknown>,
   ): Promise<{ node: GraphNode; edge: GraphEdge | null }> {
-    const decisionNode = await this.graphService.upsertNode(
-      orgId,
-      'Decision',
-      decisionId,
-      props,
-    );
+    const decisionNode = await this.graphService.upsertNode(orgId, 'Decision', decisionId, props);
 
     const agentNode = await this.graphService.getNode(orgId, 'Agent', agentId);
     if (agentNode !== null) {

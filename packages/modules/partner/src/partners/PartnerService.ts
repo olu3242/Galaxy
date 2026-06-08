@@ -81,31 +81,30 @@ export class PartnerService {
     await this.setTenantContext(adminOrgId);
     const conditions: string[] = [];
     const params: unknown[] = [];
-    let idx = 1;
 
     if (options.type !== undefined) {
-      conditions.push(`type = $${idx}`);
       params.push(options.type);
-      idx++;
+      conditions.push(`type = $${String(params.length)}`);
     }
     if (options.tier !== undefined) {
-      conditions.push(`tier = $${idx}`);
       params.push(options.tier);
-      idx++;
+      conditions.push(`tier = $${String(params.length)}`);
     }
     if (options.status !== undefined) {
-      conditions.push(`status = $${idx}`);
       params.push(options.status);
-      idx++;
+      conditions.push(`status = $${String(params.length)}`);
     }
 
     const where = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
     const limit = options.limit ?? 50;
     const offset = options.offset ?? 0;
-    params.push(limit, offset);
+    params.push(limit);
+    const limitIdx = params.length;
+    params.push(offset);
+    const offsetIdx = params.length;
 
     const result = await this.pool.query<PartnerRow>(
-      `SELECT * FROM partners ${where} ORDER BY created_at DESC LIMIT $${idx} OFFSET $${idx + 1}`,
+      `SELECT * FROM partners ${where} ORDER BY created_at DESC LIMIT $${String(limitIdx)} OFFSET $${String(offsetIdx)}`,
       params,
     );
     return result.rows.map(rowToPartner);
@@ -146,22 +145,18 @@ export class PartnerService {
     await this.setTenantContext(organizationId);
     const sets: string[] = [];
     const params: unknown[] = [partnerId, organizationId];
-    let idx = 3;
 
     if (input.name !== undefined) {
-      sets.push(`name = $${idx}`);
       params.push(input.name);
-      idx++;
+      sets.push(`name = $${String(params.length)}`);
     }
     if (input.contactEmail !== undefined) {
-      sets.push(`contact_email = $${idx}`);
       params.push(input.contactEmail);
-      idx++;
+      sets.push(`contact_email = $${String(params.length)}`);
     }
     if (input.contactName !== undefined) {
-      sets.push(`contact_name = $${idx}`);
       params.push(input.contactName);
-      idx++;
+      sets.push(`contact_name = $${String(params.length)}`);
     }
 
     if (sets.length === 0) {

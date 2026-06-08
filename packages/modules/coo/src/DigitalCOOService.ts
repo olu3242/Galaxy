@@ -93,7 +93,10 @@ export class DigitalCOOService {
     _actorId: string,
     correlationId: string,
   ): Promise<COOBriefing> {
-    await this.pool.query('SELECT set_config($1, $2, true)', ['app.current_tenant', organizationId]);
+    await this.pool.query('SELECT set_config($1, $2, true)', [
+      'app.current_tenant',
+      organizationId,
+    ]);
 
     const ctx = await this.aggregator.aggregate(organizationId);
     const { insights, healthScore } = this.insightEngine.analyze(ctx);
@@ -143,7 +146,10 @@ export class DigitalCOOService {
   }
 
   async getBriefingHistory(organizationId: string, limit = 10): Promise<COOBriefing[]> {
-    await this.pool.query('SELECT set_config($1, $2, true)', ['app.current_tenant', organizationId]);
+    await this.pool.query('SELECT set_config($1, $2, true)', [
+      'app.current_tenant',
+      organizationId,
+    ]);
     const result = await this.pool.query<DbBriefing>(
       `SELECT * FROM coo_briefings WHERE organization_id = $1 ORDER BY created_at DESC LIMIT $2`,
       [organizationId, limit],
@@ -152,7 +158,10 @@ export class DigitalCOOService {
   }
 
   async getBriefing(organizationId: string, briefingId: string): Promise<COOBriefing | null> {
-    await this.pool.query('SELECT set_config($1, $2, true)', ['app.current_tenant', organizationId]);
+    await this.pool.query('SELECT set_config($1, $2, true)', [
+      'app.current_tenant',
+      organizationId,
+    ]);
     const result = await this.pool.query<DbBriefing>(
       `SELECT * FROM coo_briefings WHERE organization_id = $1 AND id = $2`,
       [organizationId, briefingId],
@@ -162,7 +171,10 @@ export class DigitalCOOService {
   }
 
   async listActions(organizationId: string, status?: string): Promise<COOAction[]> {
-    await this.pool.query('SELECT set_config($1, $2, true)', ['app.current_tenant', organizationId]);
+    await this.pool.query('SELECT set_config($1, $2, true)', [
+      'app.current_tenant',
+      organizationId,
+    ]);
     const conditions = ['organization_id = $1'];
     const params: unknown[] = [organizationId];
     if (status !== undefined) {
@@ -181,7 +193,10 @@ export class DigitalCOOService {
     actionId: string,
     actorId: string,
   ): Promise<COOAction> {
-    await this.pool.query('SELECT set_config($1, $2, true)', ['app.current_tenant', organizationId]);
+    await this.pool.query('SELECT set_config($1, $2, true)', [
+      'app.current_tenant',
+      organizationId,
+    ]);
     const result = await this.pool.query<DbAction>(
       `UPDATE coo_actions
        SET status = 'approved', approved_by = $1, approved_at = NOW()
@@ -200,7 +215,10 @@ export class DigitalCOOService {
     actorId: string,
     reason: string,
   ): Promise<COOAction> {
-    await this.pool.query('SELECT set_config($1, $2, true)', ['app.current_tenant', organizationId]);
+    await this.pool.query('SELECT set_config($1, $2, true)', [
+      'app.current_tenant',
+      organizationId,
+    ]);
     const result = await this.pool.query<DbAction>(
       `UPDATE coo_actions
        SET status = 'rejected', rejected_by = $1, rejected_at = NOW(), rejection_reason = $2

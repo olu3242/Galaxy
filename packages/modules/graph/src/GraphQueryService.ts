@@ -7,11 +7,7 @@ export class GraphQueryService {
   /**
    * Returns all nodes reachable from a member within the given depth.
    */
-  async getMemberNetwork(
-    orgId: string,
-    memberId: string,
-    depth: number,
-  ): Promise<GraphNode[]> {
+  async getMemberNetwork(orgId: string, memberId: string, depth: number): Promise<GraphNode[]> {
     const memberNode = await this.graphService.getNode(orgId, 'Member', memberId);
     if (memberNode === null) return [];
 
