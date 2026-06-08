@@ -119,9 +119,9 @@ export function analyticsRoutes(fastify: FastifyInstance): void {
       }>,
       reply: FastifyReply,
     ) => {
-      const { organizationId, name, category, generatedBy } = request.body;
+      const { organizationId, name } = request.body;
 
-      if (!organizationId || !name || !category || !generatedBy) {
+      if (!organizationId || !name || !request.body.category || !request.body.generatedBy) {
         return reply
           .status(400)
           .send({ error: 'organizationId, name, category, generatedBy are required' });
@@ -130,8 +130,8 @@ export function analyticsRoutes(fastify: FastifyInstance): void {
       const report = await reportingService.generateReport({
         organizationId,
         name,
-        category,
-        generatedBy,
+        category: request.body.category,
+        generatedBy: request.body.generatedBy,
         ...(request.body.templateId !== undefined ? { templateId: request.body.templateId } : {}),
         ...(request.body.data !== undefined ? { data: request.body.data } : {}),
       });
