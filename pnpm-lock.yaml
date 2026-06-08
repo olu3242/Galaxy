@@ -84,6 +84,9 @@ importers:
       '@galaxy/config':
         specifier: workspace:*
         version: link:../../packages/config
+      '@galaxy/conversation':
+        specifier: workspace:*
+        version: link:../../packages/modules/conversation
       '@galaxy/coo':
         specifier: workspace:*
         version: link:../../packages/modules/coo
@@ -393,6 +396,25 @@ importers:
         specifier: ^9.0.0
         version: 9.39.4(jiti@1.21.7)
 
+  packages/modules/autonomous-intelligence:
+    dependencies:
+      pg:
+        specifier: ^8.11.0
+        version: 8.21.0
+    devDependencies:
+      '@types/node':
+        specifier: ^20.0.0
+        version: 20.19.42
+      '@types/pg':
+        specifier: ^8.11.0
+        version: 8.20.0
+      eslint:
+        specifier: ^9.0.0
+        version: 9.39.4(jiti@1.21.7)
+      typescript:
+        specifier: ^5.3.0
+        version: 5.9.3
+
   packages/modules/benchmarking:
     dependencies:
       pg:
@@ -461,6 +483,25 @@ importers:
       vitest:
         specifier: ^2.0.0
         version: 2.1.9(@types/node@20.19.42)
+
+  packages/modules/conversation:
+    dependencies:
+      pg:
+        specifier: ^8.11.0
+        version: 8.21.0
+    devDependencies:
+      '@types/node':
+        specifier: ^20.0.0
+        version: 20.19.42
+      '@types/pg':
+        specifier: ^8.11.0
+        version: 8.20.0
+      eslint:
+        specifier: ^9.0.0
+        version: 9.39.4(jiti@1.21.7)
+      typescript:
+        specifier: ^5.3.0
+        version: 5.9.3
 
   packages/modules/coo:
     dependencies:

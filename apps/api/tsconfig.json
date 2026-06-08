@@ -40,6 +40,7 @@
     { "path": "../../packages/modules/predictive" },
     { "path": "../../packages/modules/risk-intelligence" },
     { "path": "../../packages/modules/intelligence-network" },
-    { "path": "../../packages/modules/benchmarking" }
+    { "path": "../../packages/modules/benchmarking" },
+    { "path": "../../packages/modules/conversation" }
   ]
 }
