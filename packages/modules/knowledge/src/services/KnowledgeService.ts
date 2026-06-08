@@ -76,7 +76,9 @@ export class KnowledgeService {
       ],
     );
 
-    return rowToDocument(result.rows[0]!);
+    const row = result.rows[0];
+    if (!row) throw new Error('INSERT RETURNING returned no row');
+    return rowToDocument(row);
   }
 
   async updateDocument(input: UpdateDocumentInput): Promise<KnowledgeDocument> {
@@ -88,23 +90,23 @@ export class KnowledgeService {
     let idx = 1;
 
     if (parsed.title !== undefined) {
-      setClauses.push(`title = $${idx++}`);
+      setClauses.push(`title = $${String(idx++)}`);
       params.push(parsed.title);
     }
     if (parsed.content !== undefined) {
-      setClauses.push(`content = $${idx++}`);
+      setClauses.push(`content = $${String(idx++)}`);
       params.push(parsed.content);
     }
     if (parsed.categoryId !== undefined) {
-      setClauses.push(`category_id = $${idx++}`);
+      setClauses.push(`category_id = $${String(idx++)}`);
       params.push(parsed.categoryId);
     }
     if (parsed.tags !== undefined) {
-      setClauses.push(`tags = $${idx++}`);
+      setClauses.push(`tags = $${String(idx++)}`);
       params.push(parsed.tags);
     }
     if (parsed.metadata !== undefined) {
-      setClauses.push(`metadata = $${idx++}`);
+      setClauses.push(`metadata = $${String(idx++)}`);
       params.push(JSON.stringify(parsed.metadata));
     }
 
@@ -114,7 +116,7 @@ export class KnowledgeService {
     const result = await this.pool.query<KnowledgeDocumentRow>(
       `UPDATE knowledge_documents
        SET ${setClauses.join(', ')}
-       WHERE id = $${idx++} AND organization_id = $${idx}
+       WHERE id = $${String(idx++)} AND organization_id = $${String(idx)}
        RETURNING *`,
       params,
     );
@@ -185,11 +187,11 @@ export class KnowledgeService {
     let idx = 2;
 
     if (options.status) {
-      conditions.push(`status = $${idx++}`);
+      conditions.push(`status = $${String(idx++)}`);
       params.push(options.status);
     }
     if (options.categoryId) {
-      conditions.push(`category_id = $${idx++}`);
+      conditions.push(`category_id = $${String(idx++)}`);
       params.push(options.categoryId);
     }
 
@@ -197,7 +199,7 @@ export class KnowledgeService {
     params.push(options.offset ?? 0);
 
     const result = await this.pool.query<KnowledgeDocumentRow>(
-      `SELECT * FROM knowledge_documents WHERE ${conditions.join(' AND ')} ORDER BY updated_at DESC LIMIT $${idx++} OFFSET $${idx}`,
+      `SELECT * FROM knowledge_documents WHERE ${conditions.join(' AND ')} ORDER BY updated_at DESC LIMIT $${String(idx++)} OFFSET $${String(idx)}`,
       params,
     );
 
