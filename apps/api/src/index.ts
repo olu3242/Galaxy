@@ -11,6 +11,10 @@ import { knowledgeRoutes } from './routes/knowledge.js';
 import { intelligenceRoutes } from './routes/intelligence.js';
 import { workflowOsRoutes } from './routes/workflow-os.js';
 import { agentOsRoutes } from './routes/agent-os.js';
+import { billingRoutes } from './routes/billing.js';
+import { developerRoutes } from './routes/developer.js';
+import { marketplaceRoutes } from './routes/marketplace.js';
+import { observabilityRoutes } from './routes/observability.js';
 import { governanceRoutes } from './routes/governance.js';
 import { platformAdminRoutes } from './routes/platform-admin.js';
 
@@ -56,6 +60,10 @@ async function buildApp(): Promise<FastifyInstance> {
   await fastify.register(intelligenceRoutes, { prefix: '/api/v1' });
   await fastify.register(workflowOsRoutes, { prefix: '/api/v1' });
   await fastify.register(agentOsRoutes, { prefix: '/api/v1' });
+  await fastify.register(billingRoutes, { prefix: '/api/v1' });
+  await fastify.register(developerRoutes, { prefix: '/api/v1' });
+  await fastify.register(marketplaceRoutes, { prefix: '/api/v1' });
+  await fastify.register(observabilityRoutes, { prefix: '/api/v1' });
   await fastify.register(governanceRoutes, { prefix: '/api/v1' });
   await fastify.register(platformAdminRoutes, { prefix: '/api/v1' });
 

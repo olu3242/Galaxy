@@ -23,6 +23,8 @@
     { "path": "../../packages/modules/intelligence" },
     { "path": "../../packages/modules/workflow" },
     { "path": "../../packages/modules/agents" },
+    { "path": "../../packages/modules/billing" },
+    { "path": "../../packages/modules/developer" },
     { "path": "../../packages/modules/marketplace" },
     { "path": "../../packages/modules/observability" },
     { "path": "../../packages/modules/governance" },
