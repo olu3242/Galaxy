@@ -5,6 +5,7 @@
 ## Implemented Capabilities
 
 ### Cross-Org Intelligence Network (`@galaxy/intelligence-network`)
+
 - Opt-in contribution system: organizations contribute anonymized metrics
 - Laplace noise injection (differential privacy, ε=1.0) before storing contributions
 - Benchmark aggregation with minimum cohort enforcement (n≥10)
@@ -15,12 +16,14 @@
 - REST API: POST `/intelligence/opt-in`, POST `/intelligence/opt-out`, GET `/intelligence/benchmarks`, `/peer-comparison`, `/recommendations`
 
 ### Benchmarking (`@galaxy/benchmarking`)
+
 - Organization percentile lookup against industry+size_bucket+period cohorts
 - Full industry benchmark report (all metrics for a cohort)
 - Comparative report with summary (metrics above median, overall percentile)
 - REST API: GET `/benchmarking/percentile`, `/benchmarking/report`, `/benchmarking/comparison`
 
 ### Database
+
 - `intelligence_contributions` table with unique constraint (org, metric, period)
 - `intelligence_benchmarks` table (no RLS — cross-org readable)
 - Anonymization noise stored per contribution for auditability

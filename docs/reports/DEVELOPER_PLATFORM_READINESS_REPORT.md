@@ -5,6 +5,7 @@
 ## Implemented Capabilities
 
 ### Developer Platform (`@galaxy/developer`)
+
 - API key management with scoped permissions
 - OAuth2 application registration (client_id/client_secret generation)
 - Webhook endpoint registration with secret signing
@@ -13,6 +14,7 @@
 - REST API: `/developer/api-keys`, `/developer/apps`, `/developer/webhooks`, `/developer/sandboxes`
 
 ### API Gateway Integration
+
 - Route versioning supporting v1/v2/v3
 - Rate limiting tiers per developer plan
 - Request analytics for usage monitoring

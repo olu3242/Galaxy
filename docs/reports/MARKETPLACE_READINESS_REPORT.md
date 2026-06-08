@@ -5,6 +5,7 @@
 ## Implemented Capabilities
 
 ### Marketplace Core (`@galaxy/marketplace`)
+
 - Marketplace item listing with categories (workflow/agent/integration/knowledge/solution-pack)
 - Publisher profile management with verification status
 - Item installation tracking per organization
@@ -13,6 +14,7 @@
 - REST API: full CRUD on items, publishers, installations, billing, ratings
 
 ### Solution Packs (Enterprise Extension)
+
 - Curated solution packs with industry classification
 - One-click installation with workflow template provisioning
 - Template library for workflow bootstrapping

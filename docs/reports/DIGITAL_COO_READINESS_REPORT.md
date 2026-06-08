@@ -5,6 +5,7 @@
 ## Implemented Capabilities
 
 ### Digital COO Service (`@galaxy/coo`)
+
 - Context aggregation across workflow stats, approval backlog, task load, risk summary
 - Insight engine identifying 5 categories: SLA breach risk, approval bottleneck, task overload, compliance issue, general
 - Health score computation (starts at 100, deducts per insight severity)
@@ -16,6 +17,7 @@
 - REST API: POST `/coo/briefing`, GET `/coo/briefings`, PUT `/coo/actions/:id/approve`, `/coo/actions/:id/reject`, PUT `/coo/actions/:id/execute`
 
 ### Org Memory (`@galaxy/org-memory`)
+
 - Memory types: decision, pattern, lesson, preference, constraint
 - Confidence scoring and validity management
 - Tag-based recall with type/validity filtering
@@ -23,6 +25,7 @@
 - REST API: POST `/org-memory`, GET `/org-memory`, GET `/org-memory/stats`, PUT `/org-memory/:id/invalidate`
 
 ### Database
+
 - `coo_briefings` table with full briefing data JSONB
 - `coo_actions` table with approval workflow columns
 - `org_memories` table with relevance tags array and confidence score
