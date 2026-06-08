@@ -9,10 +9,7 @@ import type { AgentStatus, AgentType } from '@galaxy/autonomous-intelligence';
 export function autonomousIntelligenceRoutes(fastify: FastifyInstance): void {
   fastify.get(
     '/autonomous-intelligence/agents',
-    async (
-      request: FastifyRequest<{ Querystring: { orgId: string } }>,
-      reply: FastifyReply,
-    ) => {
+    async (request: FastifyRequest<{ Querystring: { orgId: string } }>, reply: FastifyReply) => {
       const { orgId } = request.query;
       const service = new AgentRegistryService(fastify.pg);
       const agents = await service.listAgents(orgId);
