@@ -67,9 +67,9 @@ export class PolicyRuleService {
 
   async deleteRule(orgId: string, ruleId: string): Promise<void> {
     await this.setTenantContext(orgId);
-    await this.pool.query(
-      'DELETE FROM policy_rules WHERE organization_id = $1 AND id = $2',
-      [orgId, ruleId],
-    );
+    await this.pool.query('DELETE FROM policy_rules WHERE organization_id = $1 AND id = $2', [
+      orgId,
+      ruleId,
+    ]);
   }
 }

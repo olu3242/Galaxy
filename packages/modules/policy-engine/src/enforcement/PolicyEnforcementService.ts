@@ -41,17 +41,19 @@ function evaluateOperator(
     case 'not_equals':
       return fieldValue !== ruleValue;
     case 'contains':
-      return typeof fieldValue === 'string' &&
+      return (
+        typeof fieldValue === 'string' &&
         typeof ruleValue === 'string' &&
-        fieldValue.includes(ruleValue);
+        fieldValue.includes(ruleValue)
+      );
     case 'greater_than':
-      return typeof fieldValue === 'number' &&
-        typeof ruleValue === 'number' &&
-        fieldValue > ruleValue;
+      return (
+        typeof fieldValue === 'number' && typeof ruleValue === 'number' && fieldValue > ruleValue
+      );
     case 'less_than':
-      return typeof fieldValue === 'number' &&
-        typeof ruleValue === 'number' &&
-        fieldValue < ruleValue;
+      return (
+        typeof fieldValue === 'number' && typeof ruleValue === 'number' && fieldValue < ruleValue
+      );
     case 'in':
       return Array.isArray(ruleValue) && ruleValue.includes(fieldValue);
     case 'not_in':
@@ -89,15 +91,24 @@ export class PolicyEnforcementService {
     const policyResult = await this.pool.query<{
       enforcement_mode: string;
       status: string;
-    }>(
-      'SELECT enforcement_mode, status FROM policies WHERE organization_id = $1 AND id = $2',
-      [orgId, policyId],
-    );
+    }>('SELECT enforcement_mode, status FROM policies WHERE organization_id = $1 AND id = $2', [
+      orgId,
+      policyId,
+    ]);
     const policyRow = policyResult.rows[0];
     if (!policyRow) throw new Error('Policy not found');
 
     if (policyRow.status !== 'active' || policyRow.enforcement_mode === 'disabled') {
-      await this.logEnforcement(orgId, policyId, null, resourceType, resourceId, 'evaluate', 'allowed', context);
+      await this.logEnforcement(
+        orgId,
+        policyId,
+        null,
+        resourceType,
+        resourceId,
+        'evaluate',
+        'allowed',
+        context,
+      );
       return { outcome: 'allowed', reason: 'Policy not active or disabled' };
     }
 
@@ -123,7 +134,16 @@ export class PolicyEnforcementService {
       }
     }
 
-    await this.logEnforcement(orgId, policyId, matchedRuleId, resourceType, resourceId, 'evaluate', outcome, context);
+    await this.logEnforcement(
+      orgId,
+      policyId,
+      matchedRuleId,
+      resourceType,
+      resourceId,
+      'evaluate',
+      outcome,
+      context,
+    );
     return { outcome, ...(reason !== undefined ? { reason } : {}) };
   }
 

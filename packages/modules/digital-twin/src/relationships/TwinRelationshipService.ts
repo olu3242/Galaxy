@@ -48,7 +48,14 @@ export class TwinRelationshipService {
          (organization_id, source_node_id, target_node_id, relationship_type, weight, properties)
        VALUES ($1, $2, $3, $4, $5, $6)
        RETURNING *`,
-      [orgId, sourceNodeId, targetNodeId, relationshipType, effectiveWeight, JSON.stringify(effectiveProperties)],
+      [
+        orgId,
+        sourceNodeId,
+        targetNodeId,
+        relationshipType,
+        effectiveWeight,
+        JSON.stringify(effectiveProperties),
+      ],
     );
     const row = result.rows[0];
     if (!row) throw new Error('Failed to create twin relationship');
@@ -68,9 +75,9 @@ export class TwinRelationshipService {
 
   async deleteRelationship(orgId: string, relationshipId: string): Promise<void> {
     await this.setTenantContext(orgId);
-    await this.pool.query(
-      'DELETE FROM twin_relationships WHERE organization_id = $1 AND id = $2',
-      [orgId, relationshipId],
-    );
+    await this.pool.query('DELETE FROM twin_relationships WHERE organization_id = $1 AND id = $2', [
+      orgId,
+      relationshipId,
+    ]);
   }
 }

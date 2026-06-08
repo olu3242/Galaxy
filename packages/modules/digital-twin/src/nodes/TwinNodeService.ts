@@ -67,11 +67,7 @@ export class TwinNodeService {
     return rowToNode(row);
   }
 
-  async listNodes(
-    orgId: string,
-    nodeType?: TwinNodeType,
-    limit?: number,
-  ): Promise<TwinNode[]> {
+  async listNodes(orgId: string, nodeType?: TwinNodeType, limit?: number): Promise<TwinNode[]> {
     await this.setTenantContext(orgId);
     const effectiveLimit = limit ?? 100;
     let result;

@@ -37,10 +37,7 @@ export function policyEngineRoutes(fastify: FastifyInstance): void {
   // GET /policies
   fastify.get(
     '/policies',
-    async (
-      request: FastifyRequest<{ Querystring: { orgId: string } }>,
-      reply: FastifyReply,
-    ) => {
+    async (request: FastifyRequest<{ Querystring: { orgId: string } }>, reply: FastifyReply) => {
       const { orgId } = request.query;
       const svc = new PolicyService(fastify.pg);
       const policies = await svc.listPolicies(orgId);

@@ -60,7 +60,8 @@ export class TwinSnapshotService {
 
     const nodeCount = nodeCountRow ? parseInt(nodeCountRow.count, 10) : 0;
     const relationshipCount = relCountRow ? parseInt(relCountRow.count, 10) : 0;
-    const healthScore = avgRow?.avg !== null && avgRow?.avg !== undefined ? parseFloat(avgRow.avg) : 1.0;
+    const healthScore =
+      avgRow?.avg !== null && avgRow?.avg !== undefined ? parseFloat(avgRow.avg) : 1.0;
 
     const insights: Record<string, unknown> = {
       nodeCount,

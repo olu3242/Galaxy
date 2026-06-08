@@ -1,9 +1,5 @@
 import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
-import {
-  OrgDNAService,
-  OrgLanguageService,
-  IndustryBlueprintService,
-} from '@galaxy/org-dna';
+import { OrgDNAService, OrgLanguageService, IndustryBlueprintService } from '@galaxy/org-dna';
 
 export function orgDnaRoutes(fastify: FastifyInstance): void {
   // POST /org-dna
@@ -46,10 +42,7 @@ export function orgDnaRoutes(fastify: FastifyInstance): void {
   // GET /org-dna
   fastify.get(
     '/org-dna',
-    async (
-      request: FastifyRequest<{ Querystring: { orgId: string } }>,
-      reply: FastifyReply,
-    ) => {
+    async (request: FastifyRequest<{ Querystring: { orgId: string } }>, reply: FastifyReply) => {
       const { orgId } = request.query;
       const svc = new OrgDNAService(fastify.pg);
       const dna = await svc.getDNA(orgId);
@@ -80,10 +73,7 @@ export function orgDnaRoutes(fastify: FastifyInstance): void {
   // GET /org-dna/completeness
   fastify.get(
     '/org-dna/completeness',
-    async (
-      request: FastifyRequest<{ Querystring: { orgId: string } }>,
-      reply: FastifyReply,
-    ) => {
+    async (request: FastifyRequest<{ Querystring: { orgId: string } }>, reply: FastifyReply) => {
       const { orgId } = request.query;
       const svc = new OrgDNAService(fastify.pg);
       const score = await svc.computeCompleteness(orgId);
@@ -116,10 +106,7 @@ export function orgDnaRoutes(fastify: FastifyInstance): void {
   // GET /org-dna/language
   fastify.get(
     '/org-dna/language',
-    async (
-      request: FastifyRequest<{ Querystring: { orgId: string } }>,
-      reply: FastifyReply,
-    ) => {
+    async (request: FastifyRequest<{ Querystring: { orgId: string } }>, reply: FastifyReply) => {
       const { orgId } = request.query;
       const svc = new OrgLanguageService(fastify.pg);
       const terms = await svc.getTerms(orgId);
@@ -160,22 +147,16 @@ export function orgDnaRoutes(fastify: FastifyInstance): void {
   );
 
   // GET /org-dna/blueprints
-  fastify.get(
-    '/org-dna/blueprints',
-    async (_request: FastifyRequest, reply: FastifyReply) => {
-      const svc = new IndustryBlueprintService(fastify.pg);
-      const blueprints = await svc.listBlueprints();
-      return reply.send(blueprints);
-    },
-  );
+  fastify.get('/org-dna/blueprints', async (_request: FastifyRequest, reply: FastifyReply) => {
+    const svc = new IndustryBlueprintService(fastify.pg);
+    const blueprints = await svc.listBlueprints();
+    return reply.send(blueprints);
+  });
 
   // GET /org-dna/blueprints/:industry
   fastify.get(
     '/org-dna/blueprints/:industry',
-    async (
-      request: FastifyRequest<{ Params: { industry: string } }>,
-      reply: FastifyReply,
-    ) => {
+    async (request: FastifyRequest<{ Params: { industry: string } }>, reply: FastifyReply) => {
       const { industry } = request.params;
       const svc = new IndustryBlueprintService(fastify.pg);
       const blueprint = await svc.getBlueprint(industry);
