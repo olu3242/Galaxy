@@ -11,6 +11,7 @@ Sprint 3 delivers three new OS modules — Analytics OS, Knowledge OS, and the O
 Provides metrics recording, KPI tracking, dashboard management, and report generation.
 
 **Services:**
+
 - `MetricsService` — records dimensional metrics (workflow, communication, people) with period-based aggregation
 - `KPIService` — manages KPI targets and automatically evaluates status (on_track / at_risk / off_track) based on current vs target value ratio
 - `DashboardService` — manages dashboard widgets across 7 categories (executive, operations, department, workflow, communication, compliance, platform)
@@ -18,6 +19,7 @@ Provides metrics recording, KPI tracking, dashboard management, and report gener
 - `AnalyticsService` — event-driven orchestrator: maps `workflow.completed`, `message.sent`, `member.created` events to metric recordings
 
 **API Routes (`/api/v1/analytics`):**
+
 - `GET /analytics/metrics` — list metrics with category/period filters
 - `GET /analytics/kpis` — list all KPIs for an organization
 - `GET /analytics/dashboards/:category` — fetch dashboard with widgets for a category
@@ -28,12 +30,14 @@ Provides metrics recording, KPI tracking, dashboard management, and report gener
 Full document lifecycle management with versioning, publishing workflow, and full-text search.
 
 **Services:**
+
 - `KnowledgeService` — CRUD for documents with tenant isolation; status transitions: draft → published → archived
 - `KnowledgeSearchService` — PostgreSQL full-text search using `tsvector`/`tsquery`, result ranking, permission filtering, search audit logging
 - `KnowledgeVersionService` — snapshot-based versioning with version restore
 - `KnowledgePublishingService` — publish/unpublish with status validation
 
 **API Routes (`/api/v1/knowledge`):**
+
 - `POST /knowledge/documents` — create document
 - `GET /knowledge/documents` — list with status/category filters
 - `GET /knowledge/documents/:id` — get single document
@@ -47,6 +51,7 @@ Full document lifecycle management with versioning, publishing workflow, and ful
 Derives health scores, insights, recommendations, and risk indicators from operational signals.
 
 **Services:**
+
 - `HealthScoreService` — computes 5 health dimensions: organization, department, workflow (completion rate), communication (message volume), engagement (active member ratio)
 - `InsightService` — stores and retrieves typed insight snapshots (operational, department, workflow, engagement, compliance, risk, executive)
 - `RecommendationService` — generates prioritized recommendations from health scores; auto-prioritizes based on score threshold (< 50 → high, 50–75 → medium, > 75 → no-op)
@@ -54,6 +59,7 @@ Derives health scores, insights, recommendations, and risk indicators from opera
 - `OperationalIntelligenceService` — event orchestrator consuming 10 event types and routing to appropriate health/insight/risk computations
 
 **API Routes (`/api/v1/intelligence`):**
+
 - `GET /intelligence/health` — compute health score (by category)
 - `GET /intelligence/insights` — list insight snapshots (by type)
 - `GET /intelligence/recommendations` — prioritized recommendation list
@@ -64,6 +70,7 @@ Derives health scores, insights, recommendations, and risk indicators from opera
 8 migrations added covering: metrics, KPIs, reports + templates, dashboard widgets, knowledge documents + versions + activities, knowledge categories + tags, health scores + risk indicators + recommendations, intelligence snapshots.
 
 All tables:
+
 - Include `organization_id UUID NOT NULL`
 - Have RLS enabled with `tenant_isolation` policy using `current_setting('app.current_tenant', true)`
 - Use `gen_random_uuid()` for PKs
@@ -72,6 +79,7 @@ All tables:
 ### Security Compliance
 
 All services follow the CLAUDE.md security rules:
+
 1. No SQL string interpolation — all values use `$1, $2` parameters
 2. Tenant context set via `SELECT set_config($1, $2, true)` before every query
 3. TypeScript strict mode — no `any`, no `@ts-ignore`

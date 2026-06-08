@@ -40,6 +40,7 @@ Sprint 1 implemented the Identity OS, Event Fabric, People OS, database migratio
 ### Identity OS (`packages/modules/identity/src/`)
 
 **Services:**
+
 - `TenantService.ts` — setTenantContext, assertOrganizationActive, withTenant
 - `OrganizationService.ts` — create, getById, getBySlug, update, activate, suspend
 - `MembershipService.ts` — addMember, removeMember, getMembership, getMemberships, updateRole
@@ -48,12 +49,14 @@ Sprint 1 implemented the Identity OS, Event Fabric, People OS, database migratio
 - `IdentityService.ts` — provisionOrganization (creates org + roles + owner membership)
 
 **Auth:**
+
 - `AuthProvider.ts` — AuthProvider interface, EmailPasswordCredentials type
 - `crypto.ts` — hashPassword, verifyPassword using Node.js scrypt
 - `EmailPasswordProvider.ts` — timing-safe email+password authentication
 - `AuthService.ts` — provider registry, delegates authentication
 
 **Audit:**
+
 - `AuditRepository.ts` — INSERT-only; update() and delete() throw at application layer
 - `AuditService.ts` — records audit events, delegates to repository
 - `AuditEventPublisher.ts` — publishes audit.recorded GalaxyEvent

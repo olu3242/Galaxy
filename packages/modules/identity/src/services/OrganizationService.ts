@@ -38,7 +38,8 @@ function rowToOrganization(row: OrgRow): Organization {
     id: row.id,
     name: row.name,
     slug: row.slug,
-    industryType: (row.settings.industryType as Organization['industryType'] | undefined) ?? 'association',
+    industryType:
+      (row.settings.industryType as Organization['industryType'] | undefined) ?? 'association',
     planTier: (row.tier as Organization['planTier'] | undefined) ?? 'starter',
     whatsappPhone: row.waba_phone_number_id,
     settings: row.settings,
