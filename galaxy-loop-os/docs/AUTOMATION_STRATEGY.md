@@ -1,5 +1,7 @@
 # GALAXY LOOP OS™
+
 ## Advanced Automation Strategy
+
 ### Version 1.0
 
 ---
@@ -25,16 +27,16 @@ Every WhatsApp message, every approval response, every form submission, every ti
 
 ### Trigger Types
 
-| Trigger Type | Example | Response |
-|---|---|---|
-| Message Trigger | Member sends "LEAVE" to WhatsApp | Leave request workflow starts |
-| Button Response | Member taps "Approve" in WhatsApp | Approval workflow advances |
-| Time Trigger | Every Monday 9AM | Weekly report generated |
-| SLA Trigger | Workflow overdue by 24h | Escalation triggered |
-| Threshold Trigger | Budget 80% consumed | Finance Agent alerts CFO |
-| Event Trigger | `member.registered` event fires | Onboarding loop starts |
-| Loop Trigger | Loop verification due | Follow-up WhatsApp sent |
-| Agent Trigger | Anomaly detected | Compliance Agent investigates |
+| Trigger Type      | Example                           | Response                      |
+| ----------------- | --------------------------------- | ----------------------------- |
+| Message Trigger   | Member sends "LEAVE" to WhatsApp  | Leave request workflow starts |
+| Button Response   | Member taps "Approve" in WhatsApp | Approval workflow advances    |
+| Time Trigger      | Every Monday 9AM                  | Weekly report generated       |
+| SLA Trigger       | Workflow overdue by 24h           | Escalation triggered          |
+| Threshold Trigger | Budget 80% consumed               | Finance Agent alerts CFO      |
+| Event Trigger     | `member.registered` event fires   | Onboarding loop starts        |
+| Loop Trigger      | Loop verification due             | Follow-up WhatsApp sent       |
+| Agent Trigger     | Anomaly detected                  | Compliance Agent investigates |
 
 ### WhatsApp Trigger Architecture
 
@@ -74,51 +76,51 @@ Every workflow supports multi-branch conditional logic. Decisions are made progr
 ```javascript
 // Workflow DSL Example: Expense Approval
 const expenseWorkflow = {
-  name: "Expense Approval",
+  name: 'Expense Approval',
   steps: [
     {
-      id: "submit",
-      type: "form",
-      channel: "whatsapp",
-      fields: ["amount", "category", "receipt", "description"]
+      id: 'submit',
+      type: 'form',
+      channel: 'whatsapp',
+      fields: ['amount', 'category', 'receipt', 'description'],
     },
     {
-      id: "route",
-      type: "decision",
+      id: 'route',
+      type: 'decision',
       conditions: [
         {
-          if: "amount < 100",
-          then: "auto_approve"
+          if: 'amount < 100',
+          then: 'auto_approve',
         },
         {
-          if: "amount >= 100 AND amount < 1000",
-          then: "line_manager_approval"
+          if: 'amount >= 100 AND amount < 1000',
+          then: 'line_manager_approval',
         },
         {
-          if: "amount >= 1000 AND amount < 10000",
-          then: "department_head_approval"
+          if: 'amount >= 1000 AND amount < 10000',
+          then: 'department_head_approval',
         },
         {
-          if: "amount >= 10000",
-          then: "executive_approval_with_finance_agent_review"
-        }
-      ]
+          if: 'amount >= 10000',
+          then: 'executive_approval_with_finance_agent_review',
+        },
+      ],
     },
     {
-      id: "auto_approve",
-      type: "action",
-      action: "approve_and_notify",
-      loop: { enabled: true, verification: "RECEIPT_CONFIRMATION" }
+      id: 'auto_approve',
+      type: 'action',
+      action: 'approve_and_notify',
+      loop: { enabled: true, verification: 'RECEIPT_CONFIRMATION' },
     },
     {
-      id: "line_manager_approval",
-      type: "approval",
-      approver: "role:line_manager",
-      sla: "PT24H",
-      escalation: "department_head",
-      channel: "whatsapp"
-    }
-  ]
+      id: 'line_manager_approval',
+      type: 'approval',
+      approver: 'role:line_manager',
+      sla: 'PT24H',
+      escalation: 'department_head',
+      channel: 'whatsapp',
+    },
+  ],
 };
 ```
 
@@ -127,11 +129,11 @@ const expenseWorkflow = {
 ```javascript
 // Escalation automation fires when:
 escalation_rules = [
-  { trigger: "sla_breach",     action: "notify_supervisor",    delay: "PT0H"  },
-  { trigger: "sla_breach_2x",  action: "notify_department_head", delay: "PT2H" },
-  { trigger: "sla_breach_3x",  action: "notify_executive_team", delay: "PT8H" },
-  { trigger: "critical_flag",  action: "emergency_escalation",  delay: "PT0H"  },
-]
+  { trigger: 'sla_breach', action: 'notify_supervisor', delay: 'PT0H' },
+  { trigger: 'sla_breach_2x', action: 'notify_department_head', delay: 'PT2H' },
+  { trigger: 'sla_breach_3x', action: 'notify_executive_team', delay: 'PT8H' },
+  { trigger: 'critical_flag', action: 'emergency_escalation', delay: 'PT0H' },
+];
 ```
 
 ---
@@ -191,7 +193,7 @@ ACTION:
   5. If risk > 70: add fraud flag + require additional approval
   6. If risk > 90: auto-reject + notify Finance Director
   7. Append analysis to workflow instance metadata
-  
+
 TRIGGER: End of month (28th of each month)
 ACTION:
   1. Generate budget utilization report per department
@@ -276,7 +278,7 @@ Timeline:
   T+8h:   No response. SLA at 50%. Gentle escalation to manager.
   T+24h:  SLA breached. Department Head automatically notified.
   T+48h:  Critical SLA. Executive Agent flags in Mission Control.
-  
+
   After approval:
   T+approval:   Member notified. HR system updated.
   T+return day: Automated WhatsApp "Welcome back" to member.
@@ -313,36 +315,36 @@ class AutomationGovernanceGuard {
 
 ### Church OS Automations
 
-| Automation | Trigger | Action |
-|---|---|---|
-| Sunday Attendance | Location check-in | Mark attendance, send post-service message |
-| Tithe Reminder | Monthly recurring | Personalized giving reminder via WhatsApp |
-| Prayer Request Loop | "PRAYER" keyword | Log request, assign to prayer team, follow up in 7 days |
-| Member Birthday | Birthday date match | Personalized WhatsApp greeting from pastor |
-| New Member Onboarding | member.registered | 30-day onboarding loop (welcome → orientation → integration) |
+| Automation            | Trigger             | Action                                                       |
+| --------------------- | ------------------- | ------------------------------------------------------------ |
+| Sunday Attendance     | Location check-in   | Mark attendance, send post-service message                   |
+| Tithe Reminder        | Monthly recurring   | Personalized giving reminder via WhatsApp                    |
+| Prayer Request Loop   | "PRAYER" keyword    | Log request, assign to prayer team, follow up in 7 days      |
+| Member Birthday       | Birthday date match | Personalized WhatsApp greeting from pastor                   |
+| New Member Onboarding | member.registered   | 30-day onboarding loop (welcome → orientation → integration) |
 
 ### NGO OS Automations
 
-| Automation | Trigger | Action |
-|---|---|---|
-| Grant Deadline Alert | 30 days before deadline | Notify program team, create submission checklist workflow |
-| Field Report Loop | Weekly cron | Request field update from all active field officers |
-| Beneficiary Follow-up | 30 days post-intervention | Automated follow-up loop, outcome capture |
-| Donor Acknowledgment | Donation recorded | Personalized thank-you via WhatsApp within 2h |
+| Automation            | Trigger                   | Action                                                    |
+| --------------------- | ------------------------- | --------------------------------------------------------- |
+| Grant Deadline Alert  | 30 days before deadline   | Notify program team, create submission checklist workflow |
+| Field Report Loop     | Weekly cron               | Request field update from all active field officers       |
+| Beneficiary Follow-up | 30 days post-intervention | Automated follow-up loop, outcome capture                 |
+| Donor Acknowledgment  | Donation recorded         | Personalized thank-you via WhatsApp within 2h             |
 
 ---
 
 ## AUTOMATION PERFORMANCE METRICS
 
-| Metric | Target |
-|---|---|
-| Trigger latency (event → workflow start) | < 2 seconds |
-| Agent response time | < 15 seconds |
-| Loop follow-up delivery | < 30 seconds of scheduled time |
-| Automation success rate | > 95% |
-| Auto-optimization improvement rate | 15-40% per optimized workflow |
-| False positive fraud flags | < 5% |
+| Metric                                   | Target                         |
+| ---------------------------------------- | ------------------------------ |
+| Trigger latency (event → workflow start) | < 2 seconds                    |
+| Agent response time                      | < 15 seconds                   |
+| Loop follow-up delivery                  | < 30 seconds of scheduled time |
+| Automation success rate                  | > 95%                          |
+| Auto-optimization improvement rate       | 15-40% per optimized workflow  |
+| False positive fraud flags               | < 5%                           |
 
 ---
 
-*Document Version: 1.0 | Status: Strategy Draft*
+_Document Version: 1.0 | Status: Strategy Draft_

@@ -1,5 +1,7 @@
 # GALAXY LOOP OS™
+
 ## Operating System Structure
+
 ### Complete Module Reference
 
 ---
@@ -53,19 +55,20 @@ Incoming Signal (WhatsApp / API / Cron)
 
 **Core Components:**
 
-| Component | Responsibility |
-|---|---|
+| Component             | Responsibility                                     |
+| --------------------- | -------------------------------------------------- |
 | Organization Registry | Create, configure, and manage organization tenants |
-| Department Manager | Hierarchical department structure |
-| Team Manager | Teams within departments |
-| Member Registry | All person records across the org |
-| Role Engine | Role definitions and assignments |
-| Permission Matrix | What each role can do in each context |
-| Group Manager | Dynamic and static member groups |
-| Device Trust | Trusted device registry per member |
-| WhatsApp Identity | Phone number ↔ member mapping |
+| Department Manager    | Hierarchical department structure                  |
+| Team Manager          | Teams within departments                           |
+| Member Registry       | All person records across the org                  |
+| Role Engine           | Role definitions and assignments                   |
+| Permission Matrix     | What each role can do in each context              |
+| Group Manager         | Dynamic and static member groups                   |
+| Device Trust          | Trusted device registry per member                 |
+| WhatsApp Identity     | Phone number ↔ member mapping                      |
 
 **Permission Model:**
+
 ```
 Organization
   └── Department (inherits org permissions + dept-specific)
@@ -86,6 +89,7 @@ Permission Types:
 **Purpose:** Complete organizational people intelligence system.
 
 **360° Member Record:**
+
 ```
 Member Record
   ├── Identity
@@ -126,6 +130,7 @@ Member Record
 **Purpose:** All organizational communication flows through and is tracked by Galaxy.
 
 **Channel Architecture:**
+
 ```
 WhatsApp Cloud API (Primary)
   ├── Inbound Handler → Event Factory
@@ -144,18 +149,19 @@ Push Notifications (Enterprise)
 ```
 
 **WhatsApp Message → Event Conversion:**
+
 ```javascript
 // Every inbound message triggers this pipeline
 class MessageEventFactory {
   async process(inboundMessage: WhatsAppMessage): Promise<PlatformEvent[]> {
     const events = [];
-    
+
     // Always emit base event
     events.push({ type: 'message.received', ...baseContext });
-    
+
     // Intent classification
     const intent = await this.classifyIntent(inboundMessage.text);
-    
+
     // Emit intent-specific event
     switch (intent.type) {
       case 'workflow_trigger':
@@ -171,7 +177,7 @@ class MessageEventFactory {
         events.push({ type: 'incident.reported', severity: intent.severity });
         break;
     }
-    
+
     return events;
   }
 }
@@ -184,6 +190,7 @@ class MessageEventFactory {
 **Purpose:** Model and execute every organizational business process.
 
 **Standard Workflow Templates:**
+
 ```
 Leave Management
   ├── Steps: Submit → Line Manager → HR Review → Approved/Rejected
@@ -211,6 +218,7 @@ Donation/Contribution (Church/NGO)
 ```
 
 **Workflow State Machine:**
+
 ```
 DRAFT → SUBMITTED → UNDER_REVIEW → PENDING_APPROVAL
                                          ↓
@@ -229,15 +237,16 @@ DRAFT → SUBMITTED → UNDER_REVIEW → PENDING_APPROVAL
 
 **Governance Engines:**
 
-| Engine | Function |
-|---|---|
-| Policy Engine | Defines and enforces organizational rules |
-| Approval Engine | Multi-level approval chain management |
+| Engine            | Function                                  |
+| ----------------- | ----------------------------------------- |
+| Policy Engine     | Defines and enforces organizational rules |
+| Approval Engine   | Multi-level approval chain management     |
 | Compliance Engine | Checks operations against active policies |
-| Audit Engine | Writes immutable, tamper-proof audit logs |
-| Risk Engine | Scores operational risk in real-time |
+| Audit Engine      | Writes immutable, tamper-proof audit logs |
+| Risk Engine       | Scores operational risk in real-time      |
 
 **Policy Types:**
+
 - **Approval Limits** — Expense > $1000 requires CFO approval
 - **Delegated Authority** — During leave, authority delegates to deputy
 - **Compliance Checks** — All grant disbursements require 2 approvers
@@ -251,6 +260,7 @@ DRAFT → SUBMITTED → UNDER_REVIEW → PENDING_APPROVAL
 **Purpose:** Organizational memory that never forgets.
 
 **Architecture:**
+
 ```
 Document Ingestion
   └── PDF, Word, WhatsApp messages, Meeting notes
@@ -268,6 +278,7 @@ Document Ingestion
 ```
 
 **Knowledge Agent Queries (examples):**
+
 - "What is our leave policy?"
 - "Show me all expenses over $500 from last quarter"
 - "What decisions were made in the March board meeting?"
@@ -279,21 +290,22 @@ Document Ingestion
 
 **Dashboard Hierarchy:**
 
-| Dashboard | Audience | Key Metrics |
-|---|---|---|
-| Executive | CEO, Board | Org health score, workflow velocity, engagement rate |
-| Department | Department Heads | Team performance, open tasks, workflow completion |
-| Operations | COO, Operations | Active workflows, SLA compliance, escalations |
-| Finance | CFO, Finance Team | Spend vs budget, pending approvals, anomalies |
-| HR | HR Director | Attendance, engagement, onboarding funnel |
-| Loop Analytics | All Admins | Loop success rate, optimization opportunities |
-| Agent Performance | IT, Exec | Agent action success, learning rate, coverage |
+| Dashboard         | Audience          | Key Metrics                                          |
+| ----------------- | ----------------- | ---------------------------------------------------- |
+| Executive         | CEO, Board        | Org health score, workflow velocity, engagement rate |
+| Department        | Department Heads  | Team performance, open tasks, workflow completion    |
+| Operations        | COO, Operations   | Active workflows, SLA compliance, escalations        |
+| Finance           | CFO, Finance Team | Spend vs budget, pending approvals, anomalies        |
+| HR                | HR Director       | Attendance, engagement, onboarding funnel            |
+| Loop Analytics    | All Admins        | Loop success rate, optimization opportunities        |
+| Agent Performance | IT, Exec          | Agent action success, learning rate, coverage        |
 
 ---
 
 ### MODULE 8: AGENT OS
 
 **Agent Execution Model:**
+
 ```
 Trigger (Event / Cron / Manual)
     ↓
@@ -363,6 +375,7 @@ LOOP LIFECYCLE (per workflow instance)
 ```
 
 **Loop Types by Industry:**
+
 ```
 Church OS:
   ├── Tithe Loop (pledge → give → acknowledge → follow-up)
@@ -402,4 +415,4 @@ Runtime Kernel:  ● HEALTHY (queue depth: 14)
 
 ---
 
-*Document Version: 1.0 | OS Structure Reference*
+_Document Version: 1.0 | OS Structure Reference_

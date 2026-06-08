@@ -1,5 +1,7 @@
 # GALAXY LOOP OS™
+
 ## Product Requirements Document (PRD)
+
 ### Version 1.0 | Confidential
 
 ---
@@ -9,19 +11,21 @@
 Galaxy is a **self-improving Organization Operating System (Org OS)** that uses WhatsApp as its primary interaction layer while maintaining a centralized, enterprise-grade source-of-truth platform.
 
 Galaxy is NOT:
+
 - A CRM
 - A messaging application
 - A WhatsApp chatbot
 - A workflow tool bolted onto chat
 
 Galaxy IS:
+
 - A complete Organization Operating System
 - A continuous learning and improvement platform
 - An enterprise governance engine
 - An AI-agent-powered operational intelligence system
 - The operating system that organizations already live in — WhatsApp — made enterprise-grade
 
-**Tagline:** *"Run Your Organization From WhatsApp."*
+**Tagline:** _"Run Your Organization From WhatsApp."_
 
 ---
 
@@ -38,23 +42,25 @@ Galaxy converts this existing behavior into structured, governed, auditable orga
 ## TARGET MARKETS
 
 ### Primary Markets
+
 - **Africa** — High WhatsApp penetration, digitizing organizations
 - **Caribbean** — SME cooperatives, government programs
 - **Latin America** — Community organizations, NGOs
 - **South/Southeast Asia** — Religious institutions, cooperatives
 
 ### Industry Verticals
-| Template | Primary Buyer | Key Pain Points |
-|---|---|---|
-| Church OS | Pastors, Church Admins | Member management, giving, attendance |
-| NGO OS | Executive Directors, Field Directors | Grant tracking, beneficiary management |
-| School OS | Head Teachers, Bursars | Fee tracking, attendance, parent comms |
-| Cooperative OS | Board Chairs, CEOs | Savings, loans, member governance |
-| Political OS | Campaign Managers | Constituent tracking, mobilization |
-| Association OS | Secretary Generals | Dues, AGMs, compliance |
-| Creator Community OS | Community Managers | Member tiers, monetization |
-| Public Safety OS | Commanders, Incident Managers | Dispatch, incident reporting |
-| Government Program OS | Program Directors | Enrollment, delivery, impact |
+
+| Template              | Primary Buyer                        | Key Pain Points                        |
+| --------------------- | ------------------------------------ | -------------------------------------- |
+| Church OS             | Pastors, Church Admins               | Member management, giving, attendance  |
+| NGO OS                | Executive Directors, Field Directors | Grant tracking, beneficiary management |
+| School OS             | Head Teachers, Bursars               | Fee tracking, attendance, parent comms |
+| Cooperative OS        | Board Chairs, CEOs                   | Savings, loans, member governance      |
+| Political OS          | Campaign Managers                    | Constituent tracking, mobilization     |
+| Association OS        | Secretary Generals                   | Dues, AGMs, compliance                 |
+| Creator Community OS  | Community Managers                   | Member tiers, monetization             |
+| Public Safety OS      | Commanders, Incident Managers        | Dispatch, incident reporting           |
+| Government Program OS | Program Directors                    | Enrollment, delivery, impact           |
 
 ---
 
@@ -80,6 +86,7 @@ Galaxy converts this existing behavior into structured, governed, auditable orga
 ```
 
 ### Interaction Layers
+
 ```
 WhatsApp Cloud API ←→ Communication OS ←→ Runtime Kernel
 Web Dashboard ←→ Mission Control ←→ Runtime Kernel
@@ -90,14 +97,14 @@ Mobile Admin ←→ Agent OS ←→ Runtime Kernel
 
 ## CORE PRINCIPLES (NON-NEGOTIABLE)
 
-| Principle | Requirement |
-|---|---|
-| WhatsApp First | No member should need to install a new app |
-| Multi-Tenant Isolation | Zero cross-tenant data leakage |
-| Event-Driven | Every action generates an event |
-| Audit-Everything | Every operation is immutably logged |
-| Governance-First | Every operation passes governance validation |
-| Loop-Always | Every workflow supports verification, learning, optimization |
+| Principle              | Requirement                                                  |
+| ---------------------- | ------------------------------------------------------------ |
+| WhatsApp First         | No member should need to install a new app                   |
+| Multi-Tenant Isolation | Zero cross-tenant data leakage                               |
+| Event-Driven           | Every action generates an event                              |
+| Audit-Everything       | Every operation is immutably logged                          |
+| Governance-First       | Every operation passes governance validation                 |
+| Loop-Always            | Every workflow supports verification, learning, optimization |
 
 ---
 
@@ -106,6 +113,7 @@ Mobile Admin ←→ Agent OS ←→ Runtime Kernel
 ### 1. IDENTITY OS
 
 **Must Have (MVP)**
+
 - [ ] Organization creation and onboarding
 - [ ] Department and team management
 - [ ] Member invitation via WhatsApp link
@@ -114,6 +122,7 @@ Mobile Admin ←→ Agent OS ←→ Runtime Kernel
 - [ ] Member status management (active/suspended/archived)
 
 **Should Have (V1)**
+
 - [ ] Attribute-Based Access Control (ABAC)
 - [ ] Hierarchical permissions (org > dept > team)
 - [ ] Device trust management
@@ -121,6 +130,7 @@ Mobile Admin ←→ Agent OS ←→ Runtime Kernel
 - [ ] API keys for integrations
 
 **Enterprise**
+
 - [ ] SAML 2.0 / OpenID Connect
 - [ ] Custom identity providers
 - [ ] Hardware token support
@@ -130,11 +140,13 @@ Mobile Admin ←→ Agent OS ←→ Runtime Kernel
 ### 2. PEOPLE OS
 
 **Must Have (MVP)**
+
 - [ ] Member profiles (name, role, department, WhatsApp)
 - [ ] Basic 360° record (tasks, attendance)
 - [ ] Member import via CSV / WhatsApp contacts
 
 **Should Have (V1)**
+
 - [ ] Full 360° record (approvals, documents, timeline)
 - [ ] Volunteer profiles
 - [ ] Beneficiary profiles
@@ -142,6 +154,7 @@ Mobile Admin ←→ Agent OS ←→ Runtime Kernel
 - [ ] Custom fields per organization type
 
 **Enterprise**
+
 - [ ] External stakeholder profiles
 - [ ] Org chart visualization
 - [ ] Skills matrix
@@ -152,6 +165,7 @@ Mobile Admin ←→ Agent OS ←→ Runtime Kernel
 ### 3. COMMUNICATION OS
 
 **Must Have (MVP)**
+
 - [ ] WhatsApp Cloud API integration
 - [ ] Inbound message to platform event conversion
 - [ ] Basic broadcast messaging
@@ -160,6 +174,7 @@ Mobile Admin ←→ Agent OS ←→ Runtime Kernel
 - [ ] Webhook architecture with event routing
 
 **Should Have (V1)**
+
 - [ ] Multi-template message library
 - [ ] Attendance check-in via WhatsApp
 - [ ] Workflow interaction via WhatsApp buttons
@@ -167,6 +182,7 @@ Mobile Admin ←→ Agent OS ←→ Runtime Kernel
 - [ ] Message audit log
 
 **Enterprise**
+
 - [ ] Custom WhatsApp number per organization
 - [ ] SMS fallback channel
 - [ ] Email channel integration
@@ -177,6 +193,7 @@ Mobile Admin ←→ Agent OS ←→ Runtime Kernel
 ### 4. WORKFLOW OS
 
 **Must Have (MVP)**
+
 - [ ] Workflow builder (visual + code)
 - [ ] Leave request workflow
 - [ ] Expense approval workflow
@@ -185,6 +202,7 @@ Mobile Admin ←→ Agent OS ←→ Runtime Kernel
 - [ ] Basic SLA with due date tracking
 
 **Should Have (V1)**
+
 - [ ] 20+ pre-built workflow templates
 - [ ] Conditional branching
 - [ ] Multi-step approval chains
@@ -192,6 +210,7 @@ Mobile Admin ←→ Agent OS ←→ Runtime Kernel
 - [ ] Workflow versioning
 
 **Enterprise**
+
 - [ ] Custom workflow scripting (DSL)
 - [ ] Cross-tenant workflow orchestration
 - [ ] Workflow marketplace
@@ -201,11 +220,13 @@ Mobile Admin ←→ Agent OS ←→ Runtime Kernel
 ### 5. LOOP OS (Galaxy's Core Moat)
 
 **Must Have (MVP)**
+
 - [ ] Loop Registry (catalog of all organizational loops)
 - [ ] Verification Engine (proof-of-completion enforcement)
 - [ ] Basic feedback collection post-workflow
 
 **Should Have (V1)**
+
 - [ ] Full Loop Runtime
 - [ ] Learning Engine (outcome capture → insight generation)
 - [ ] Optimization Engine (bottleneck identification)
@@ -213,6 +234,7 @@ Mobile Admin ←→ Agent OS ←→ Runtime Kernel
 - [ ] Loop Center in Mission Control
 
 **Enterprise**
+
 - [ ] Loop SDK for custom loop creation
 - [ ] Loop Marketplace
 - [ ] Agent Loop automation
@@ -223,16 +245,19 @@ Mobile Admin ←→ Agent OS ←→ Runtime Kernel
 ### 6. AGENT OS
 
 **Must Have (MVP)**
+
 - [ ] 2 Agents: Executive Agent, Operations Agent
 - [ ] Permission-bound agent actions
 - [ ] Agent telemetry and audit logs
 
 **Should Have (V1)**
+
 - [ ] 5 Agents: + HR, Finance, Compliance
 - [ ] Agent-to-agent handoff
 - [ ] Agent performance analytics
 
 **Enterprise**
+
 - [ ] All 7 agents + Custom agents
 - [ ] Agent training on organizational data
 - [ ] Multi-language agent support
@@ -241,15 +266,15 @@ Mobile Admin ←→ Agent OS ←→ Runtime Kernel
 
 ## PERFORMANCE REQUIREMENTS
 
-| Metric | Requirement |
-|---|---|
-| WhatsApp Message Processing | < 500ms p99 |
-| Workflow Execution Start | < 2s after event |
-| API Response Time | < 200ms p95 |
-| Dashboard Load | < 3s |
-| Uptime SLA (Enterprise) | 99.9% |
-| Audit Log Write | < 100ms |
-| Event Bus Throughput | 10,000 events/sec minimum |
+| Metric                      | Requirement               |
+| --------------------------- | ------------------------- |
+| WhatsApp Message Processing | < 500ms p99               |
+| Workflow Execution Start    | < 2s after event          |
+| API Response Time           | < 200ms p95               |
+| Dashboard Load              | < 3s                      |
+| Uptime SLA (Enterprise)     | 99.9%                     |
+| Audit Log Write             | < 100ms                   |
+| Event Bus Throughput        | 10,000 events/sec minimum |
 
 ---
 
@@ -269,6 +294,7 @@ Mobile Admin ←→ Agent OS ←→ Runtime Kernel
 ## MVP SCOPE (0–3 months)
 
 **Included in MVP:**
+
 - Identity OS (core)
 - People OS (basic profiles)
 - Communication OS (WhatsApp Cloud API)
@@ -279,6 +305,7 @@ Mobile Admin ←→ Agent OS ←→ Runtime Kernel
 - Analytics OS (basic metrics)
 
 **Excluded from MVP:**
+
 - Agent OS
 - Knowledge OS (full RAG)
 - Loop Learning + Optimization Engines
@@ -313,16 +340,16 @@ Mobile Admin ←→ Agent OS ←→ Runtime Kernel
 
 ## SUCCESS METRICS
 
-| Metric | MVP Target | V1 Target |
-|---|---|---|
-| Organizations Onboarded | 25 | 200 |
-| Active Members (across all orgs) | 500 | 5,000 |
-| WhatsApp Messages Processed/Day | 1,000 | 50,000 |
-| Workflow Completion Rate | 70% | 85% |
-| Loop Verification Rate | 60% | 80% |
-| NPS | 40 | 60 |
-| MRR | $5K | $50K |
+| Metric                           | MVP Target | V1 Target |
+| -------------------------------- | ---------- | --------- |
+| Organizations Onboarded          | 25         | 200       |
+| Active Members (across all orgs) | 500        | 5,000     |
+| WhatsApp Messages Processed/Day  | 1,000      | 50,000    |
+| Workflow Completion Rate         | 70%        | 85%       |
+| Loop Verification Rate           | 60%        | 80%       |
+| NPS                              | 40         | 60        |
+| MRR                              | $5K        | $50K      |
 
 ---
 
-*Document Version: 1.0 | Status: Internal Draft | Classification: Confidential*
+_Document Version: 1.0 | Status: Internal Draft | Classification: Confidential_

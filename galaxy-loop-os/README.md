@@ -18,18 +18,22 @@ galaxy-loop-os/
 ## HOW TO USE THESE FILES
 
 ### Landing Page
+
 Open `index.html` in any modern browser. Works fully offline.
 Features: animated hero, Loop OS explainer, architecture overview,
 multi-tenant diagram, industry templates, pricing, FAQ with accordion,
 email capture CTA.
 
 ### Architecture Diagram
+
 Open `diagrams/architecture-diagram.svg` in any browser or SVG viewer.
 Shows: full 9-layer OS, runtime kernel, event fabric, data layer,
 multi-tenant structure.
 
 ### PRD
+
 `docs/PRD.md` — Complete product requirements including:
+
 - MVP scope (0-3 months)
 - V1 scope (3-6 months)
 - Enterprise scope (6-12 months)
@@ -37,7 +41,9 @@ multi-tenant structure.
 - Security and performance requirements
 
 ### Architecture Document
+
 `docs/ARCHITECTURE.md` — Full technical architecture:
+
 - Technology stack
 - System architecture diagram (ASCII)
 - Multi-tenant strategy with code samples
@@ -48,7 +54,9 @@ multi-tenant structure.
 - Deployment diagram
 
 ### Automation Strategy
+
 `docs/AUTOMATION_STRATEGY.md` — 4-tier automation framework:
+
 - Tier 1: Trigger Automation (WhatsApp → events)
 - Tier 2: Conditional Automation (workflow branching)
 - Tier 3: Agent Automation (AI agent playbooks)
@@ -56,7 +64,9 @@ multi-tenant structure.
 - Industry-specific automation templates
 
 ### OS Structure
+
 `docs/OS_STRUCTURE.md` — Every OS module documented:
+
 - OS Kernel execution flow
 - All 9 modules (Identity through Loop OS)
 - Loop lifecycle per workflow type

@@ -1,5 +1,7 @@
 # GALAXY LOOP OS™
+
 ## System Architecture Document
+
 ### Version 1.0
 
 ---
@@ -120,17 +122,17 @@ CREATE POLICY tenant_isolation ON members
 class TenantContextMiddleware {
   async inject(request, reply, done) {
     const tenantId = await this.resolveTenant(request);
-    
+
     // Set PostgreSQL session variable
     await db.query(`SET LOCAL app.current_tenant = '${tenantId}'`);
-    
+
     // Set request context
     request.tenantContext = {
       organizationId: tenantId,
       correlationId: crypto.randomUUID(),
-      timestamp: Date.now()
+      timestamp: Date.now(),
     };
-    
+
     done();
   }
 }
@@ -138,11 +140,11 @@ class TenantContextMiddleware {
 
 ### Tenant Isolation Levels
 
-| Level | Mechanism | Use Case |
-|---|---|---|
-| Shared Schema + RLS | PostgreSQL RLS | Standard & Growth |
-| Dedicated Schema | Schema-per-tenant | Enterprise |
-| Dedicated Database | Separate DB instance | Government / Sovereign |
+| Level               | Mechanism            | Use Case               |
+| ------------------- | -------------------- | ---------------------- |
+| Shared Schema + RLS | PostgreSQL RLS       | Standard & Growth      |
+| Dedicated Schema    | Schema-per-tenant    | Enterprise             |
+| Dedicated Database  | Separate DB instance | Government / Sovereign |
 
 ---
 
@@ -185,22 +187,22 @@ incident.reported          { tenantId, reporterId, severity, description }
 
 ```typescript
 interface GalaxyEvent<T = unknown> {
-  id:            string;       // UUID
-  version:       string;       // "1.0"
-  type:          string;       // "workflow.submitted"
-  tenantId:      string;       // Organization ID
-  correlationId: string;       // Trace across system
-  causationId:   string;       // Parent event ID
-  timestamp:     string;       // ISO 8601
+  id: string; // UUID
+  version: string; // "1.0"
+  type: string; // "workflow.submitted"
+  tenantId: string; // Organization ID
+  correlationId: string; // Trace across system
+  causationId: string; // Parent event ID
+  timestamp: string; // ISO 8601
   actor: {
-    type:        'member' | 'agent' | 'system';
-    id:          string;
+    type: 'member' | 'agent' | 'system';
+    id: string;
   };
-  payload:       T;
+  payload: T;
   metadata: {
     idempotencyKey: string;
-    schemaVersion:  string;
-    source:         string;
+    schemaVersion: string;
+    source: string;
   };
 }
 ```
@@ -226,46 +228,46 @@ CREATED → ANALYZING → EXECUTING → VERIFYING → COLLECTING_FEEDBACK
 ```typescript
 // Loop Registry — Central catalog
 class LoopRegistry {
-  async registerLoop(definition: LoopDefinition): Promise<Loop>
-  async getLoop(loopId: string, tenantId: string): Promise<Loop>
-  async listActiveLoops(tenantId: string): Promise<Loop[]>
+  async registerLoop(definition: LoopDefinition): Promise<Loop>;
+  async getLoop(loopId: string, tenantId: string): Promise<Loop>;
+  async listActiveLoops(tenantId: string): Promise<Loop[]>;
 }
 
-// Loop Runtime — Execution engine  
+// Loop Runtime — Execution engine
 class LoopRuntime {
-  async startLoop(loopId: string, context: LoopContext): Promise<LoopInstance>
-  async advanceLoop(instanceId: string, transition: LoopTransition): Promise<void>
-  async terminateLoop(instanceId: string, reason: string): Promise<LoopOutcome>
+  async startLoop(loopId: string, context: LoopContext): Promise<LoopInstance>;
+  async advanceLoop(instanceId: string, transition: LoopTransition): Promise<void>;
+  async terminateLoop(instanceId: string, reason: string): Promise<LoopOutcome>;
 }
 
 // Verification Engine
 class VerificationEngine {
-  async requestVerification(instanceId: string, method: VerificationMethod): Promise<void>
-  async submitEvidence(instanceId: string, evidence: Evidence): Promise<VerificationResult>
-  
+  async requestVerification(instanceId: string, method: VerificationMethod): Promise<void>;
+  async submitEvidence(instanceId: string, evidence: Evidence): Promise<VerificationResult>;
+
   // Verification Methods
   methods = {
     MANAGER_CONFIRMATION: 'WhatsApp message to direct supervisor',
-    PHOTO_EVIDENCE:       'Photo upload via WhatsApp',
-    LOCATION_CHECKIN:     'GPS location confirmation',
-    DOCUMENT_UPLOAD:      'Document attached to WhatsApp message',
-    DIGITAL_SIGNATURE:    'Signature via web link',
-    AGENT_VERIFICATION:   'AI agent verifies via external data',
+    PHOTO_EVIDENCE: 'Photo upload via WhatsApp',
+    LOCATION_CHECKIN: 'GPS location confirmation',
+    DOCUMENT_UPLOAD: 'Document attached to WhatsApp message',
+    DIGITAL_SIGNATURE: 'Signature via web link',
+    AGENT_VERIFICATION: 'AI agent verifies via external data',
   };
 }
 
 // Learning Engine
 class LearningEngine {
-  async captureOutcome(loopInstanceId: string, outcome: LoopOutcome): Promise<void>
-  async generateInsights(tenantId: string, loopType: string): Promise<Insight[]>
-  async updateOrganizationalMemory(tenantId: string, insights: Insight[]): Promise<void>
+  async captureOutcome(loopInstanceId: string, outcome: LoopOutcome): Promise<void>;
+  async generateInsights(tenantId: string, loopType: string): Promise<Insight[]>;
+  async updateOrganizationalMemory(tenantId: string, insights: Insight[]): Promise<void>;
 }
 
 // Optimization Engine
 class OptimizationEngine {
-  async analyzeBottlenecks(tenantId: string): Promise<Bottleneck[]>
-  async generateRecommendations(bottlenecks: Bottleneck[]): Promise<Recommendation[]>
-  async applyAutoOptimization(workflowId: string, recommendation: Recommendation): Promise<void>
+  async analyzeBottlenecks(tenantId: string): Promise<Bottleneck[]>;
+  async generateRecommendations(bottlenecks: Bottleneck[]): Promise<Recommendation[]>;
+  async applyAutoOptimization(workflowId: string, recommendation: Recommendation): Promise<void>;
 }
 ```
 
@@ -277,12 +279,12 @@ class OptimizationEngine {
 
 ```typescript
 interface GalaxyAgent {
-  id:          string;
-  name:        string;
-  type:        AgentType;
-  tenantId:    string;
+  id: string;
+  name: string;
+  type: AgentType;
+  tenantId: string;
   permissions: Permission[];
-  
+
   // Core lifecycle
   think(context: AgentContext): Promise<AgentPlan>;
   act(plan: AgentPlan): Promise<AgentAction[]>;
@@ -292,13 +294,13 @@ interface GalaxyAgent {
 
 // Agent Types
 enum AgentType {
-  EXECUTIVE    = 'executive',    // Org health, strategic alerts
-  HR           = 'hr',           // People, recruitment, performance
-  FINANCE      = 'finance',      // Budget, expense, approvals
-  OPERATIONS   = 'operations',   // Workflow orchestration
-  COMPLIANCE   = 'compliance',   // Governance, audit, risk
-  KNOWLEDGE    = 'knowledge',    // RAG, search, memory
-  COMMS        = 'communications' // Broadcasts, notifications
+  EXECUTIVE = 'executive', // Org health, strategic alerts
+  HR = 'hr', // People, recruitment, performance
+  FINANCE = 'finance', // Budget, expense, approvals
+  OPERATIONS = 'operations', // Workflow orchestration
+  COMPLIANCE = 'compliance', // Governance, audit, risk
+  KNOWLEDGE = 'knowledge', // RAG, search, memory
+  COMMS = 'communications', // Broadcasts, notifications
 }
 ```
 
@@ -462,15 +464,15 @@ GET    /api/v1/audit-logs                     # Audit trail (paginated)
 
 ## SCALABILITY STRATEGY
 
-| Component | Scaling Strategy | Trigger |
-|---|---|---|
-| API Pods | Horizontal Pod Autoscaler | CPU > 70% or p99 latency > 500ms |
-| Worker Pods | Queue depth-based scaling | Queue > 100 messages/worker |
-| PostgreSQL | Read replicas + Connection pooling (PgBouncer) | Read load |
-| Redis | Cluster mode with sharding | Memory > 75% |
-| Kafka | Topic partition expansion | Consumer lag > 1000 |
-| Agent Runtime | On-demand container spawning | Agent invocation rate |
+| Component     | Scaling Strategy                               | Trigger                          |
+| ------------- | ---------------------------------------------- | -------------------------------- |
+| API Pods      | Horizontal Pod Autoscaler                      | CPU > 70% or p99 latency > 500ms |
+| Worker Pods   | Queue depth-based scaling                      | Queue > 100 messages/worker      |
+| PostgreSQL    | Read replicas + Connection pooling (PgBouncer) | Read load                        |
+| Redis         | Cluster mode with sharding                     | Memory > 75%                     |
+| Kafka         | Topic partition expansion                      | Consumer lag > 1000              |
+| Agent Runtime | On-demand container spawning                   | Agent invocation rate            |
 
 ---
 
-*Document Version: 1.0 | Architecture Status: Draft for Review*
+_Document Version: 1.0 | Architecture Status: Draft for Review_
