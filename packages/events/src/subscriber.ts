@@ -32,11 +32,11 @@ export interface EventSubscriber {
  * Production use should use BullMQ-based implementation.
  */
 export class InMemoryEventSubscriber implements EventSubscriber {
-  private readonly handlers = new Map<string, EventHandler<unknown>>();
+  private readonly handlers = new Map<string, EventHandler>();
   private running = false;
 
   subscribe<TPayload>(eventType: string, handler: EventHandler<TPayload>): void {
-    this.handlers.set(eventType, handler as EventHandler<unknown>);
+    this.handlers.set(eventType, handler as EventHandler);
   }
 
   unsubscribe(eventType: string): void {
