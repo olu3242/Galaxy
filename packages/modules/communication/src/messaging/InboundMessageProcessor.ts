@@ -30,13 +30,13 @@ export class InboundMessageProcessor {
         content = { type: 'text', text: payload.text?.body ?? '' };
         break;
       case 'image':
-        content = { type: 'image', mediaUrl: payload.image?.id };
+        content = { type: 'image', ...(payload.image ? { mediaUrl: payload.image.id } : {}) };
         break;
       case 'audio':
-        content = { type: 'audio', mediaUrl: payload.audio?.id };
+        content = { type: 'audio', ...(payload.audio ? { mediaUrl: payload.audio.id } : {}) };
         break;
       case 'document':
-        content = { type: 'file', mediaUrl: payload.document?.id };
+        content = { type: 'file', ...(payload.document ? { mediaUrl: payload.document.id } : {}) };
         break;
       default:
         content = { type: 'text', text: '' };

@@ -95,7 +95,9 @@ export class NotificationService {
       ],
     );
 
-    const notification = rowToNotification(result.rows[0]!);
+    const notifRow = result.rows[0];
+    if (!notifRow) throw new Error('INSERT RETURNING returned no row');
+    const notification = rowToNotification(notifRow);
 
     await this.eventPublisher.publish(
       createEvent(

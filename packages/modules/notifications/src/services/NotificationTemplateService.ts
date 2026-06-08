@@ -109,7 +109,9 @@ export class NotificationTemplateService {
       ],
     );
 
-    return rowToTemplate(result.rows[0]!);
+    const created = result.rows[0];
+    if (!created) throw new Error('INSERT RETURNING returned no row');
+    return rowToTemplate(created);
   }
 
   async getById(organizationId: string, templateId: string): Promise<NotificationTemplate | null> {
@@ -150,7 +152,9 @@ export class NotificationTemplateService {
         organizationId,
       ],
     );
-    return rowToTemplate(result.rows[0]!);
+    const updated = result.rows[0];
+    if (!updated) throw new Error('UPDATE RETURNING returned no row');
+    return rowToTemplate(updated);
   }
 
   async delete(organizationId: string, templateId: string): Promise<void> {

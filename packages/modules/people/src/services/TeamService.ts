@@ -111,7 +111,9 @@ export class TeamService {
       ],
     );
 
-    const team = rowToTeam(result.rows[0]!);
+    const teamRow = result.rows[0];
+    if (!teamRow) throw new Error('INSERT RETURNING returned no row');
+    const team = rowToTeam(teamRow);
 
     if (this.publisher) {
       const event = createEvent(
@@ -179,7 +181,9 @@ export class TeamService {
         'SELECT * FROM team_members WHERE team_id = $1 AND membership_id = $2',
         [teamId, membershipId],
       );
-      return rowToTeamMember(existing.rows[0]!);
+      const existingRow = existing.rows[0];
+      if (!existingRow) throw new Error('Member not found after conflict');
+      return rowToTeamMember(existingRow);
     }
 
     return rowToTeamMember(result.rows[0]);

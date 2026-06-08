@@ -94,7 +94,9 @@ export class ChannelService {
       ],
     );
 
-    const channel = rowToChannel(result.rows[0]!);
+    const channelRow = result.rows[0];
+    if (!channelRow) throw new Error('INSERT RETURNING returned no row');
+    const channel = rowToChannel(channelRow);
 
     await this.eventPublisher.publish(
       createEvent(
@@ -192,7 +194,7 @@ export class ChannelService {
   async listMembers(
     organizationId: string,
     channelId: string,
-  ): Promise<Array<{ memberId: string; role: string; joinedAt: string }>> {
+  ): Promise<{ memberId: string; role: string; joinedAt: string }[]> {
     await this.setTenantContext(organizationId);
     const result = await this.pool.query<{
       member_id: string;

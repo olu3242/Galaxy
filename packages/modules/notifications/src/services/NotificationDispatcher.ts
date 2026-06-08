@@ -46,7 +46,7 @@ export class NotificationDispatcher {
         channel,
         title: input.title,
         body: input.body,
-        data: input.data,
+        ...(input.data !== undefined ? { data: input.data } : {}),
         actorId: input.actorId,
         correlationId: input.correlationId,
       };

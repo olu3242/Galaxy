@@ -96,7 +96,9 @@ export class BroadcastService {
       ],
     );
 
-    return rowToBroadcast(result.rows[0]!);
+    const broadcastRow = result.rows[0];
+    if (!broadcastRow) throw new Error('INSERT RETURNING returned no row');
+    return rowToBroadcast(broadcastRow);
   }
 
   async send(
@@ -115,7 +117,9 @@ export class BroadcastService {
          RETURNING *`,
         [broadcastId, organizationId],
       );
-      broadcast = rowToBroadcast(result.rows[0]!);
+      const sentRow = result.rows[0];
+      if (!sentRow) throw new Error('UPDATE RETURNING returned no row');
+      broadcast = rowToBroadcast(sentRow);
 
       await this.eventPublisher.publish(
         createEvent(

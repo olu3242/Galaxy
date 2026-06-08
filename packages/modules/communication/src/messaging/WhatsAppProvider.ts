@@ -14,11 +14,11 @@ export class WhatsAppProvider implements MessagingProvider {
   send(to: string, content: MessageContent): Promise<MessageResult> {
     // Stub implementation — logs and returns mock result.
     // TODO: Implement real WhatsApp Cloud API call here.
-    console.log(`[WhatsAppProvider] stub send to=${to} type=${content.type}`);
+    console.warn(`[WhatsAppProvider] stub send to=${to} type=${content.type}`);
 
     return Promise.resolve({
       success: true,
-      providerMessageId: `stub-${Date.now()}`,
+      providerMessageId: `stub-${String(Date.now())}`,
       sentAt: new Date().toISOString(),
     });
   }

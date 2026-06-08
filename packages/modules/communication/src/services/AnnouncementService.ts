@@ -82,7 +82,9 @@ export class AnnouncementService {
       [input.organizationId, parsed.title, parsed.body, parsed.expiresAt ?? null, input.createdBy],
     );
 
-    return rowToAnnouncement(result.rows[0]!);
+    const created = result.rows[0];
+    if (!created) throw new Error('INSERT RETURNING returned no row');
+    return rowToAnnouncement(created);
   }
 
   async publish(
@@ -101,7 +103,9 @@ export class AnnouncementService {
       [publishedBy, announcementId, organizationId],
     );
 
-    const announcement = rowToAnnouncement(result.rows[0]!);
+    const publishedRow = result.rows[0];
+    if (!publishedRow) throw new Error('UPDATE RETURNING returned no row');
+    const announcement = rowToAnnouncement(publishedRow);
 
     await this.eventPublisher.publish(
       createEvent(
@@ -141,7 +145,9 @@ export class AnnouncementService {
       [announcementId, organizationId],
     );
 
-    const announcement = rowToAnnouncement(result.rows[0]!);
+    const archivedRow = result.rows[0];
+    if (!archivedRow) throw new Error('UPDATE RETURNING returned no row');
+    const announcement = rowToAnnouncement(archivedRow);
 
     await this.auditService.record({
       organizationId,

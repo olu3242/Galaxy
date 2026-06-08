@@ -91,7 +91,9 @@ export class DepartmentService {
       ],
     );
 
-    const department = rowToDepartment(result.rows[0]!);
+    const deptRow = result.rows[0];
+    if (!deptRow) throw new Error('INSERT RETURNING returned no row');
+    const department = rowToDepartment(deptRow);
 
     if (this.publisher) {
       const event = createEvent(
@@ -167,7 +169,9 @@ export class DepartmentService {
       ],
     );
 
-    return rowToDepartment(result.rows[0]!);
+    const updatedRow = result.rows[0];
+    if (!updatedRow) throw new Error('UPDATE RETURNING returned no row');
+    return rowToDepartment(updatedRow);
   }
 
   async archive(organizationId: string, departmentId: string): Promise<void> {

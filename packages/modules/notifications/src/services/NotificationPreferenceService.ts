@@ -76,7 +76,9 @@ export class NotificationPreferenceService {
         input.isEnabled,
       ],
     );
-    return rowToPreference(result.rows[0]!);
+    const row = result.rows[0];
+    if (!row) throw new Error('INSERT RETURNING returned no row');
+    return rowToPreference(row);
   }
 
   async listForMember(organizationId: string, memberId: string): Promise<NotificationPreference[]> {

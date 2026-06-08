@@ -90,7 +90,9 @@ export class MessageService {
       ],
     );
 
-    const message = rowToMessage(result.rows[0]!);
+    const msgRow = result.rows[0];
+    if (!msgRow) throw new Error('INSERT RETURNING returned no row');
+    const message = rowToMessage(msgRow);
 
     await this.eventPublisher.publish(
       createEvent(
