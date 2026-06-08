@@ -42,6 +42,9 @@
     { "path": "../../packages/modules/intelligence-network" },
     { "path": "../../packages/modules/benchmarking" },
     { "path": "../../packages/modules/conversation" },
-    { "path": "../../packages/modules/autonomous-intelligence" }
+    { "path": "../../packages/modules/autonomous-intelligence" },
+    { "path": "../../packages/modules/digital-twin" },
+    { "path": "../../packages/modules/policy-engine" },
+    { "path": "../../packages/modules/org-dna" }
   ]
 }

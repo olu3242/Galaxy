@@ -31,6 +31,9 @@ import { intelligenceNetworkRoutes } from './routes/intelligence-network.js';
 import { benchmarkingRoutes } from './routes/benchmarking.js';
 import { conversationRoutes } from './routes/conversation.js';
 import { autonomousIntelligenceRoutes } from './routes/autonomous-intelligence.js';
+import { digitalTwinRoutes } from './routes/digital-twin.js';
+import { policyEngineRoutes } from './routes/policy-engine.js';
+import { orgDnaRoutes } from './routes/org-dna.js';
 
 declare module 'fastify' {
   interface FastifyInstance {
@@ -94,6 +97,9 @@ async function buildApp(): Promise<FastifyInstance> {
   await fastify.register(benchmarkingRoutes, { prefix: '/api/v1' });
   await fastify.register(conversationRoutes, { prefix: '/api/v1' });
   await fastify.register(autonomousIntelligenceRoutes, { prefix: '/api/v1' });
+  await fastify.register(digitalTwinRoutes, { prefix: '/api/v1' });
+  await fastify.register(policyEngineRoutes, { prefix: '/api/v1' });
+  await fastify.register(orgDnaRoutes, { prefix: '/api/v1' });
 
   // Graceful shutdown
   fastify.addHook('onClose', async () => {
