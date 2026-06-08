@@ -12,6 +12,8 @@
   "references": [
     { "path": "../../packages/types" },
     { "path": "../../packages/config" },
-    { "path": "../../packages/utils" }
+    { "path": "../../packages/utils" },
+    { "path": "../../packages/events" },
+    { "path": "../../packages/modules/agents" }
   ]
 }

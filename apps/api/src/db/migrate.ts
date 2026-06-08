@@ -20,6 +20,10 @@ import * as migration026 from './migrations/026_gwos_event_fabric.js';
 import * as migration027 from './migrations/027_gwos_ai_orchestration.js';
 import * as migration028 from './migrations/028_gwos_whatsapp_runtime.js';
 import * as migration029 from './migrations/029_gwos_rls.js';
+import * as migration030 from './migrations/030_agent_registry.js';
+import * as migration031 from './migrations/031_agent_memory.js';
+import * as migration032 from './migrations/032_decision_engine.js';
+import * as migration033 from './migrations/033_agent_rls.js';
 
 interface Migration {
   up: (pool: Pool) => Promise<void>;
@@ -48,6 +52,10 @@ const migrations: { name: string; migration: Migration }[] = [
   { name: '027_gwos_ai_orchestration', migration: migration027 },
   { name: '028_gwos_whatsapp_runtime', migration: migration028 },
   { name: '029_gwos_rls', migration: migration029 },
+  { name: '030_agent_registry', migration: migration030 },
+  { name: '031_agent_memory', migration: migration031 },
+  { name: '032_decision_engine', migration: migration032 },
+  { name: '033_agent_rls', migration: migration033 },
 ];
 
 async function ensureMigrationsTable(pool: Pool): Promise<void> {

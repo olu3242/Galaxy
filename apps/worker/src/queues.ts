@@ -11,5 +11,6 @@ export const taskQueue = new Queue('task-processing', { connection });
 export const slaQueue = new Queue('sla-monitoring', { connection });
 export const intentQueue = new Queue('intent-detection', { connection });
 export const notificationQueue = new Queue('notification-dispatch', { connection });
+export const agentQueue = new Queue('agent-execution', { connection });
 
 export { connection };

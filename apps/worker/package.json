@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.39.0",
+    "@galaxy/agents": "workspace:*",
     "@galaxy/config": "workspace:*",
     "@galaxy/events": "workspace:*",
     "@galaxy/types": "workspace:*",

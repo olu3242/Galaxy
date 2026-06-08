@@ -5,6 +5,7 @@ import { connection } from './queues.js';
 import { createWorkflowProcessor } from './processors/workflow-execution.js';
 import { createSlaProcessor } from './processors/sla-monitoring.js';
 import { createIntentProcessor } from './processors/intent-detection.js';
+import { processAgentJob } from './processors/agent-execution.js';
 
 const logger = pino({ level: process.env.LOG_LEVEL ?? 'info' });
 
@@ -47,12 +48,22 @@ intentWorker.on('failed', (job, err) => {
   logger.error({ jobId: job?.id, err }, 'intent detection job failed');
 });
 
+// Agent execution worker
+const agentWorker = new Worker('agent-execution', processAgentJob, { connection });
+agentWorker.on('completed', (job) => {
+  logger.info({ jobId: job.id }, 'agent job completed');
+});
+agentWorker.on('failed', (job, err) => {
+  logger.error({ jobId: job?.id, err }, 'agent job failed');
+});
+
 // Graceful shutdown
 async function shutdown(): Promise<void> {
   logger.info('Shutting down Galaxy Worker...');
   await workflowWorker.close();
   await slaWorker.close();
   await intentWorker.close();
+  await agentWorker.close();
   await pool.end();
   await connection.quit();
   logger.info('Galaxy Worker shut down cleanly');
