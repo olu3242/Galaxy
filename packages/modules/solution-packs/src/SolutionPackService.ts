@@ -93,11 +93,7 @@ export class SolutionPackService {
     return rowToPack(row);
   }
 
-  async installPack(
-    orgId: string,
-    packId: string,
-    installedBy: string,
-  ): Promise<PackInstallation> {
+  async installPack(orgId: string, packId: string, installedBy: string): Promise<PackInstallation> {
     await this.setTenantContext(orgId);
 
     // Check pack exists

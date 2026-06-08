@@ -17,6 +17,18 @@ import { marketplaceRoutes } from './routes/marketplace.js';
 import { observabilityRoutes } from './routes/observability.js';
 import { governanceRoutes } from './routes/governance.js';
 import { platformAdminRoutes } from './routes/platform-admin.js';
+import { apiGatewayRoutes } from './routes/api-gateway.js';
+import { integrationRoutes } from './routes/integrations.js';
+import { graphRoutes } from './routes/graph.js';
+import { cooRoutes } from './routes/coo.js';
+import { orgMemoryRoutes } from './routes/org-memory.js';
+import { solutionPackRoutes } from './routes/solution-packs.js';
+import { partnerRoutes } from './routes/partner.js';
+import { economyRoutes } from './routes/economy.js';
+import { predictiveRoutes } from './routes/predictive.js';
+import { riskIntelligenceRoutes } from './routes/risk-intelligence.js';
+import { intelligenceNetworkRoutes } from './routes/intelligence-network.js';
+import { benchmarkingRoutes } from './routes/benchmarking.js';
 
 declare module 'fastify' {
   interface FastifyInstance {
@@ -66,6 +78,18 @@ async function buildApp(): Promise<FastifyInstance> {
   await fastify.register(observabilityRoutes, { prefix: '/api/v1' });
   await fastify.register(governanceRoutes, { prefix: '/api/v1' });
   await fastify.register(platformAdminRoutes, { prefix: '/api/v1' });
+  await fastify.register(apiGatewayRoutes, { prefix: '/api/v1' });
+  await fastify.register(integrationRoutes, { prefix: '/api/v1' });
+  await fastify.register(graphRoutes, { prefix: '/api/v1' });
+  await fastify.register(cooRoutes, { prefix: '/api/v1' });
+  await fastify.register(orgMemoryRoutes, { prefix: '/api/v1' });
+  await fastify.register(solutionPackRoutes, { prefix: '/api/v1' });
+  await fastify.register(partnerRoutes, { prefix: '/api/v1' });
+  await fastify.register(economyRoutes, { prefix: '/api/v1' });
+  await fastify.register(predictiveRoutes, { prefix: '/api/v1' });
+  await fastify.register(riskIntelligenceRoutes, { prefix: '/api/v1' });
+  await fastify.register(intelligenceNetworkRoutes, { prefix: '/api/v1' });
+  await fastify.register(benchmarkingRoutes, { prefix: '/api/v1' });
 
   // Graceful shutdown
   fastify.addHook('onClose', async () => {

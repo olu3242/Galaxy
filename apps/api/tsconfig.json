@@ -28,6 +28,18 @@
     { "path": "../../packages/modules/marketplace" },
     { "path": "../../packages/modules/observability" },
     { "path": "../../packages/modules/governance" },
-    { "path": "../../packages/modules/platform-admin" }
+    { "path": "../../packages/modules/platform-admin" },
+    { "path": "../../packages/modules/api-gateway" },
+    { "path": "../../packages/modules/integrations" },
+    { "path": "../../packages/modules/solution-packs" },
+    { "path": "../../packages/modules/graph" },
+    { "path": "../../packages/modules/coo" },
+    { "path": "../../packages/modules/org-memory" },
+    { "path": "../../packages/modules/partner" },
+    { "path": "../../packages/modules/economy" },
+    { "path": "../../packages/modules/predictive" },
+    { "path": "../../packages/modules/risk-intelligence" },
+    { "path": "../../packages/modules/intelligence-network" },
+    { "path": "../../packages/modules/benchmarking" }
   ]
 }

@@ -72,27 +72,48 @@ importers:
       '@galaxy/analytics':
         specifier: workspace:*
         version: link:../../packages/modules/analytics
+      '@galaxy/api-gateway':
+        specifier: workspace:*
+        version: link:../../packages/modules/api-gateway
+      '@galaxy/benchmarking':
+        specifier: workspace:*
+        version: link:../../packages/modules/benchmarking
       '@galaxy/billing':
         specifier: workspace:*
         version: link:../../packages/modules/billing
       '@galaxy/config':
         specifier: workspace:*
         version: link:../../packages/config
+      '@galaxy/coo':
+        specifier: workspace:*
+        version: link:../../packages/modules/coo
       '@galaxy/developer':
         specifier: workspace:*
         version: link:../../packages/modules/developer
+      '@galaxy/economy':
+        specifier: workspace:*
+        version: link:../../packages/modules/economy
       '@galaxy/events':
         specifier: workspace:*
         version: link:../../packages/events
       '@galaxy/governance':
         specifier: workspace:*
         version: link:../../packages/modules/governance
+      '@galaxy/graph':
+        specifier: workspace:*
+        version: link:../../packages/modules/graph
       '@galaxy/identity':
         specifier: workspace:*
         version: link:../../packages/modules/identity
+      '@galaxy/integrations':
+        specifier: workspace:*
+        version: link:../../packages/modules/integrations
       '@galaxy/intelligence':
         specifier: workspace:*
         version: link:../../packages/modules/intelligence
+      '@galaxy/intelligence-network':
+        specifier: workspace:*
+        version: link:../../packages/modules/intelligence-network
       '@galaxy/knowledge':
         specifier: workspace:*
         version: link:../../packages/modules/knowledge
@@ -102,12 +123,27 @@ importers:
       '@galaxy/observability':
         specifier: workspace:*
         version: link:../../packages/modules/observability
+      '@galaxy/org-memory':
+        specifier: workspace:*
+        version: link:../../packages/modules/org-memory
+      '@galaxy/partner':
+        specifier: workspace:*
+        version: link:../../packages/modules/partner
       '@galaxy/people':
         specifier: workspace:*
         version: link:../../packages/modules/people
       '@galaxy/platform-admin':
         specifier: workspace:*
         version: link:../../packages/modules/platform-admin
+      '@galaxy/predictive':
+        specifier: workspace:*
+        version: link:../../packages/modules/predictive
+      '@galaxy/risk-intelligence':
+        specifier: workspace:*
+        version: link:../../packages/modules/risk-intelligence
+      '@galaxy/solution-packs':
+        specifier: workspace:*
+        version: link:../../packages/modules/solution-packs
       '@galaxy/types':
         specifier: workspace:*
         version: link:../../packages/types
@@ -341,6 +377,38 @@ importers:
         specifier: ^2.0.0
         version: 2.1.9(@types/node@20.19.42)
 
+  packages/modules/api-gateway:
+    dependencies:
+      pg:
+        specifier: ^8.11.0
+        version: 8.21.0
+    devDependencies:
+      '@types/node':
+        specifier: ^20.0.0
+        version: 20.19.42
+      '@types/pg':
+        specifier: ^8.11.0
+        version: 8.20.0
+      eslint:
+        specifier: ^9.0.0
+        version: 9.39.4(jiti@1.21.7)
+
+  packages/modules/benchmarking:
+    dependencies:
+      pg:
+        specifier: ^8.11.0
+        version: 8.21.0
+    devDependencies:
+      '@types/node':
+        specifier: ^20.0.0
+        version: 20.19.42
+      '@types/pg':
+        specifier: ^8.11.0
+        version: 8.20.0
+      eslint:
+        specifier: ^9.0.0
+        version: 9.39.4(jiti@1.21.7)
+
   packages/modules/billing:
     dependencies:
       '@galaxy/types':
@@ -394,6 +462,22 @@ importers:
         specifier: ^2.0.0
         version: 2.1.9(@types/node@20.19.42)
 
+  packages/modules/coo:
+    dependencies:
+      pg:
+        specifier: ^8.11.0
+        version: 8.21.0
+    devDependencies:
+      '@types/node':
+        specifier: ^20.0.0
+        version: 20.19.42
+      '@types/pg':
+        specifier: ^8.11.0
+        version: 8.20.0
+      eslint:
+        specifier: ^9.0.0
+        version: 9.39.4(jiti@1.21.7)
+
   packages/modules/developer:
     dependencies:
       '@galaxy/types':
@@ -415,6 +499,22 @@ importers:
       vitest:
         specifier: ^3.2.3
         version: 3.2.6(@types/node@22.19.20)
+
+  packages/modules/economy:
+    dependencies:
+      pg:
+        specifier: ^8.11.0
+        version: 8.21.0
+    devDependencies:
+      '@types/node':
+        specifier: ^20.0.0
+        version: 20.19.42
+      '@types/pg':
+        specifier: ^8.11.0
+        version: 8.20.0
+      eslint:
+        specifier: ^9.0.0
+        version: 9.39.4(jiti@1.21.7)
 
   packages/modules/governance:
     dependencies:
@@ -450,6 +550,22 @@ importers:
         specifier: ^2.0.0
         version: 2.1.9(@types/node@20.19.42)
 
+  packages/modules/graph:
+    dependencies:
+      pg:
+        specifier: ^8.12.0
+        version: 8.21.0
+    devDependencies:
+      '@types/node':
+        specifier: ^20.0.0
+        version: 20.19.42
+      '@types/pg':
+        specifier: ^8.11.0
+        version: 8.20.0
+      vitest:
+        specifier: ^2.0.0
+        version: 2.1.9(@types/node@20.19.42)
+
   packages/modules/identity:
     dependencies:
       '@galaxy/events':
@@ -478,6 +594,22 @@ importers:
         specifier: ^2.0.0
         version: 2.1.9(@types/node@20.19.42)
 
+  packages/modules/integrations:
+    dependencies:
+      pg:
+        specifier: ^8.11.0
+        version: 8.21.0
+    devDependencies:
+      '@types/node':
+        specifier: ^20.0.0
+        version: 20.19.42
+      '@types/pg':
+        specifier: ^8.11.0
+        version: 8.20.0
+      eslint:
+        specifier: ^9.0.0
+        version: 9.39.4(jiti@1.21.7)
+
   packages/modules/intelligence:
     dependencies:
       '@galaxy/events':
@@ -505,6 +637,22 @@ importers:
       vitest:
         specifier: ^2.0.0
         version: 2.1.9(@types/node@20.19.42)
+
+  packages/modules/intelligence-network:
+    dependencies:
+      pg:
+        specifier: ^8.11.0
+        version: 8.21.0
+    devDependencies:
+      '@types/node':
+        specifier: ^20.0.0
+        version: 20.19.42
+      '@types/pg':
+        specifier: ^8.11.0
+        version: 8.20.0
+      eslint:
+        specifier: ^9.0.0
+        version: 9.39.4(jiti@1.21.7)
 
   packages/modules/knowledge:
     dependencies:
@@ -636,6 +784,41 @@ importers:
         specifier: ^2.0.0
         version: 2.1.9(@types/node@20.19.42)
 
+  packages/modules/org-memory:
+    dependencies:
+      pg:
+        specifier: ^8.11.0
+        version: 8.21.0
+    devDependencies:
+      '@types/node':
+        specifier: ^20.0.0
+        version: 20.19.42
+      '@types/pg':
+        specifier: ^8.11.0
+        version: 8.20.0
+      eslint:
+        specifier: ^9.0.0
+        version: 9.39.4(jiti@1.21.7)
+
+  packages/modules/partner:
+    dependencies:
+      pg:
+        specifier: ^8.12.0
+        version: 8.21.0
+    devDependencies:
+      '@types/node':
+        specifier: ^20.0.0
+        version: 20.19.42
+      '@types/pg':
+        specifier: ^8.11.0
+        version: 8.20.0
+      eslint:
+        specifier: ^9.0.0
+        version: 9.39.4(jiti@1.21.7)
+      typescript:
+        specifier: ^5.5.0
+        version: 5.9.3
+
   packages/modules/people:
     dependencies:
       '@galaxy/events':
@@ -697,6 +880,54 @@ importers:
       vitest:
         specifier: ^2.0.0
         version: 2.1.9(@types/node@20.19.42)
+
+  packages/modules/predictive:
+    dependencies:
+      pg:
+        specifier: ^8.11.0
+        version: 8.21.0
+    devDependencies:
+      '@types/node':
+        specifier: ^20.0.0
+        version: 20.19.42
+      '@types/pg':
+        specifier: ^8.11.0
+        version: 8.20.0
+      eslint:
+        specifier: ^9.0.0
+        version: 9.39.4(jiti@1.21.7)
+
+  packages/modules/risk-intelligence:
+    dependencies:
+      pg:
+        specifier: ^8.11.0
+        version: 8.21.0
+    devDependencies:
+      '@types/node':
+        specifier: ^20.0.0
+        version: 20.19.42
+      '@types/pg':
+        specifier: ^8.11.0
+        version: 8.20.0
+      eslint:
+        specifier: ^9.0.0
+        version: 9.39.4(jiti@1.21.7)
+
+  packages/modules/solution-packs:
+    dependencies:
+      pg:
+        specifier: ^8.11.0
+        version: 8.21.0
+    devDependencies:
+      '@types/node':
+        specifier: ^20.0.0
+        version: 20.19.42
+      '@types/pg':
+        specifier: ^8.11.0
+        version: 8.20.0
+      eslint:
+        specifier: ^9.0.0
+        version: 9.39.4(jiti@1.21.7)
 
   packages/modules/workflow:
     dependencies:

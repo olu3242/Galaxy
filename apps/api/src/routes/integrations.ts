@@ -32,8 +32,8 @@ export function integrationRoutes(fastify: FastifyInstance): void {
       organizationId: orgId,
       name: body.name,
       connectorType: body.connectorType,
-      config: body.config ?? {},
-      credentials: body.credentials ?? {},
+      config: body.config,
+      credentials: body.credentials,
     });
     return reply.status(201).send({ connector });
   });

@@ -4,16 +4,18 @@ import {
   GatewayRateLimitService,
   GatewayAnalyticsService,
 } from '@galaxy/api-gateway';
-import type { RegisterRouteInput, HttpMethod, ApiVersion, RateLimitTier } from '@galaxy/api-gateway';
+import type {
+  RegisterRouteInput,
+  HttpMethod,
+  ApiVersion,
+  RateLimitTier,
+} from '@galaxy/api-gateway';
 
 export function apiGatewayRoutes(fastify: FastifyInstance): void {
   // GET /api/v1/gateway/routes — list registered routes
   fastify.get(
     '/gateway/routes',
-    async (
-      request: FastifyRequest<{ Querystring: { version?: string } }>,
-      reply: FastifyReply,
-    ) => {
+    async (request: FastifyRequest<{ Querystring: { version?: string } }>, reply: FastifyReply) => {
       const service = new GatewayRouteService(fastify.pg);
       const version = request.query.version as ApiVersion | undefined;
       const routes = await service.listRoutes(version);

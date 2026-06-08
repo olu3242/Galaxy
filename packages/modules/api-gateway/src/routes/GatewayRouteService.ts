@@ -35,7 +35,14 @@ export class GatewayRouteService {
       `INSERT INTO gateway_routes (path, method, version, auth_required, rate_limit_tier, description)
        VALUES ($1, $2, $3, $4, $5, $6)
        RETURNING *`,
-      [input.path, input.method, input.version, input.authRequired, input.rateLimitTier, input.description],
+      [
+        input.path,
+        input.method,
+        input.version,
+        input.authRequired,
+        input.rateLimitTier,
+        input.description,
+      ],
     );
     const row = result.rows[0];
     if (!row) throw new Error('Failed to insert gateway route');
@@ -60,7 +67,11 @@ export class GatewayRouteService {
     return result.rows.map(toGatewayRoute);
   }
 
-  async lookupRoute(path: string, method: string, version: ApiVersion): Promise<GatewayRoute | undefined> {
+  async lookupRoute(
+    path: string,
+    method: string,
+    version: ApiVersion,
+  ): Promise<GatewayRoute | undefined> {
     // Exact match first
     const exact = await this.pool.query<GatewayRouteRow>(
       `SELECT * FROM gateway_routes

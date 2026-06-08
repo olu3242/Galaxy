@@ -67,10 +67,7 @@ export class SolutionPackTemplateService {
     return result.rows.map(rowToTemplate);
   }
 
-  async getTemplate(
-    orgId: string,
-    templateId: string,
-  ): Promise<SolutionPackTemplate | undefined> {
+  async getTemplate(orgId: string, templateId: string): Promise<SolutionPackTemplate | undefined> {
     await this.setTenantContext(orgId);
     const result = await this.pool.query<SolutionPackTemplateRow>(
       `SELECT * FROM workflow_templates

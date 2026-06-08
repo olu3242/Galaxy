@@ -35,6 +35,14 @@ import * as migration041 from './migrations/041_developer_rls.js';
 import * as migration042 from './migrations/042_governance.js';
 import * as migration043 from './migrations/043_platform_admin.js';
 import * as migration044 from './migrations/044_governance_rls.js';
+import * as migration045 from './migrations/045_partner_portal.js';
+import * as migration046 from './migrations/046_api_gateway.js';
+import * as migration047 from './migrations/047_integrations.js';
+import * as migration048 from './migrations/048_integrations_rls.js';
+import * as migration049 from './migrations/049_org_graph.js';
+import * as migration050 from './migrations/050_coo_org_memory.js';
+import * as migration051 from './migrations/051_predictive.js';
+import * as migration052 from './migrations/052_economy.js';
 
 interface Migration {
   up: (pool: Pool) => Promise<void>;
@@ -78,6 +86,14 @@ const migrations: { name: string; migration: Migration }[] = [
   { name: '042_governance', migration: migration042 },
   { name: '043_platform_admin', migration: migration043 },
   { name: '044_governance_rls', migration: migration044 },
+  { name: '045_partner_portal', migration: migration045 },
+  { name: '046_api_gateway', migration: migration046 },
+  { name: '047_integrations', migration: migration047 },
+  { name: '048_integrations_rls', migration: migration048 },
+  { name: '049_org_graph', migration: migration049 },
+  { name: '050_coo_org_memory', migration: migration050 },
+  { name: '051_predictive', migration: migration051 },
+  { name: '052_economy', migration: migration052 },
 ];
 
 async function ensureMigrationsTable(pool: Pool): Promise<void> {
@@ -103,11 +119,11 @@ async function runUp(pool: Pool): Promise<void> {
 
   for (const { name, migration } of migrations) {
     if (applied.has(name)) {
-      console.log(`[migrate] Skipping ${name} (already applied)`);
+      console.warn(`[migrate] Skipping ${name} (already applied)`);
       continue;
     }
 
-    console.log(`[migrate] Running ${name}...`);
+    console.warn(`[migrate] Running ${name}...`);
     const client = await pool.connect();
 
     try {
@@ -115,7 +131,7 @@ async function runUp(pool: Pool): Promise<void> {
       await migration.up(pool);
       await client.query('INSERT INTO schema_migrations (name) VALUES ($1)', [name]);
       await client.query('COMMIT');
-      console.log(`[migrate] Applied ${name}`);
+      console.warn(`[migrate] Applied ${name}`);
     } catch (err) {
       await client.query('ROLLBACK');
       console.error(`[migrate] Failed to apply ${name}:`, err);
@@ -133,7 +149,7 @@ async function runDown(pool: Pool): Promise<void> {
   const toRollback = [...migrations].reverse().filter(({ name }) => applied.has(name));
 
   for (const { name, migration } of toRollback) {
-    console.log(`[migrate] Rolling back ${name}...`);
+    console.warn(`[migrate] Rolling back ${name}...`);
     const client = await pool.connect();
 
     try {
@@ -141,7 +157,7 @@ async function runDown(pool: Pool): Promise<void> {
       await migration.down(pool);
       await client.query('DELETE FROM schema_migrations WHERE name = $1', [name]);
       await client.query('COMMIT');
-      console.log(`[migrate] Rolled back ${name}`);
+      console.warn(`[migrate] Rolled back ${name}`);
     } catch (err) {
       await client.query('ROLLBACK');
       console.error(`[migrate] Failed to rollback ${name}:`, err);
@@ -171,7 +187,7 @@ async function main(): Promise<void> {
       await runUp(pool);
     }
 
-    console.log('[migrate] Done');
+    console.warn('[migrate] Done');
   } finally {
     await pool.end();
   }

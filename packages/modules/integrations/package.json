@@ -18,12 +18,11 @@
     "clean": "rm -rf dist *.tsbuildinfo"
   },
   "dependencies": {
-    "pg": "catalog:"
+    "pg": "^8.11.0"
   },
   "devDependencies": {
-    "@galaxy/tsconfig": "workspace:*",
-    "typescript": "catalog:",
-    "@types/pg": "catalog:",
-    "eslint": "catalog:"
+    "@types/pg": "^8.11.0",
+    "eslint": "^9.0.0",
+    "@types/node": "^20.0.0"
   }
 }

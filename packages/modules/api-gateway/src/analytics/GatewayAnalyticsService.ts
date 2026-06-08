@@ -47,7 +47,10 @@ export class GatewayAnalyticsService {
   }
 
   async getRecentLogs(organizationId: string, limitCount = 100): Promise<ApiRequestLog[]> {
-    await this.pool.query('SELECT set_config($1, $2, true)', ['app.current_tenant', organizationId]);
+    await this.pool.query('SELECT set_config($1, $2, true)', [
+      'app.current_tenant',
+      organizationId,
+    ]);
     const result = await this.pool.query<RequestLogRow>(
       `SELECT * FROM api_request_logs
        WHERE organization_id = $1
@@ -68,7 +71,10 @@ export class GatewayAnalyticsService {
   }
 
   async getStats(organizationId: string, windowHours: 24 | 168 = 24): Promise<GatewayStats> {
-    await this.pool.query('SELECT set_config($1, $2, true)', ['app.current_tenant', organizationId]);
+    await this.pool.query('SELECT set_config($1, $2, true)', [
+      'app.current_tenant',
+      organizationId,
+    ]);
     const result = await this.pool.query<AggRow>(
       `SELECT
          COUNT(*) AS total_calls,
@@ -97,7 +103,10 @@ export class GatewayAnalyticsService {
     organizationId: string,
     windowHours: 24 | 168 = 24,
   ): Promise<EndpointStats[]> {
-    await this.pool.query('SELECT set_config($1, $2, true)', ['app.current_tenant', organizationId]);
+    await this.pool.query('SELECT set_config($1, $2, true)', [
+      'app.current_tenant',
+      organizationId,
+    ]);
     const result = await this.pool.query<StatsRow>(
       `SELECT
          endpoint,

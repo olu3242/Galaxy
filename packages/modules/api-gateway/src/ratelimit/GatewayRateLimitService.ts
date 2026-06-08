@@ -77,10 +77,7 @@ export class GatewayRateLimitService {
     };
   }
 
-  async getStatus(
-    apiKeyId: string,
-    tier: RateLimitTier,
-  ): Promise<RateLimitStatus> {
+  async getStatus(apiKeyId: string, tier: RateLimitTier): Promise<RateLimitStatus> {
     const config = TIER_CONFIGS[tier];
 
     if (tier === 'enterprise') {

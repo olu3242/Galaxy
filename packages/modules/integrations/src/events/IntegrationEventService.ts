@@ -1,10 +1,5 @@
 import type { Pool } from 'pg';
-import type {
-  EventMapping,
-  EventMappingRow,
-  EventDelivery,
-  EventDeliveryRow,
-} from '../types.js';
+import type { EventMapping, EventMappingRow, EventDelivery, EventDeliveryRow } from '../types.js';
 
 function rowToMapping(row: EventMappingRow): EventMapping {
   return {

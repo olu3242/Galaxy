@@ -4,13 +4,23 @@
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "exports": { ".": { "import": "./dist/index.js", "types": "./dist/index.d.ts" } },
-  "scripts": { "build": "tsc --build", "typecheck": "tsc --noEmit", "lint": "eslint src/" },
-  "dependencies": { "pg": "catalog:" },
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc --build",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src/"
+  },
+  "dependencies": {
+    "pg": "^8.11.0"
+  },
   "devDependencies": {
-    "@galaxy/tsconfig": "workspace:*",
-    "typescript": "catalog:",
-    "@types/pg": "catalog:",
-    "eslint": "catalog:"
+    "@types/pg": "^8.11.0",
+    "eslint": "^9.0.0",
+    "@types/node": "^20.0.0"
   }
 }
