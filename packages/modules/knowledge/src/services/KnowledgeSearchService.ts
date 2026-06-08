@@ -50,11 +50,11 @@ export class KnowledgeSearchService {
     let idx = 3;
 
     if (options.categoryId) {
-      conditions.push(`category_id = $${idx++}`);
+      conditions.push(`category_id = $${String(idx++)}`);
       params.push(options.categoryId);
     }
     if (options.tags && options.tags.length > 0) {
-      conditions.push(`tags && $${idx++}`);
+      conditions.push(`tags && $${String(idx++)}`);
       params.push(options.tags);
     }
 
@@ -66,7 +66,7 @@ export class KnowledgeSearchService {
        FROM knowledge_documents
        WHERE ${conditions.join(' AND ')}
        ORDER BY rank DESC
-       LIMIT $${idx}`,
+       LIMIT $${String(idx)}`,
       params,
     );
 

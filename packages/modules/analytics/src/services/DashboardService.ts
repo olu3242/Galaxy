@@ -74,7 +74,9 @@ export class DashboardService {
       ],
     );
 
-    return rowToWidget(result.rows[0]!);
+    const row = result.rows[0];
+    if (!row) throw new Error('INSERT RETURNING returned no row');
+    return rowToWidget(row);
   }
 
   async getWidgets(

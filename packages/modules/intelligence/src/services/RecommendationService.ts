@@ -89,13 +89,13 @@ export class RecommendationService {
   private buildRecommendationItems(
     category: InsightType,
     context: Record<string, unknown>,
-  ): Array<{
+  ): {
     title: string;
     description: string;
     priority: RecommendationPriority;
     actionItems: string[];
-  }> {
-    const score = typeof context['score'] === 'number' ? context['score'] : 100;
+  }[] {
+    const score = typeof context.score === 'number' ? context.score : 100;
 
     if (score < 50) {
       return [

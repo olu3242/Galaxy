@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import type { Pool, QueryResult } from 'pg';
 import { KnowledgeService } from '../services/KnowledgeService.js';
 
@@ -121,7 +121,7 @@ describe('KnowledgeService', () => {
       const calls = vi.mocked(pool.query).mock.calls;
       for (const call of calls) {
         if (typeof call[0] === 'string' && call[0].includes('organization_id')) {
-          expect(String(call[0])).not.toContain(organizationId);
+          expect(call[0]).not.toContain(organizationId);
           expect(call[1]).toContain(organizationId);
         }
       }

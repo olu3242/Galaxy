@@ -29,7 +29,9 @@ async function insertHealthScore(
      RETURNING *`,
     [organizationId, category, entityId, score, JSON.stringify(components)],
   );
-  return rowToHealthScore(result.rows[0]!);
+  const row = result.rows[0];
+  if (!row) throw new Error('INSERT RETURNING returned no row');
+  return rowToHealthScore(row);
 }
 
 export class HealthScoreService {

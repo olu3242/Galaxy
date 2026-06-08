@@ -65,7 +65,9 @@ export class MetricsService {
       ],
     );
 
-    return rowToMetric(result.rows[0]!);
+    const row = result.rows[0];
+    if (!row) throw new Error('INSERT RETURNING returned no row');
+    return rowToMetric(row);
   }
 
   async getMetrics(
@@ -79,11 +81,11 @@ export class MetricsService {
     let idx = 2;
 
     if (options.category) {
-      conditions.push(`category = $${idx++}`);
+      conditions.push(`category = $${String(idx++)}`);
       params.push(options.category);
     }
     if (options.period) {
-      conditions.push(`period = $${idx++}`);
+      conditions.push(`period = $${String(idx++)}`);
       params.push(options.period);
     }
 
@@ -91,7 +93,7 @@ export class MetricsService {
     params.push(options.offset ?? 0);
 
     const result = await this.pool.query<MetricRow>(
-      `SELECT * FROM metrics WHERE ${conditions.join(' AND ')} ORDER BY created_at DESC LIMIT $${idx++} OFFSET $${idx}`,
+      `SELECT * FROM metrics WHERE ${conditions.join(' AND ')} ORDER BY created_at DESC LIMIT $${String(idx++)} OFFSET $${String(idx)}`,
       params,
     );
 

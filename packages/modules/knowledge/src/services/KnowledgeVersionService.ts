@@ -69,7 +69,9 @@ export class KnowledgeVersionService {
       ],
     );
 
-    return rowToVersion(result.rows[0]!);
+    const row = result.rows[0];
+    if (!row) throw new Error('INSERT RETURNING returned no row');
+    return rowToVersion(row);
   }
 
   async getVersions(organizationId: string, documentId: string): Promise<KnowledgeVersion[]> {
@@ -100,7 +102,7 @@ export class KnowledgeVersionService {
 
     const versionRow = versionResult.rows[0];
     if (!versionRow) {
-      throw new Error(`Version ${version} of document ${documentId} not found`);
+      throw new Error(`Version ${String(version)} of document ${documentId} not found`);
     }
 
     await this.pool.query(
@@ -115,7 +117,7 @@ export class KnowledgeVersionService {
       documentId,
       content: versionRow.content,
       changedBy: restoredBy,
-      changeNote: `Restored from version ${version}`,
+      changeNote: `Restored from version ${String(version)}`,
     });
   }
 }

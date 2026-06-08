@@ -66,7 +66,9 @@ export class ReportingService {
       ],
     );
 
-    return rowToReport(result.rows[0]!);
+    const row = result.rows[0];
+    if (!row) throw new Error('INSERT RETURNING returned no row');
+    return rowToReport(row);
   }
 
   async getReports(organizationId: string, category?: DashboardCategory): Promise<Report[]> {

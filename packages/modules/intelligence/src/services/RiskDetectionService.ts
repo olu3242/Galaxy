@@ -62,7 +62,7 @@ export class RiskDetectionService {
     if (failedWorkflows > 5) {
       const r = await this.flagRiskIndicators(organizationId, {
         name: 'High workflow failure rate',
-        description: `${failedWorkflows} workflows have failed`,
+        description: `${String(failedWorkflows)} workflows have failed`,
         level: failedWorkflows > 20 ? 'critical' : 'high',
         signals: { failedWorkflows },
       });
@@ -72,7 +72,7 @@ export class RiskDetectionService {
     if (rejectedApprovals > 10) {
       const r = await this.flagRiskIndicators(organizationId, {
         name: 'High approval rejection rate',
-        description: `${rejectedApprovals} approvals rejected in the last 7 days`,
+        description: `${String(rejectedApprovals)} approvals rejected in the last 7 days`,
         level: 'medium',
         signals: { rejectedApprovals },
       });
@@ -83,7 +83,7 @@ export class RiskDetectionService {
   }
 
   assessRiskLevel(signals: Record<string, unknown>): RiskLevel {
-    const score = typeof signals['score'] === 'number' ? signals['score'] : 0;
+    const score = typeof signals.score === 'number' ? signals.score : 0;
     if (score >= 80) return 'critical';
     if (score >= 60) return 'high';
     if (score >= 40) return 'medium';
@@ -119,7 +119,9 @@ export class RiskDetectionService {
       ],
     );
 
-    return rowToRisk(result.rows[0]!);
+    const row = result.rows[0];
+    if (!row) throw new Error('INSERT RETURNING returned no row');
+    return rowToRisk(row);
   }
 
   async listRisks(organizationId: string, level?: RiskLevel): Promise<RiskIndicator[]> {
