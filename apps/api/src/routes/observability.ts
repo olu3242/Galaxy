@@ -146,9 +146,7 @@ export function observabilityRoutes(fastify: FastifyInstance): void {
     const service = new IncidentService(fastify.pg);
     const incidents = await service.listIncidents(orgId, {
       ...(query.status !== undefined ? { status: query.status as IncidentStatus } : {}),
-      ...(query.severity !== undefined
-        ? { severity: query.severity as IncidentSeverity }
-        : {}),
+      ...(query.severity !== undefined ? { severity: query.severity as IncidentSeverity } : {}),
       ...(query.limit !== undefined ? { limit: parseInt(query.limit, 10) } : {}),
       ...(query.offset !== undefined ? { offset: parseInt(query.offset, 10) } : {}),
     });

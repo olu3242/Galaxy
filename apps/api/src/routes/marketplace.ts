@@ -78,9 +78,7 @@ export function marketplaceRoutes(fastify: FastifyInstance): void {
         : {}),
       ...(typeof body.priceAmount === 'number' ? { priceAmount: body.priceAmount } : {}),
       ...(Array.isArray(body.tags) ? { tags: body.tags as string[] } : {}),
-      ...(body.metadata !== undefined &&
-      typeof body.metadata === 'object' &&
-      body.metadata !== null
+      ...(body.metadata !== undefined && typeof body.metadata === 'object' && body.metadata !== null
         ? { metadata: body.metadata as Record<string, unknown> }
         : {}),
     });
