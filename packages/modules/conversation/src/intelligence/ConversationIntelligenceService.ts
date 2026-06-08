@@ -19,7 +19,8 @@ export class ConversationIntelligenceService {
   extractIntent(content: string): string {
     const lower = content.toLowerCase();
     if (lower.includes('help') || lower.includes('support')) return 'support_request';
-    if (lower.includes('buy') || lower.includes('purchase') || lower.includes('order')) return 'purchase_intent';
+    if (lower.includes('buy') || lower.includes('purchase') || lower.includes('order'))
+      return 'purchase_intent';
     if (lower.includes('cancel') || lower.includes('refund')) return 'cancellation';
     if (lower.includes('status') || lower.includes('track')) return 'status_inquiry';
     return 'general_inquiry';
