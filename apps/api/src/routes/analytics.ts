@@ -121,7 +121,7 @@ export function analyticsRoutes(fastify: FastifyInstance): void {
     ) => {
       const { organizationId, name } = request.body;
 
-      if (!organizationId || !name || !request.body.category || !request.body.generatedBy) {
+      if (!organizationId || !name || !request.body.generatedBy) {
         return reply
           .status(400)
           .send({ error: 'organizationId, name, category, generatedBy are required' });
