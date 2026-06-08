@@ -1,0 +1,27 @@
+{
+  "name": "@galaxy/org-memory",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc --build",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src/"
+  },
+  "dependencies": {
+    "pg": "catalog:"
+  },
+  "devDependencies": {
+    "@galaxy/tsconfig": "workspace:*",
+    "typescript": "catalog:",
+    "@types/pg": "catalog:",
+    "eslint": "catalog:"
+  }
+}

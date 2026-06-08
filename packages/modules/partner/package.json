@@ -1,0 +1,29 @@
+{
+  "name": "@galaxy/partner",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Galaxy Partner Portal — partner registration, publisher portal, deal management",
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc --build",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src/"
+  },
+  "dependencies": {
+    "pg": "^8.12.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/pg": "^8.11.0",
+    "eslint": "^9.0.0",
+    "typescript": "^5.5.0"
+  }
+}
