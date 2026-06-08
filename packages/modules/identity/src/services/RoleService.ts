@@ -92,7 +92,9 @@ export class RoleService {
       ],
     );
 
-    const role = rowToRole(result.rows[0]!);
+    const roleRow = result.rows[0];
+    if (!roleRow) throw new Error('INSERT into roles returned no row');
+    const role = rowToRole(roleRow);
 
     if (this.publisher) {
       const event = createEvent(
@@ -132,12 +134,12 @@ export class RoleService {
   }
 
   async provisionDefaultRoles(organizationId: string, correlationId: string): Promise<Role[]> {
-    const defaultRoles: Array<{
+    const defaultRoles: {
       name: string;
       slug: string;
       scope: Role['scope'];
       description: string;
-    }> = [
+    }[] = [
       {
         name: 'Owner',
         slug: 'org:owner',

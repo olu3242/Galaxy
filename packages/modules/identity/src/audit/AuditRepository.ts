@@ -69,7 +69,8 @@ export class AuditRepository {
       ],
     );
 
-    const row = result.rows[0]!;
+    const row = result.rows[0];
+    if (!row) throw new Error('INSERT into audit_logs returned no row');
 
     return {
       id: row.id,

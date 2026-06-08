@@ -73,7 +73,9 @@ export class MembershipService {
       [input.organizationId, input.userId, input.roleId ?? null],
     );
 
-    const membership = rowToMembership(result.rows[0]!);
+    const membershipRow = result.rows[0];
+    if (!membershipRow) throw new Error('INSERT into memberships returned no row');
+    const membership = rowToMembership(membershipRow);
 
     if (this.publisher) {
       const event = createEvent(

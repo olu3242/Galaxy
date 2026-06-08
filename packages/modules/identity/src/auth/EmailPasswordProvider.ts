@@ -39,7 +39,7 @@ export class EmailPasswordProvider implements AuthProvider {
 
     const user = result.rows[0];
 
-    if (!user || !user.password_hash) {
+    if (!user?.password_hash) {
       // Use same timing to avoid user enumeration
       await verifyPassword(
         emailCreds.password,

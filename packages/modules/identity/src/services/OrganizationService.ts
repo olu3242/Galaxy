@@ -38,8 +38,8 @@ function rowToOrganization(row: OrgRow): Organization {
     id: row.id,
     name: row.name,
     slug: row.slug,
-    industryType: (row.settings['industryType'] as Organization['industryType']) ?? 'association',
-    planTier: (row.tier as Organization['planTier']) ?? 'starter',
+    industryType: (row.settings.industryType as Organization['industryType'] | undefined) ?? 'association',
+    planTier: (row.tier as Organization['planTier'] | undefined) ?? 'starter',
     whatsappPhone: row.waba_phone_number_id,
     settings: row.settings,
     isActive: row.status === 'active',
@@ -75,7 +75,9 @@ export class OrganizationService {
       ],
     );
 
-    const org = rowToOrganization(result.rows[0]!);
+    const orgRow = result.rows[0];
+    if (!orgRow) throw new Error('INSERT into organizations returned no row');
+    const org = rowToOrganization(orgRow);
 
     if (this.publisher) {
       const event = createEvent(
@@ -129,7 +131,9 @@ export class OrganizationService {
       [input.name ?? null, JSON.stringify(newSettings), organizationId],
     );
 
-    return rowToOrganization(result.rows[0]!);
+    const updatedRow = result.rows[0];
+    if (!updatedRow) throw new Error('UPDATE on organizations returned no row');
+    return rowToOrganization(updatedRow);
   }
 
   async activate(organizationId: string): Promise<void> {

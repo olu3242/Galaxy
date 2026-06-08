@@ -74,7 +74,9 @@ export class PermissionService {
       ],
     );
 
-    return rowToPermission(result.rows[0]!);
+    const permRow = result.rows[0];
+    if (!permRow) throw new Error('INSERT into permissions returned no row');
+    return rowToPermission(permRow);
   }
 
   async assignPermissionToRole(
