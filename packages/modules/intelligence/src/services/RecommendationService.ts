@@ -55,14 +55,7 @@ export class RecommendationService {
            (organization_id, title, description, priority, category, action_items)
          VALUES ($1, $2, $3, $4, $5, $6)
          RETURNING *`,
-        [
-          organizationId,
-          item.title,
-          item.description,
-          item.priority,
-          category,
-          item.actionItems,
-        ],
+        [organizationId, item.title, item.description, item.priority, category, item.actionItems],
       );
       if (result.rows[0]) {
         recommendations.push(rowToRecommendation(result.rows[0]));

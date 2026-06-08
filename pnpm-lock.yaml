@@ -65,6 +65,9 @@ importers:
       '@fastify/websocket':
         specifier: ^8.0.0
         version: 8.3.1
+      '@galaxy/analytics':
+        specifier: workspace:*
+        version: link:../../packages/modules/analytics
       '@galaxy/config':
         specifier: workspace:*
         version: link:../../packages/config
@@ -74,6 +77,12 @@ importers:
       '@galaxy/identity':
         specifier: workspace:*
         version: link:../../packages/modules/identity
+      '@galaxy/intelligence':
+        specifier: workspace:*
+        version: link:../../packages/modules/intelligence
+      '@galaxy/knowledge':
+        specifier: workspace:*
+        version: link:../../packages/modules/knowledge
       '@galaxy/people':
         specifier: workspace:*
         version: link:../../packages/modules/people

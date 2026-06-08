@@ -69,10 +69,7 @@ export class ReportingService {
     return rowToReport(result.rows[0]!);
   }
 
-  async getReports(
-    organizationId: string,
-    category?: DashboardCategory,
-  ): Promise<Report[]> {
+  async getReports(organizationId: string, category?: DashboardCategory): Promise<Report[]> {
     await this.setTenantContext(organizationId);
 
     const conditions = ['organization_id = $1'];
@@ -102,10 +99,9 @@ export class ReportingService {
       category: string;
       config: Record<string, unknown>;
       created_at: string;
-    }>(
-      'SELECT * FROM report_templates WHERE organization_id = $1 ORDER BY name ASC',
-      [organizationId],
-    );
+    }>('SELECT * FROM report_templates WHERE organization_id = $1 ORDER BY name ASC', [
+      organizationId,
+    ]);
 
     return result.rows.map((row) => ({
       id: row.id,

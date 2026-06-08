@@ -69,7 +69,10 @@ export class HealthScoreService {
     });
   }
 
-  async computeDepartmentHealth(organizationId: string, departmentId: string): Promise<HealthScore> {
+  async computeDepartmentHealth(
+    organizationId: string,
+    departmentId: string,
+  ): Promise<HealthScore> {
     await this.setTenantContext(organizationId);
 
     const memberResult = await this.pool.query<{ count: string }>(
@@ -110,7 +113,7 @@ export class HealthScoreService {
     await this.setTenantContext(organizationId);
 
     const result = await this.pool.query<{ count: string }>(
-      'SELECT COUNT(*) as count FROM messages WHERE organization_id = $1 AND created_at > NOW() - INTERVAL \'7 days\'',
+      "SELECT COUNT(*) as count FROM messages WHERE organization_id = $1 AND created_at > NOW() - INTERVAL '7 days'",
       [organizationId],
     );
 

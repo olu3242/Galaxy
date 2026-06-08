@@ -1,6 +1,11 @@
 import type { Pool } from 'pg';
 import { z } from 'zod';
-import type { DashboardCategory, DashboardWidget, DashboardWidgetRow, WidgetType } from '../types.js';
+import type {
+  DashboardCategory,
+  DashboardWidget,
+  DashboardWidgetRow,
+  WidgetType,
+} from '../types.js';
 
 const CreateWidgetSchema = z.object({
   category: z.enum([

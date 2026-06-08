@@ -71,7 +71,9 @@ export class KPIService {
       ],
     );
 
-    return rowToKPI(result.rows[0]!);
+    const row = result.rows[0];
+    if (!row) throw new Error('INSERT RETURNING returned no row');
+    return rowToKPI(row);
   }
 
   async getKPIs(organizationId: string): Promise<KPI[]> {
@@ -117,6 +119,8 @@ export class KPIService {
       [currentValue, status, kpiId, organizationId],
     );
 
-    return rowToKPI(updated.rows[0]!);
+    const updatedRow = updated.rows[0];
+    if (!updatedRow) throw new Error('UPDATE RETURNING returned no row');
+    return rowToKPI(updatedRow);
   }
 }

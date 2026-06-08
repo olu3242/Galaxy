@@ -6,6 +6,9 @@ import { departmentRoutes } from './routes/departments.js';
 import { teamRoutes } from './routes/teams.js';
 import { roleRoutes } from './routes/roles.js';
 import { auditRoutes } from './routes/audit.js';
+import { analyticsRoutes } from './routes/analytics.js';
+import { knowledgeRoutes } from './routes/knowledge.js';
+import { intelligenceRoutes } from './routes/intelligence.js';
 
 declare module 'fastify' {
   interface FastifyInstance {
@@ -44,6 +47,9 @@ async function buildApp(): Promise<ReturnType<typeof Fastify>> {
   await fastify.register(teamRoutes, { prefix: '/api/v1' });
   await fastify.register(roleRoutes, { prefix: '/api/v1' });
   await fastify.register(auditRoutes, { prefix: '/api/v1' });
+  await fastify.register(analyticsRoutes, { prefix: '/api/v1' });
+  await fastify.register(knowledgeRoutes, { prefix: '/api/v1' });
+  await fastify.register(intelligenceRoutes, { prefix: '/api/v1' });
 
   // Graceful shutdown
   fastify.addHook('onClose', async () => {

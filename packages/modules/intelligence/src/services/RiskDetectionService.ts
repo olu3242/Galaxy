@@ -122,10 +122,7 @@ export class RiskDetectionService {
     return rowToRisk(result.rows[0]!);
   }
 
-  async listRisks(
-    organizationId: string,
-    level?: RiskLevel,
-  ): Promise<RiskIndicator[]> {
+  async listRisks(organizationId: string, level?: RiskLevel): Promise<RiskIndicator[]> {
     await this.setTenantContext(organizationId);
 
     const conditions = ['organization_id = $1', 'resolved_at IS NULL'];
