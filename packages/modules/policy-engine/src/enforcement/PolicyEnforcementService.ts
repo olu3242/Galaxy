@@ -120,7 +120,7 @@ export class PolicyEnforcementService {
 
     for (const rule of rules) {
       const fieldValue = context[rule.field];
-      const matches = evaluateOperator(rule.operator as PolicyRuleOperator, fieldValue, rule.value);
+      const matches = evaluateOperator(rule.operator, fieldValue, rule.value);
       if (matches) {
         matchedRuleId = rule.id;
         if (rule.action === 'deny') {
