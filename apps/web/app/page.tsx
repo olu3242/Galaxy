@@ -73,16 +73,9 @@ function Counter({ target, suffix }: { target: number; suffix: string }) {
     if (!el) return;
     const obs = new IntersectionObserver(
       (entries) => {
-        (entries) => {
-  const entry = entries[0];
-
-  if (!entry) return;
-
-  if (entry.isIntersecting) {
-    setTriggered(true);
-    obs.disconnect();
-  }
-}
+        const entry = entries[0];
+        if (!entry) return;
+        if (entry.isIntersecting) {
           setTriggered(true);
           obs.disconnect();
         }
@@ -90,7 +83,7 @@ function Counter({ target, suffix }: { target: number; suffix: string }) {
       { threshold: 0.5 },
     );
     obs.observe(el);
-    return () => obs.disconnect();
+    return () => { obs.disconnect(); };
   }, []);
 
   return (
@@ -101,11 +94,11 @@ function Counter({ target, suffix }: { target: number; suffix: string }) {
   );
 }
 
-function FaqItem({ q, a, index }: { q: string; a: string; index: number }) {
+function FaqItem({ q, a, index: _index }: { q: string; a: string; index: number }) {
   const [open, setOpen] = useState(false);
   return (
     <div className={`faq-item${open ? ' open' : ''}`}>
-      <button className="faq-q" onClick={() => setOpen((prev) => !prev)} aria-expanded={open}>
+      <button className="faq-q" onClick={() => { setOpen((prev) => !prev); }} aria-expanded={open}>
         <span className="faq-q-text">{q}</span>
         <div className="faq-icon">+</div>
       </button>
@@ -116,7 +109,7 @@ function FaqItem({ q, a, index }: { q: string; a: string; index: number }) {
   );
 }
 
-export default function GalaxyPage() {
+export default function GalaxyPage(): React.ReactElement {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [ctaEmail, setCtaEmail] = useState('');
@@ -124,9 +117,9 @@ export default function GalaxyPage() {
 
   // Nav scroll effect
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 60);
+    const handleScroll = () => { setScrolled(window.scrollY > 60); };
     window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
+    return () => { window.removeEventListener('scroll', handleScroll); };
   }, []);
 
   // Scroll reveal
@@ -139,8 +132,8 @@ export default function GalaxyPage() {
       },
       { threshold: 0.08 },
     );
-    document.querySelectorAll('.reveal').forEach((el) => obs.observe(el));
-    return () => obs.disconnect();
+    document.querySelectorAll('.reveal').forEach((el) => { obs.observe(el); });
+    return () => { obs.disconnect(); };
   }, []);
 
   // Lock body scroll when mobile menu is open
@@ -152,7 +145,7 @@ export default function GalaxyPage() {
   }, [mobileOpen]);
 
   function handleCtaSubmit() {
-    if (!ctaEmail || !ctaEmail.includes('@')) {
+    if (!ctaEmail.includes('@')) {
       setCtaMsg({ text: 'Please enter a valid email address.', color: '#f87171' });
       return;
     }
@@ -186,7 +179,7 @@ export default function GalaxyPage() {
         </div>
         <button
           className="mobile-toggle"
-          onClick={() => setMobileOpen(true)}
+          onClick={() => { setMobileOpen(true); }}
           aria-label="Open menu"
         >
           <span />
@@ -197,15 +190,15 @@ export default function GalaxyPage() {
 
       {/* MOBILE MENU */}
       <div className={`mobile-menu${mobileOpen ? ' open' : ''}`} id="mobileMenu">
-        <button className="mobile-close" onClick={() => setMobileOpen(false)} aria-label="Close menu">
+        <button className="mobile-close" onClick={() => { setMobileOpen(false); }} aria-label="Close menu">
           ✕
         </button>
-        <a href="#solutions" className="nav-link" style={{ fontFamily: 'var(--font-head)' }} onClick={() => setMobileOpen(false)}>Solutions</a>
-        <a href="#customers" className="nav-link" style={{ fontFamily: 'var(--font-head)' }} onClick={() => setMobileOpen(false)}>Customers</a>
-        <a href="#testimonials" className="nav-link" style={{ fontFamily: 'var(--font-head)' }} onClick={() => setMobileOpen(false)}>Testimonials</a>
-        <a href="#faq" className="nav-link" style={{ fontFamily: 'var(--font-head)' }} onClick={() => setMobileOpen(false)}>FAQ</a>
+        <a href="#solutions" className="nav-link" style={{ fontFamily: 'var(--font-head)' }} onClick={() => { setMobileOpen(false); }}>Solutions</a>
+        <a href="#customers" className="nav-link" style={{ fontFamily: 'var(--font-head)' }} onClick={() => { setMobileOpen(false); }}>Customers</a>
+        <a href="#testimonials" className="nav-link" style={{ fontFamily: 'var(--font-head)' }} onClick={() => { setMobileOpen(false); }}>Testimonials</a>
+        <a href="#faq" className="nav-link" style={{ fontFamily: 'var(--font-head)' }} onClick={() => { setMobileOpen(false); }}>FAQ</a>
         <a href="mailto:hello@galaxyos.co" className="nav-link" style={{ fontFamily: 'var(--font-head)' }}>Contact</a>
-        <a href="#waitlist" className="btn-hero-primary" onClick={() => setMobileOpen(false)}>Join Waitlist</a>
+        <a href="#waitlist" className="btn-hero-primary" onClick={() => { setMobileOpen(false); }}>Join Waitlist</a>
         <a href="mailto:hello@galaxyos.co" className="btn-hero-primary">Book a Demo</a>
       </div>
 
@@ -403,7 +396,7 @@ export default function GalaxyPage() {
             { icon: '📂', color: 'pi-amber', title: 'Records are impossible to find', desc: 'When you need to reference a past decision, payment, or approval, you\'re scrolling through months of messages hoping to find it.' },
             { icon: '🔗', color: 'pi-violet', title: 'Coordination breaks at scale', desc: 'What works for 20 people collapses at 200. As organizations grow, informal systems become liabilities instead of assets.' },
           ].map((card, i) => (
-            <div className={`problem-card reveal${i > 0 ? ` reveal-delay-${(i % 3) + 1}` : ''}`} key={i}>
+            <div className={`problem-card reveal${i > 0 ? ` reveal-delay-${String((i % 3) + 1)}` : ''}`} key={i}>
               <div className={`problem-icon ${card.color}`}>{card.icon}</div>
               <div className="problem-title" style={{ fontFamily: 'var(--font-head)' }}>{card.title}</div>
               <div className="problem-desc">{card.desc}</div>
@@ -641,7 +634,7 @@ export default function GalaxyPage() {
               className="cta-input"
               placeholder="your@organization.com"
               value={ctaEmail}
-              onChange={(e) => setCtaEmail(e.target.value)}
+              onChange={(e) => { setCtaEmail(e.target.value); }}
               style={{ fontFamily: 'var(--font-body)' }}
             />
             <button
