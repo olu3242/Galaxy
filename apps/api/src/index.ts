@@ -40,6 +40,7 @@ import { selfHealingRoutes } from './routes/self-healing.js';
 import { aiDeploymentRoutes } from './routes/ai-deployment.js';
 import { missionControlRoutes } from './routes/mission-control.js';
 import { reliabilityRoutes } from './routes/reliability.js';
+import { platformRoutes } from './routes/platform.js';
 
 declare module 'fastify' {
   interface FastifyInstance {
@@ -112,6 +113,7 @@ async function buildApp(): Promise<FastifyInstance> {
   await fastify.register(aiDeploymentRoutes, { prefix: '/api/v1' });
   await fastify.register(missionControlRoutes, { prefix: '/api/v1' });
   await fastify.register(reliabilityRoutes, { prefix: '/api/v1' });
+  await fastify.register(platformRoutes, { prefix: '/api/v1' });
 
   // Graceful shutdown
   fastify.addHook('onClose', async () => {

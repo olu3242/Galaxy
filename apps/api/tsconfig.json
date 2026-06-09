@@ -135,6 +135,9 @@
     },
     {
       "path": "../../packages/modules/reliability"
+    },
+    {
+      "path": "../../packages/modules/platform"
     }
   ]
 }

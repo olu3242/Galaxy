@@ -153,6 +153,9 @@ importers:
       '@galaxy/people':
         specifier: workspace:*
         version: link:../../packages/modules/people
+      '@galaxy/platform':
+        specifier: workspace:*
+        version: link:../../packages/modules/platform
       '@galaxy/platform-admin':
         specifier: workspace:*
         version: link:../../packages/modules/platform-admin
