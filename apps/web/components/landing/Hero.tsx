@@ -1,16 +1,6 @@
 'use client';
 
-import Image from 'next/image';
-import { AnimatePresence, motion } from 'framer-motion';
-import { useEffect, useState } from 'react';
-
-const organizationScenes = [
-  { src: '/images/hero-organizations/faith-community.png', label: 'Faith communities', detail: 'Ministries moving together' },
-  { src: '/images/hero-organizations/nonprofit-team.png', label: 'Nonprofit teams', detail: 'Programs with clear ownership' },
-  { src: '/images/hero-organizations/school-leadership.png', label: 'Schools', detail: 'Every department aligned' },
-  { src: '/images/hero-organizations/volunteer-event.png', label: 'Volunteer organizations', detail: 'Events running with confidence' },
-  { src: '/images/hero-organizations/cooperative-board.png', label: 'Cooperatives', detail: 'Decisions everyone can trust' },
-];
+import { motion } from 'framer-motion';
 
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
@@ -26,7 +16,7 @@ function MissionControlCard(): React.ReactElement {
     <div className="relative w-full max-w-md mx-auto lg:mx-0">
       {/* Main card */}
       <motion.div
-        initial={false}
+        initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.4 }}
         className="glass rounded-2xl p-5 glow-violet"
@@ -94,7 +84,7 @@ function MissionControlCard(): React.ReactElement {
 
       {/* Floating approval card */}
       <motion.div
-        initial={false}
+        initial={{ opacity: 0, x: 30, y: -10 }}
         animate={{ opacity: 1, x: 0, y: -10 }}
         transition={{ duration: 0.5, delay: 0.7 }}
         className="absolute -top-4 -right-4 glass rounded-xl p-3 w-44 hidden lg:block"
@@ -116,7 +106,7 @@ function MissionControlCard(): React.ReactElement {
 
       {/* Floating pending card */}
       <motion.div
-        initial={false}
+        initial={{ opacity: 0, x: -20, y: 20 }}
         animate={{ opacity: 1, x: -20, y: 20 }}
         transition={{ duration: 0.5, delay: 0.9 }}
         className="absolute -bottom-2 -left-4 glass rounded-xl p-3 w-40 hidden lg:block"
@@ -137,49 +127,12 @@ function MissionControlCard(): React.ReactElement {
 }
 
 export default function Hero(): React.ReactElement {
-  const [scene, setScene] = useState(0);
-
-  useEffect(() => {
-    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (reducedMotion) return undefined;
-
-    const timer = window.setInterval(() => {
-      setScene((current) => (current + 1) % organizationScenes.length);
-    }, 6500);
-
-    return () => {
-      window.clearInterval(timer);
-    };
-  }, []);
-
-  const currentScene = organizationScenes[scene]!;
-
   return (
-    <section className="relative min-h-screen flex items-center overflow-hidden bg-galaxy-black">
+    <section className="relative min-h-screen flex items-center overflow-hidden">
       {/* Background */}
-      <div className="absolute inset-0" aria-hidden="true">
-        <AnimatePresence mode="sync">
-          <motion.div
-            key={currentScene.src}
-            initial={{ opacity: 0, scale: 1.025 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ opacity: { duration: 1.1 }, scale: { duration: 7, ease: 'linear' } }}
-            className="absolute inset-0"
-          >
-            <Image
-              src={currentScene.src}
-              alt=""
-              fill
-              priority={scene === 0}
-              sizes="100vw"
-              className="object-cover object-center"
-            />
-          </motion.div>
-        </AnimatePresence>
-        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(7,11,20,0.99)_0%,rgba(7,11,20,0.93)_32%,rgba(7,11,20,0.55)_62%,rgba(7,11,20,0.28)_100%)]" />
-        <div className="absolute inset-0 bg-gradient-to-t from-galaxy-black via-transparent to-galaxy-black/50" />
-        <div className="absolute inset-0 bg-galaxy-violet/[0.06] mix-blend-color" />
+      <div className="absolute inset-0 bg-galaxy-black">
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-galaxy-violet/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-galaxy-teal/8 rounded-full blur-3xl" />
       </div>
 
       <div className="relative max-w-7xl mx-auto px-6 pt-24 pb-16 grid lg:grid-cols-2 gap-16 items-center w-full">
@@ -188,7 +141,7 @@ export default function Hero(): React.ReactElement {
           <motion.div
             custom={0}
             variants={fadeUp}
-            initial={false}
+            initial="hidden"
             animate="visible"
             className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-galaxy-violet/10 border border-galaxy-violet/20 mb-6"
           >
@@ -201,7 +154,7 @@ export default function Hero(): React.ReactElement {
           <motion.h1
             custom={1}
             variants={fadeUp}
-            initial={false}
+            initial="hidden"
             animate="visible"
             className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-[1.1] tracking-tight text-galaxy-white mb-6"
           >
@@ -212,7 +165,7 @@ export default function Hero(): React.ReactElement {
           <motion.p
             custom={2}
             variants={fadeUp}
-            initial={false}
+            initial="hidden"
             animate="visible"
             className="text-lg text-galaxy-muted leading-relaxed mb-8 max-w-xl"
           >
@@ -223,7 +176,7 @@ export default function Hero(): React.ReactElement {
           <motion.div
             custom={3}
             variants={fadeUp}
-            initial={false}
+            initial="hidden"
             animate="visible"
             className="flex flex-wrap gap-3"
           >
@@ -252,7 +205,7 @@ export default function Hero(): React.ReactElement {
           <motion.div
             custom={4}
             variants={fadeUp}
-            initial={false}
+            initial="hidden"
             animate="visible"
             className="flex items-center gap-6 mt-10"
           >
@@ -274,40 +227,13 @@ export default function Hero(): React.ReactElement {
 
         {/* Right — Mission Control visual */}
         <motion.div
-          initial={false}
+          initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.6, delay: 0.3 }}
           className="flex justify-center lg:justify-end"
         >
           <MissionControlCard />
         </motion.div>
-      </div>
-
-      <div className="absolute bottom-6 left-0 right-0 z-20">
-        <div className="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <AnimatePresence mode="wait">
-            <motion.div key={currentScene.label} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} className="flex items-center gap-3">
-              <span className="w-8 h-px bg-galaxy-teal" />
-              <div><p className="text-xs font-semibold text-white">{currentScene.label}</p><p className="text-[11px] text-galaxy-slate">{currentScene.detail}</p></div>
-            </motion.div>
-          </AnimatePresence>
-          <div className="flex items-center gap-2" role="tablist" aria-label="Organization scenes">
-            {organizationScenes.map((item, index) => (
-              <button
-                key={item.src}
-                type="button"
-                role="tab"
-                aria-selected={scene === index}
-                aria-label={`Show ${item.label}`}
-                onClick={() => setScene(index)}
-                className={`group relative h-8 rounded-full transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-galaxy-teal ${scene === index ? 'w-12' : 'w-8'}`}
-              >
-                <span className={`absolute inset-x-0 top-1/2 h-1 -translate-y-1/2 rounded-full transition-colors ${scene === index ? 'bg-white/25' : 'bg-white/15 group-hover:bg-white/30'}`} />
-                {scene === index && <motion.span layoutId="hero-scene-progress" className="absolute left-0 top-1/2 h-1 w-full -translate-y-1/2 rounded-full bg-galaxy-teal origin-left hero-carousel-progress" />}
-              </button>
-            ))}
-          </div>
-        </div>
       </div>
     </section>
   );

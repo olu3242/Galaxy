@@ -8,8 +8,8 @@
     "dev": "next dev --port 3000",
     "start": "next start",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint app/",
-    "lint:fix": "eslint app/ --fix",
+    "lint": "eslint app/ components/",
+    "lint:fix": "eslint app/ components/ --fix",
     "test": "vitest run",
     "test:watch": "vitest",
     "clean": "rm -rf .next out"
@@ -17,7 +17,7 @@
   "dependencies": {
     "@galaxy/types": "workspace:*",
     "@galaxy/utils": "workspace:*",
-    "framer-motion": "^11.0.0",
+    "framer-motion": "^12.40.0",
     "next": "14.2.0",
     "react": "^18.3.0",
     "react-dom": "^18.3.0",
