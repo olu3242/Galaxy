@@ -5,50 +5,140 @@
     "rootDir": "src",
     "composite": true,
     "tsBuildInfoFile": "tsconfig.tsbuildinfo",
-    "types": ["node"]
+    "types": [
+      "node"
+    ]
   },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist"],
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ],
   "references": [
-    { "path": "../../packages/types" },
-    { "path": "../../packages/config" },
-    { "path": "../../packages/utils" },
-    { "path": "../../packages/events" },
-    { "path": "../../packages/modules/identity" },
-    { "path": "../../packages/modules/people" },
-    { "path": "../../packages/modules/communication" },
-    { "path": "../../packages/modules/notifications" },
-    { "path": "../../packages/modules/analytics" },
-    { "path": "../../packages/modules/knowledge" },
-    { "path": "../../packages/modules/intelligence" },
-    { "path": "../../packages/modules/workflow" },
-    { "path": "../../packages/modules/agents" },
-    { "path": "../../packages/modules/billing" },
-    { "path": "../../packages/modules/developer" },
-    { "path": "../../packages/modules/marketplace" },
-    { "path": "../../packages/modules/observability" },
-    { "path": "../../packages/modules/governance" },
-    { "path": "../../packages/modules/platform-admin" },
-    { "path": "../../packages/modules/api-gateway" },
-    { "path": "../../packages/modules/integrations" },
-    { "path": "../../packages/modules/solution-packs" },
-    { "path": "../../packages/modules/graph" },
-    { "path": "../../packages/modules/coo" },
-    { "path": "../../packages/modules/org-memory" },
-    { "path": "../../packages/modules/partner" },
-    { "path": "../../packages/modules/economy" },
-    { "path": "../../packages/modules/predictive" },
-    { "path": "../../packages/modules/risk-intelligence" },
-    { "path": "../../packages/modules/intelligence-network" },
-    { "path": "../../packages/modules/benchmarking" },
-    { "path": "../../packages/modules/conversation" },
-    { "path": "../../packages/modules/autonomous-intelligence" },
-    { "path": "../../packages/modules/digital-twin" },
-    { "path": "../../packages/modules/policy-engine" },
-    { "path": "../../packages/modules/org-dna" },
-    { "path": "../../packages/modules/org-health" },
-    { "path": "../../packages/modules/workflow-generator" },
-    { "path": "../../packages/modules/self-healing" },
-    { "path": "../../packages/modules/ai-deployment" }
+    {
+      "path": "../../packages/types"
+    },
+    {
+      "path": "../../packages/config"
+    },
+    {
+      "path": "../../packages/utils"
+    },
+    {
+      "path": "../../packages/events"
+    },
+    {
+      "path": "../../packages/modules/identity"
+    },
+    {
+      "path": "../../packages/modules/people"
+    },
+    {
+      "path": "../../packages/modules/communication"
+    },
+    {
+      "path": "../../packages/modules/notifications"
+    },
+    {
+      "path": "../../packages/modules/analytics"
+    },
+    {
+      "path": "../../packages/modules/knowledge"
+    },
+    {
+      "path": "../../packages/modules/intelligence"
+    },
+    {
+      "path": "../../packages/modules/workflow"
+    },
+    {
+      "path": "../../packages/modules/agents"
+    },
+    {
+      "path": "../../packages/modules/billing"
+    },
+    {
+      "path": "../../packages/modules/developer"
+    },
+    {
+      "path": "../../packages/modules/marketplace"
+    },
+    {
+      "path": "../../packages/modules/observability"
+    },
+    {
+      "path": "../../packages/modules/governance"
+    },
+    {
+      "path": "../../packages/modules/platform-admin"
+    },
+    {
+      "path": "../../packages/modules/api-gateway"
+    },
+    {
+      "path": "../../packages/modules/integrations"
+    },
+    {
+      "path": "../../packages/modules/solution-packs"
+    },
+    {
+      "path": "../../packages/modules/graph"
+    },
+    {
+      "path": "../../packages/modules/coo"
+    },
+    {
+      "path": "../../packages/modules/org-memory"
+    },
+    {
+      "path": "../../packages/modules/partner"
+    },
+    {
+      "path": "../../packages/modules/economy"
+    },
+    {
+      "path": "../../packages/modules/predictive"
+    },
+    {
+      "path": "../../packages/modules/risk-intelligence"
+    },
+    {
+      "path": "../../packages/modules/intelligence-network"
+    },
+    {
+      "path": "../../packages/modules/benchmarking"
+    },
+    {
+      "path": "../../packages/modules/conversation"
+    },
+    {
+      "path": "../../packages/modules/autonomous-intelligence"
+    },
+    {
+      "path": "../../packages/modules/digital-twin"
+    },
+    {
+      "path": "../../packages/modules/policy-engine"
+    },
+    {
+      "path": "../../packages/modules/org-dna"
+    },
+    {
+      "path": "../../packages/modules/org-health"
+    },
+    {
+      "path": "../../packages/modules/workflow-generator"
+    },
+    {
+      "path": "../../packages/modules/self-healing"
+    },
+    {
+      "path": "../../packages/modules/ai-deployment"
+    },
+    {
+      "path": "../../packages/modules/mission-control"
+    }
   ]
 }

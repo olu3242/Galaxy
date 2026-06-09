@@ -2,7 +2,7 @@
   "name": "@galaxy/api",
   "version": "0.1.0",
   "private": true,
-  "description": "Galaxy API — Fastify REST + WebSocket server",
+  "description": "Galaxy API \u2014 Fastify REST + WebSocket server",
   "type": "module",
   "scripts": {
     "build": "tsc --build",
@@ -72,7 +72,8 @@
     "ioredis": "^5.4.0",
     "pg": "^8.12.0",
     "pino": "^9.0.0",
-    "zod": "^3.23.0"
+    "zod": "^3.23.0",
+    "@galaxy/mission-control": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
