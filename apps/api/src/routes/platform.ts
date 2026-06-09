@@ -30,7 +30,7 @@ export function platformRoutes(fastify: FastifyInstance): void {
       reply: FastifyReply,
     ) => {
       const { metricName, value, labels } = request.body;
-      if (!metricName || value === undefined) {
+      if (!metricName) {
         return reply.status(400).send({ error: 'metricName and value required' });
       }
       const svc = new PlatformAdminService(fastify.pg);
@@ -209,7 +209,8 @@ export function platformRoutes(fastify: FastifyInstance): void {
     ) => {
       const { featureId } = request.params;
       const { enabled } = request.body;
-      if (enabled === undefined) return reply.status(400).send({ error: 'enabled required' });
+      if (typeof enabled !== 'boolean')
+        return reply.status(400).send({ error: 'enabled required' });
       const svc = new FeatureFlagService(fastify.pg);
       const flag = await svc.toggleFlag(featureId, enabled);
       if (!flag) return reply.status(404).send({ error: 'Feature flag not found' });
@@ -247,7 +248,7 @@ export function platformRoutes(fastify: FastifyInstance): void {
       reply: FastifyReply,
     ) => {
       const { organizationId, namespace, key, value } = request.body;
-      if (!organizationId || !namespace || !key || value === undefined) {
+      if (!organizationId || !namespace || !key || !value) {
         return reply.status(400).send({ error: 'organizationId, namespace, key, value required' });
       }
       const svc = new ConfigurationService(fastify.pg);
@@ -326,7 +327,7 @@ export function platformRoutes(fastify: FastifyInstance): void {
       reply: FastifyReply,
     ) => {
       const { organizationId, amountCents, currency, dueDate } = request.body;
-      if (!organizationId || amountCents === undefined) {
+      if (!organizationId) {
         return reply.status(400).send({ error: 'organizationId and amountCents required' });
       }
       const svc = new InvoiceService(fastify.pg);
@@ -454,7 +455,7 @@ export function platformRoutes(fastify: FastifyInstance): void {
       reply: FastifyReply,
     ) => {
       const { organizationId, resourceType, quantity, metadata } = request.body;
-      if (!organizationId || !resourceType || quantity === undefined) {
+      if (!organizationId || !resourceType) {
         return reply
           .status(400)
           .send({ error: 'organizationId, resourceType and quantity required' });
@@ -528,15 +529,6 @@ export function platformRoutes(fastify: FastifyInstance): void {
         newThisMonth,
         snapshotDate,
       } = request.body;
-      if (
-        mrrCents === undefined ||
-        arrCents === undefined ||
-        activeSubscriptions === undefined ||
-        churnedThisMonth === undefined ||
-        newThisMonth === undefined
-      ) {
-        return reply.status(400).send({ error: 'All revenue metrics required' });
-      }
       const svc = new RevenueOperationsService(fastify.pg);
       const snapshot = await svc.recordSnapshot({
         mrrCents,
