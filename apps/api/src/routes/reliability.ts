@@ -158,14 +158,7 @@ export function reliabilityRoutes(fastify: FastifyInstance): void {
       const orgId = getOrgId(request);
       const { category, status, limit } = request.query;
       const svc = new FailureRegistryService(fastify.pg);
-      return reply.send(
-        await svc.listFailures(
-          orgId,
-          category,
-          status,
-          limit,
-        ),
-      );
+      return reply.send(await svc.listFailures(orgId, category, status, limit));
     },
   );
 
@@ -228,9 +221,7 @@ export function reliabilityRoutes(fastify: FastifyInstance): void {
       const orgId = getOrgId(request);
       const { threatType, limit } = request.query;
       const svc = new ThreatDetectionService(fastify.pg);
-      return reply.send(
-        await svc.listThreats(orgId, threatType, limit),
-      );
+      return reply.send(await svc.listThreats(orgId, threatType, limit));
     },
   );
 
@@ -279,9 +270,7 @@ export function reliabilityRoutes(fastify: FastifyInstance): void {
       const orgId = getOrgId(request);
       const { status, limit } = request.query;
       const svc = new EscalationService(fastify.pg);
-      return reply.send(
-        await svc.listEscalations(orgId, status, limit),
-      );
+      return reply.send(await svc.listEscalations(orgId, status, limit));
     },
   );
 
@@ -455,9 +444,7 @@ export function reliabilityRoutes(fastify: FastifyInstance): void {
       const orgId = getOrgId(request);
       const { simulationType, limit } = request.query;
       const svc = new SimulationEngine(fastify.pg);
-      return reply.send(
-        await svc.listRuns(orgId, simulationType, limit),
-      );
+      return reply.send(await svc.listRuns(orgId, simulationType, limit));
     },
   );
 
