@@ -48,6 +48,7 @@
     { "path": "../../packages/modules/org-dna" },
     { "path": "../../packages/modules/org-health" },
     { "path": "../../packages/modules/workflow-generator" },
-    { "path": "../../packages/modules/self-healing" }
+    { "path": "../../packages/modules/self-healing" },
+    { "path": "../../packages/modules/ai-deployment" }
   ]
 }

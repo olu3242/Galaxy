@@ -1,5 +1,5 @@
 import type { Pool } from 'pg';
-import type { HealingLevel, HealingRule } from '../types.js';
+import type { HealingRule, HealingLevel } from '../types.js';
 
 interface RuleRow {
   id: string;
@@ -13,7 +13,7 @@ interface RuleRow {
   created_at: Date;
 }
 
-function rowToRule(row: RuleRow): HealingRule {
+function mapRule(row: RuleRow): HealingRule {
   return {
     id: row.id,
     organizationId: row.organization_id,
@@ -39,44 +39,58 @@ export class HealingRuleService {
     priority = 0,
   ): Promise<HealingRule> {
     await this.pool.query('SELECT set_config($1, $2, true)', ['app.current_tenant', orgId]);
+
     const result = await this.pool.query<RuleRow>(
       `INSERT INTO healing_rules (organization_id, level, name, condition, action, priority)
-       VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
+       VALUES ($1, $2, $3, $4, $5, $6)
+       RETURNING *`,
       [orgId, level, name, JSON.stringify(condition), action, priority],
     );
+
     const row = result.rows[0];
-    if (!row) throw new Error('Failed to create healing rule');
-    return rowToRule(row);
+    if (row === undefined) throw new Error('Failed to create healing rule');
+    return mapRule(row);
   }
 
   async listRules(orgId: string, level?: HealingLevel): Promise<HealingRule[]> {
     await this.pool.query('SELECT set_config($1, $2, true)', ['app.current_tenant', orgId]);
-    const params: unknown[] = [orgId];
-    const where = level ? ' AND level = $2' : '';
-    if (level) params.push(level);
+
+    if (level !== undefined) {
+      const result = await this.pool.query<RuleRow>(
+        'SELECT * FROM healing_rules WHERE organization_id = $1 AND level = $2 ORDER BY priority DESC',
+        [orgId, level],
+      );
+      return result.rows.map(mapRule);
+    }
+
     const result = await this.pool.query<RuleRow>(
-      `SELECT * FROM healing_rules WHERE organization_id = $1${where} ORDER BY priority DESC`,
-      params,
+      'SELECT * FROM healing_rules WHERE organization_id = $1 ORDER BY priority DESC',
+      [orgId],
     );
-    return result.rows.map(rowToRule);
+    return result.rows.map(mapRule);
   }
 
   async toggleRule(orgId: string, ruleId: string, enabled: boolean): Promise<HealingRule> {
     await this.pool.query('SELECT set_config($1, $2, true)', ['app.current_tenant', orgId]);
+
     const result = await this.pool.query<RuleRow>(
-      `UPDATE healing_rules SET enabled = $3 WHERE organization_id = $1 AND id = $2 RETURNING *`,
-      [orgId, ruleId, enabled],
+      `UPDATE healing_rules SET enabled = $3
+       WHERE id = $1 AND organization_id = $2
+       RETURNING *`,
+      [ruleId, orgId, enabled],
     );
+
     const row = result.rows[0];
-    if (!row) throw new Error('Rule not found');
-    return rowToRule(row);
+    if (row === undefined) throw new Error('Healing rule not found');
+    return mapRule(row);
   }
 
   async deleteRule(orgId: string, ruleId: string): Promise<void> {
     await this.pool.query('SELECT set_config($1, $2, true)', ['app.current_tenant', orgId]);
-    await this.pool.query('DELETE FROM healing_rules WHERE organization_id = $1 AND id = $2', [
-      orgId,
+
+    await this.pool.query('DELETE FROM healing_rules WHERE id = $1 AND organization_id = $2', [
       ruleId,
+      orgId,
     ]);
   }
 }
