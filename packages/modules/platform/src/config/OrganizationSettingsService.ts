@@ -1,5 +1,6 @@
 import type { Pool } from 'pg';
 import { ConfigurationService } from './ConfigurationService.js';
+import type { OrgConfiguration } from './ConfigurationService.js';
 
 export interface ConfigSchema {
   namespace: string;
@@ -33,7 +34,12 @@ export class OrganizationSettingsService {
     return schema?.defaultValue ?? null;
   }
 
-  async setSetting(organizationId: string, namespace: string, key: string, value: string) {
+  async setSetting(
+    organizationId: string,
+    namespace: string,
+    key: string,
+    value: string,
+  ): Promise<OrgConfiguration> {
     return this.configService.set({ organizationId, namespace, key, value });
   }
 
