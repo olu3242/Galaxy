@@ -9,18 +9,22 @@ Six enhancements were made to the Galaxy landing page V3. Four new sections were
 ## Sections Added
 
 ### 1. BeforeAfterSection
+
 **Position:** Directly below Hero  
 **Purpose:** Immediately surface the value proposition by contrasting the painful status quo with the Galaxy outcome. Two glass cards (muted red for "Before", teal for "After") with scroll-reveal animations and icon-per-item layout.
 
 ### 2. ExecutionFlowSection
+
 **Position:** Below HowItWorks  
 **Purpose:** Show a simple, visual 5-step operational flow — Request → Assignment → Tracking → Approval → Outcome — using customer-only language. Horizontal on desktop with connecting lines, vertical on mobile.
 
 ### 3. PlaybooksSection
+
 **Position:** Below OrganizationGallery  
 **Purpose:** Reduce perceived setup friction by showing pre-built operational patterns for 8 organization types. 4-column grid on desktop with emoji icons, hover effect, and staggered reveal.
 
 ### 4. TrustGovernanceSection
+
 **Position:** Before Testimonials  
 **Purpose:** Address governance and accountability concerns directly. 2×2 grid of glass cards covering: Complete Visibility, Role-Based Access, Approval Controls, Complete History.
 
@@ -29,6 +33,7 @@ Six enhancements were made to the Galaxy landing page V3. Four new sections were
 ## Enhancements to Existing Sections
 
 ### 5. Testimonials.tsx
+
 - Added `orgType` and `orgSize` fields to each testimonial (Church · 850 members, NGO · 120 staff, School · 1,200 students)
 - Added a prominent outcome metric chip per testimonial:
   - "Zero missed follow-ups since launch"
@@ -37,6 +42,7 @@ Six enhancements were made to the Galaxy landing page V3. Four new sections were
 - Outcome chips are displayed as teal highlight badges above the author attribution
 
 ### 6. CTA.tsx
+
 - Added 3 trust bullet points below the email form:
   - "Get started in minutes — no complex setup"
   - "Members join easily — no software installation required"

@@ -61,12 +61,7 @@ export class InvoiceService {
       `INSERT INTO invoices (organization_id, amount_cents, currency, status, due_date)
        VALUES ($1, $2, $3, 'draft', $4)
        RETURNING *`,
-      [
-        input.organizationId,
-        input.amountCents,
-        input.currency ?? 'USD',
-        input.dueDate ?? null,
-      ],
+      [input.organizationId, input.amountCents, input.currency ?? 'USD', input.dueDate ?? null],
     );
     const row = result.rows[0];
     if (!row) throw new Error('Failed to create invoice');
