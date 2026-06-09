@@ -104,9 +104,8 @@ export class FailureRegistryService {
     for (const row of result.rows) {
       const cat = row.category;
       const st = row.status;
-      if (!metrics[cat]) metrics[cat] = {};
-      const catMetrics = metrics[cat];
-      if (catMetrics !== undefined) catMetrics[st] = parseInt(row.count, 10);
+      metrics[cat] ??= {};
+      metrics[cat][st] = parseInt(row.count, 10);
     }
     return metrics;
   }

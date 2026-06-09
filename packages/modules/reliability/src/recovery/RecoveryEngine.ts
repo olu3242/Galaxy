@@ -1,5 +1,5 @@
 import type { Pool } from 'pg';
-import type { RetryPolicy, RetryRecord, RetryStatus } from './types.js';
+import type { RetryPolicy, RetryRecord, RetryStatus, RecoveryChannel } from './types.js';
 
 interface PolicyRow {
   id: string;
@@ -38,7 +38,7 @@ function rowToPolicy(row: PolicyRow): RetryPolicy {
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     ...(row.fallback_channel !== null
-      ? { fallbackChannel: row.fallback_channel as import('./types.js').RecoveryChannel }
+      ? { fallbackChannel: row.fallback_channel as RecoveryChannel }
       : {}),
   };
 }
@@ -67,7 +67,7 @@ export class RecoveryEngine {
     resourceType: string,
     maxRetries: number,
     backoffSeconds: number,
-    fallbackChannel?: import('./types.js').RecoveryChannel,
+    fallbackChannel?: RecoveryChannel,
   ): Promise<RetryPolicy> {
     await this.pool.query('SELECT set_config($1, $2, true)', ['app.current_tenant', orgId]);
     const result = await this.pool.query<PolicyRow>(
