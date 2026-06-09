@@ -9,6 +9,9 @@ const testimonials = [
     name: 'Pastor Emmanuel Adeyinka',
     role: 'Senior Pastor',
     org: 'Covenant Chapel, Lagos',
+    orgType: 'Church',
+    orgSize: '850 members',
+    outcome: 'Zero missed follow-ups since launch',
     initial: 'E',
     color: 'bg-galaxy-violet',
   },
@@ -18,6 +21,9 @@ const testimonials = [
     name: 'Mary Okonkwo',
     role: 'Executive Director',
     org: 'Hope Rising Foundation',
+    orgType: 'NGO',
+    orgSize: '120 staff & volunteers',
+    outcome: 'Reduced reporting time by 60%',
     initial: 'M',
     color: 'bg-galaxy-teal',
   },
@@ -27,6 +33,9 @@ const testimonials = [
     name: 'Thomas Chen',
     role: 'Principal',
     org: 'Westview International School',
+    orgType: 'School',
+    orgSize: '1,200 students',
+    outcome: 'Improved staff accountability by 40%',
     initial: 'T',
     color: 'bg-galaxy-blue',
   },
@@ -76,16 +85,23 @@ export default function Testimonials(): React.ReactElement {
               <p className="text-galaxy-slate leading-relaxed text-sm flex-1 mb-6">
                 &ldquo;{t.quote}&rdquo;
               </p>
+              <div className="mb-5 inline-flex items-center gap-2 text-xs font-medium text-galaxy-teal bg-galaxy-teal/10 px-3 py-1.5 rounded-full">
+                <div className="w-1.5 h-1.5 rounded-full bg-galaxy-teal" />
+                {t.outcome}
+              </div>
               <div className="flex items-center gap-3 pt-5 border-t border-white/5">
                 <div
                   className={`w-10 h-10 rounded-full ${t.color} flex items-center justify-center text-white font-bold flex-shrink-0`}
                 >
                   {t.initial}
                 </div>
-                <div>
+                <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-galaxy-white">{t.name}</p>
                   <p className="text-xs text-galaxy-muted">
                     {t.role} · {t.org}
+                  </p>
+                  <p className="text-xs text-galaxy-muted/60 mt-0.5">
+                    {t.orgType} · {t.orgSize}
                   </p>
                 </div>
               </div>
