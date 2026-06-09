@@ -6,20 +6,20 @@ Phase 4.7-4.8 has been fully implemented as a new `@galaxy/platform` package (`p
 
 ## What Was Built
 
-| Workstream | Services | Tables |
-|---|---|---|
-| A — Platform Admin | PlatformAdminService, OrganizationRegistryService | platform_admin_actions, platform_admin_metrics |
-| B — Tenant Operations | TenantOperationsService, TenantHealthService | tenants, tenant_settings, tenant_health, tenant_limits |
-| C — Org Lifecycle | OrganizationLifecycleService, ReadinessScoringService | org_lifecycle_events, org_readiness_scores, org_health_checkpoints |
-| D — Feature Management | FeatureFlagService, EntitlementService | feature_flags, feature_entitlements, plan_features |
-| E — Configuration | ConfigurationService, OrganizationSettingsService | org_configurations, config_schemas |
-| F — Observability | MetricsService, PlatformHealthService | platform_metrics, platform_health_snapshots |
-| G — Audit & Support | AuditService, SupportService | support_tickets, admin_notes (+ existing audit_logs) |
-| H — Billing | BillingService, InvoiceService, PaymentService | billing_accounts, billing_profiles, invoices, invoice_items, payments, credits |
-| I — Subscriptions | SubscriptionService, PlanService, TrialService | plans, subscriptions, subscription_events |
-| J — Usage Metering | UsageMeteringService, QuotaService | usage_events, usage_records, usage_limits, usage_alerts |
-| K — Revenue Ops | RevenueOperationsService, CustomerHealthService | revenue_snapshots, customer_health_scores |
-| L — Commercial | CommercialPolicyService | commercial_policies, entitlement_mappings |
+| Workstream             | Services                                              | Tables                                                                         |
+| ---------------------- | ----------------------------------------------------- | ------------------------------------------------------------------------------ |
+| A — Platform Admin     | PlatformAdminService, OrganizationRegistryService     | platform_admin_actions, platform_admin_metrics                                 |
+| B — Tenant Operations  | TenantOperationsService, TenantHealthService          | tenants, tenant_settings, tenant_health, tenant_limits                         |
+| C — Org Lifecycle      | OrganizationLifecycleService, ReadinessScoringService | org_lifecycle_events, org_readiness_scores, org_health_checkpoints             |
+| D — Feature Management | FeatureFlagService, EntitlementService                | feature_flags, feature_entitlements, plan_features                             |
+| E — Configuration      | ConfigurationService, OrganizationSettingsService     | org_configurations, config_schemas                                             |
+| F — Observability      | MetricsService, PlatformHealthService                 | platform_metrics, platform_health_snapshots                                    |
+| G — Audit & Support    | AuditService, SupportService                          | support_tickets, admin_notes (+ existing audit_logs)                           |
+| H — Billing            | BillingService, InvoiceService, PaymentService        | billing_accounts, billing_profiles, invoices, invoice_items, payments, credits |
+| I — Subscriptions      | SubscriptionService, PlanService, TrialService        | plans, subscriptions, subscription_events                                      |
+| J — Usage Metering     | UsageMeteringService, QuotaService                    | usage_events, usage_records, usage_limits, usage_alerts                        |
+| K — Revenue Ops        | RevenueOperationsService, CustomerHealthService       | revenue_snapshots, customer_health_scores                                      |
+| L — Commercial         | CommercialPolicyService                               | commercial_policies, entitlement_mappings                                      |
 
 ## Migrations
 

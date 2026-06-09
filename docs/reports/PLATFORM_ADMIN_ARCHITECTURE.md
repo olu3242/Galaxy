@@ -15,6 +15,7 @@ The Platform Admin module (`@galaxy/platform`, workstreams A and B) provides glo
 ## API Endpoints
 
 Routes are registered under `/api/v1/platform` and include:
+
 - `POST /admin/metrics` — record a platform metric
 - `GET /admin/metrics` — list metrics with optional filters
 - `GET /tenants`, `POST /tenants`, `GET /tenants/:tenantId` — tenant CRUD
