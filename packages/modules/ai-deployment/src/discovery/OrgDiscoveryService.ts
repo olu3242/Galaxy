@@ -33,9 +33,7 @@ function mapSession(row: SessionRow): OrgDiscoverySession {
     status: row.status as OrgDiscoverySession['status'],
     createdAt: row.created_at,
     updatedAt: row.updated_at,
-    ...(row.generated_structure !== null
-      ? { generatedStructure: row.generated_structure }
-      : {}),
+    ...(row.generated_structure !== null ? { generatedStructure: row.generated_structure } : {}),
   };
 }
 
@@ -102,7 +100,13 @@ export class OrgDiscoveryService {
              generated_structure = $5, updated_at = NOW()
          WHERE id = $1 AND organization_id = $2
          RETURNING *`,
-        [sessionId, orgId, JSON.stringify(updatedResponses), nextStep, JSON.stringify(generatedStructure)],
+        [
+          sessionId,
+          orgId,
+          JSON.stringify(updatedResponses),
+          nextStep,
+          JSON.stringify(generatedStructure),
+        ],
       );
 
       const row = result.rows[0];
