@@ -2,7 +2,7 @@
   "name": "@galaxy/api",
   "version": "0.1.0",
   "private": true,
-  "description": "Galaxy API \u2014 Fastify REST + WebSocket server",
+  "description": "Galaxy API — Fastify REST + WebSocket server",
   "type": "module",
   "scripts": {
     "build": "tsc --build",
