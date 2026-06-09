@@ -34,6 +34,8 @@ import { autonomousIntelligenceRoutes } from './routes/autonomous-intelligence.j
 import { digitalTwinRoutes } from './routes/digital-twin.js';
 import { policyEngineRoutes } from './routes/policy-engine.js';
 import { orgDnaRoutes } from './routes/org-dna.js';
+import { orgHealthRoutes } from './routes/org-health.js';
+import { workflowGeneratorRoutes } from './routes/workflow-generator.js';
 
 declare module 'fastify' {
   interface FastifyInstance {
@@ -100,6 +102,8 @@ async function buildApp(): Promise<FastifyInstance> {
   await fastify.register(digitalTwinRoutes, { prefix: '/api/v1' });
   await fastify.register(policyEngineRoutes, { prefix: '/api/v1' });
   await fastify.register(orgDnaRoutes, { prefix: '/api/v1' });
+  await fastify.register(orgHealthRoutes, { prefix: '/api/v1' });
+  await fastify.register(workflowGeneratorRoutes, { prefix: '/api/v1' });
 
   // Graceful shutdown
   fastify.addHook('onClose', async () => {

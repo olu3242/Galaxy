@@ -135,6 +135,9 @@ importers:
       '@galaxy/org-dna':
         specifier: workspace:*
         version: link:../../packages/modules/org-dna
+      '@galaxy/org-health':
+        specifier: workspace:*
+        version: link:../../packages/modules/org-health
       '@galaxy/org-memory':
         specifier: workspace:*
         version: link:../../packages/modules/org-memory
@@ -168,6 +171,9 @@ importers:
       '@galaxy/workflow':
         specifier: workspace:*
         version: link:../../packages/modules/workflow
+      '@galaxy/workflow-generator':
+        specifier: workspace:*
+        version: link:../../packages/modules/workflow-generator
       bullmq:
         specifier: ^5.0.0
         version: 5.78.0
@@ -875,6 +881,25 @@ importers:
         specifier: ^5.3.0
         version: 5.9.3
 
+  packages/modules/org-health:
+    dependencies:
+      pg:
+        specifier: ^8.11.0
+        version: 8.21.0
+    devDependencies:
+      '@types/node':
+        specifier: ^20.0.0
+        version: 20.19.42
+      '@types/pg':
+        specifier: ^8.11.0
+        version: 8.20.0
+      eslint:
+        specifier: ^9.0.0
+        version: 9.39.4(jiti@1.21.7)
+      typescript:
+        specifier: ^5.3.0
+        version: 5.9.3
+
   packages/modules/org-memory:
     dependencies:
       pg:
@@ -1075,6 +1100,25 @@ importers:
       vitest:
         specifier: ^2.0.0
         version: 2.1.9(@types/node@20.19.42)
+
+  packages/modules/workflow-generator:
+    dependencies:
+      pg:
+        specifier: ^8.11.0
+        version: 8.21.0
+    devDependencies:
+      '@types/node':
+        specifier: ^20.0.0
+        version: 20.19.42
+      '@types/pg':
+        specifier: ^8.11.0
+        version: 8.20.0
+      eslint:
+        specifier: ^9.0.0
+        version: 9.39.4(jiti@1.21.7)
+      typescript:
+        specifier: ^5.3.0
+        version: 5.9.3
 
   packages/types:
     devDependencies:
