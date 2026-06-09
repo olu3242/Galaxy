@@ -162,6 +162,9 @@ importers:
       '@galaxy/predictive':
         specifier: workspace:*
         version: link:../../packages/modules/predictive
+      '@galaxy/reliability':
+        specifier: workspace:*
+        version: link:../../packages/modules/reliability
       '@galaxy/risk-intelligence':
         specifier: workspace:*
         version: link:../../packages/modules/risk-intelligence

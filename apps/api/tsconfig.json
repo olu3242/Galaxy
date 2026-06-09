@@ -132,6 +132,9 @@
     },
     {
       "path": "../../packages/modules/mission-control"
+    },
+    {
+      "path": "../../packages/modules/reliability"
     }
   ]
 }
