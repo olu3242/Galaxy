@@ -65,6 +65,7 @@
     "@galaxy/org-dna": "workspace:*",
     "@galaxy/org-health": "workspace:*",
     "@galaxy/workflow-generator": "workspace:*",
+    "@galaxy/self-healing": "workspace:*",
     "bullmq": "^5.0.0",
     "fastify": "^4.28.0",
     "ioredis": "^5.4.0",

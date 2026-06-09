@@ -47,6 +47,7 @@
     { "path": "../../packages/modules/policy-engine" },
     { "path": "../../packages/modules/org-dna" },
     { "path": "../../packages/modules/org-health" },
-    { "path": "../../packages/modules/workflow-generator" }
+    { "path": "../../packages/modules/workflow-generator" },
+    { "path": "../../packages/modules/self-healing" }
   ]
 }
