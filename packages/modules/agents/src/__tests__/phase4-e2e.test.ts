@@ -25,7 +25,7 @@ const ACTOR_ID = '00000000-0000-0000-0000-000000000002';
 const CORR_ID = '00000000-0000-0000-0000-000000000099';
 const NOW = '2026-01-01T00:00:00.000Z';
 
-function ok<T>(rows: T[]): QueryResult<T> {
+function ok<T extends object>(rows: T[]): QueryResult<T> {
   return { rows, rowCount: rows.length, command: 'SELECT', oid: 0, fields: [] };
 }
 
@@ -791,32 +791,35 @@ describe('AgentRuntime', () => {
     await expect(r.approveExecution(ORG, EXEC_ID, ACTOR_ID)).rejects.toThrow('Execution not found');
   });
 
+  const baseExecution: import('../types.js').AgentExecution = {
+    id: EXEC_ID,
+    organizationId: ORG,
+    agentId: AGENT_ID,
+    triggerType: 'manual',
+    triggerData: {},
+    status: 'completed',
+    input: {},
+    output: {},
+    decisions: [],
+    recommendations: [],
+    requiresHumanApproval: false,
+    correlationId: CORR_ID,
+    createdAt: NOW,
+    updatedAt: NOW,
+  };
+
   it('buildRiskAssessmentsFromExecution — derives riskLevel from score', () => {
     const assessments = runtime.buildRiskAssessmentsFromExecution({
-      ...execRow,
+      ...baseExecution,
       riskScore: 85,
-      status: 'completed',
-      triggerType: 'manual',
-      triggerData: {},
-      output: {},
-      decisions: [],
-      recommendations: [],
-      requiresHumanApproval: false,
     });
     expect(assessments[0]?.riskLevel).toBe('critical');
   });
 
   it('buildRiskAssessmentsFromExecution — low score maps to low riskLevel', () => {
     const assessments = runtime.buildRiskAssessmentsFromExecution({
-      ...execRow,
+      ...baseExecution,
       riskScore: 10,
-      status: 'completed',
-      triggerType: 'manual',
-      triggerData: {},
-      output: {},
-      decisions: [],
-      recommendations: [],
-      requiresHumanApproval: false,
     });
     expect(assessments[0]?.riskLevel).toBe('low');
   });
