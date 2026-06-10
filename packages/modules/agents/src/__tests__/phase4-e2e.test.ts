@@ -8,6 +8,7 @@
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import type { Pool, QueryResult } from 'pg';
+import type { AgentExecution } from '../types.js';
 import { AgentRegistryService } from '../registry/AgentRegistryService.js';
 import { AgentRuntime } from '../runtime/AgentRuntime.js';
 import { DecisionEngine } from '../decisions/DecisionEngine.js';
@@ -791,7 +792,7 @@ describe('AgentRuntime', () => {
     await expect(r.approveExecution(ORG, EXEC_ID, ACTOR_ID)).rejects.toThrow('Execution not found');
   });
 
-  const baseExecution: import('../types.js').AgentExecution = {
+  const baseExecution: AgentExecution = {
     id: EXEC_ID,
     organizationId: ORG,
     agentId: AGENT_ID,
@@ -837,7 +838,7 @@ describe('Cross-tenant isolation — set_config called before every query', () =
 
     const query = pool.query as ReturnType<typeof vi.fn>;
     const calls = query.mock.calls as [string, unknown[]][];
-    const configs = calls.filter(([sql]) => (sql as string).includes('set_config'));
+    const configs = calls.filter(([sql]) => (sql).includes('set_config'));
     // each call is [sql, [key, value]] — tenant is the second param element
     expect((configs[0]?.[1] as string[])[1]).toBe('tenant-A');
     expect((configs[1]?.[1] as string[])[1]).toBe('tenant-B');
