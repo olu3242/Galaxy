@@ -44,7 +44,10 @@ export class PaymentService {
   constructor(private readonly pool: Pool) {}
 
   async recordPayment(input: RecordPaymentInput): Promise<Payment> {
-    await this.pool.query('SELECT set_config($1, $2, true)', ['app.current_tenant', input.organizationId]);
+    await this.pool.query('SELECT set_config($1, $2, true)', [
+      'app.current_tenant',
+      input.organizationId,
+    ]);
     const result = await this.pool.query<PaymentRow>(
       `INSERT INTO payments
          (organization_id, invoice_id, amount_cents, currency, status, payment_method, external_id, metadata, paid_at)
@@ -70,7 +73,10 @@ export class PaymentService {
     limit?: number;
     offset?: number;
   }): Promise<Payment[]> {
-    await this.pool.query('SELECT set_config($1, $2, true)', ['app.current_tenant', opts.organizationId]);
+    await this.pool.query('SELECT set_config($1, $2, true)', [
+      'app.current_tenant',
+      opts.organizationId,
+    ]);
     const params: unknown[] = [opts.organizationId];
     let idx = 2;
 
@@ -99,7 +105,7 @@ export class PaymentService {
       status: row.status as PaymentStatus,
       paymentMethod: row.payment_method,
       externalId: row.external_id,
-      metadata: row.metadata ?? {},
+      metadata: row.metadata,
       paidAt: row.paid_at,
       createdAt: row.created_at,
     };

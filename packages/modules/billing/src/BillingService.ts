@@ -50,7 +50,10 @@ export class BillingService {
   constructor(private readonly pool: Pool) {}
 
   async createBillingAccount(input: CreateBillingAccountInput): Promise<BillingAccount> {
-    await this.pool.query('SELECT set_config($1, $2, true)', ['app.current_tenant', input.organizationId]);
+    await this.pool.query('SELECT set_config($1, $2, true)', [
+      'app.current_tenant',
+      input.organizationId,
+    ]);
     const result = await this.pool.query<AccountRow>(
       `INSERT INTO billing_accounts
          (organization_id, status, currency, billing_email, billing_name, billing_address, metadata)
@@ -139,8 +142,8 @@ export class BillingService {
       currency: row.currency,
       billingEmail: row.billing_email,
       billingName: row.billing_name,
-      billingAddress: row.billing_address ?? {},
-      metadata: row.metadata ?? {},
+      billingAddress: row.billing_address,
+      metadata: row.metadata,
       createdAt: row.created_at,
       updatedAt: row.updated_at,
     };
