@@ -10,12 +10,14 @@ Galaxy Loop OS has achieved full commercial infrastructure readiness. All critic
 ## Commercial Infrastructure Status
 
 ### Billing ✅
+
 - Billing accounts with full profile management
 - Invoice generation, listing, and payment tracking
 - Payment recording with external payment provider support
 - Credit and refund ledger tables
 
 ### Subscriptions ✅
+
 - Four plan tiers: Starter, Growth, Professional, Enterprise
 - Custom plan creation for enterprise deals
 - Trial management with configurable trial periods (default 14 days)
@@ -23,18 +25,21 @@ Galaxy Loop OS has achieved full commercial infrastructure readiness. All critic
 - Subscription upgrade/downgrade/cancel/renew lifecycle
 
 ### Usage Metering ✅
+
 - Real-time usage event recording per org/subscription
 - Five usage dimensions: workflows, agents, API calls, storage, member seats
 - Automated quota enforcement with 80% threshold alerts
 - Usage aggregation by billing period
 
 ### Revenue Operations ✅
+
 - MRR/ARR tracking
 - Expansion revenue estimation
 - Churn rate and retention rate computation
 - Customer health scoring (activity + engagement + payment history)
 
 ### Commercial Controls ✅
+
 - Pricing configuration management
 - Billing policy framework
 - Subscription renewal enforcement
@@ -42,12 +47,12 @@ Galaxy Loop OS has achieved full commercial infrastructure readiness. All critic
 
 ## Pricing Architecture
 
-| Plan | Monthly (USD) | Annual Discount | Target Segment |
-|------|--------------|-----------------|----------------|
-| Starter | TBD | 0% | Small teams (≤25 members) |
-| Growth | TBD | 15-20% | Growing businesses (≤100) |
-| Professional | TBD | 20% | Mid-market (≤500) |
-| Enterprise | Custom | Custom | Large enterprise (unlimited) |
+| Plan         | Monthly (USD) | Annual Discount | Target Segment               |
+| ------------ | ------------- | --------------- | ---------------------------- |
+| Starter      | TBD           | 0%              | Small teams (≤25 members)    |
+| Growth       | TBD           | 15-20%          | Growing businesses (≤100)    |
+| Professional | TBD           | 20%             | Mid-market (≤500)            |
+| Enterprise   | Custom        | Custom          | Large enterprise (unlimited) |
 
 ## Readiness Checklist
 

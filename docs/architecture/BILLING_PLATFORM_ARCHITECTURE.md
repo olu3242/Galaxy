@@ -36,16 +36,17 @@ packages/modules/billing/src/
 
 ## Plan Tiers
 
-| Tier | Members | Workflows | Agents | API Calls/mo | Storage |
-|------|---------|-----------|--------|--------------|---------|
-| Starter | 25 | 50 | 3 | 10,000 | 512 MB |
-| Growth | 100 | 200 | 10 | 100,000 | 2 GB |
-| Professional | 500 | 1,000 | 50 | 1,000,000 | 10 GB |
-| Enterprise | 10,000 | 10,000 | 1,000 | 10,000,000 | 100 GB |
+| Tier         | Members | Workflows | Agents | API Calls/mo | Storage |
+| ------------ | ------- | --------- | ------ | ------------ | ------- |
+| Starter      | 25      | 50        | 3      | 10,000       | 512 MB  |
+| Growth       | 100     | 200       | 10     | 100,000      | 2 GB    |
+| Professional | 500     | 1,000     | 50     | 1,000,000    | 10 GB   |
+| Enterprise   | 10,000  | 10,000    | 1,000  | 10,000,000   | 100 GB  |
 
 ## Usage Metering
 
 Usage events are recorded per `(organizationId, subscriptionId, eventType)`. Supported event types:
+
 - `workflow_run` — workflow execution
 - `agent_execution` — AI agent action
 - `api_call` — external API invocation
@@ -57,6 +58,7 @@ Quota enforcement runs at event check time and raises `usage_alerts` at 80% thre
 ## Revenue Metrics
 
 `RevenueOperationsService` computes:
+
 - **MRR** — sum of `monthly_price_cents` for active subscriptions
 - **ARR** — MRR × 12
 - **Expansion Revenue** — estimated 5% MRR uplift
@@ -66,6 +68,7 @@ Quota enforcement runs at event check time and raises `usage_alerts` at 80% thre
 ## Customer Health Scoring
 
 `CustomerHealthService` produces a 0-100 health score per org:
+
 - Activity score (0-33): based on audit log event count in last 30 days
 - Engagement score (0-33): based on days since last activity
 - Payment score (0-34): based on failed payment count
@@ -74,25 +77,25 @@ Quota enforcement runs at event check time and raises `usage_alerts` at 80% thre
 
 Routes registered under `/api/v1/billing/v2/...`.
 
-| Method | Path | Description |
-|--------|------|-------------|
-| POST | /billing/v2/accounts | Create billing account |
-| GET | /billing/v2/accounts/:orgId | Get billing account |
-| PATCH | /billing/v2/accounts/:orgId | Update billing account |
-| POST | /billing/v2/payments | Record payment |
-| GET | /billing/v2/organizations/:orgId/payments | List payments |
-| GET | /billing/v2/plans | List plans |
-| POST | /billing/v2/plans | Create plan (admin) |
-| DELETE | /billing/v2/plans/:planId | Deactivate plan (admin) |
-| POST | /billing/v2/organizations/:orgId/trials | Start trial |
-| GET | /billing/v2/organizations/:orgId/trials | Get trial status |
-| POST | /billing/v2/organizations/:orgId/trials/convert | Convert trial to paid |
-| GET | /billing/v2/organizations/:orgId/quota/:eventType | Check quota |
-| GET | /billing/v2/organizations/:orgId/usage-alerts | Get usage alerts |
-| GET | /billing/v2/revenue/metrics | Revenue metrics (admin) |
-| GET | /billing/v2/organizations/:orgId/health | Customer health |
-| GET | /billing/v2/pricing | Pricing config |
-| GET | /billing/v2/policies/:key | Get billing policy (admin) |
-| PUT | /billing/v2/policies/:key | Set billing policy (admin) |
-| POST | /billing/v2/organizations/:orgId/governance/renew | Enforce renewal |
-| GET | /billing/v2/organizations/:orgId/enterprise-access/:feature | Enterprise access check |
+| Method | Path                                                        | Description                |
+| ------ | ----------------------------------------------------------- | -------------------------- |
+| POST   | /billing/v2/accounts                                        | Create billing account     |
+| GET    | /billing/v2/accounts/:orgId                                 | Get billing account        |
+| PATCH  | /billing/v2/accounts/:orgId                                 | Update billing account     |
+| POST   | /billing/v2/payments                                        | Record payment             |
+| GET    | /billing/v2/organizations/:orgId/payments                   | List payments              |
+| GET    | /billing/v2/plans                                           | List plans                 |
+| POST   | /billing/v2/plans                                           | Create plan (admin)        |
+| DELETE | /billing/v2/plans/:planId                                   | Deactivate plan (admin)    |
+| POST   | /billing/v2/organizations/:orgId/trials                     | Start trial                |
+| GET    | /billing/v2/organizations/:orgId/trials                     | Get trial status           |
+| POST   | /billing/v2/organizations/:orgId/trials/convert             | Convert trial to paid      |
+| GET    | /billing/v2/organizations/:orgId/quota/:eventType           | Check quota                |
+| GET    | /billing/v2/organizations/:orgId/usage-alerts               | Get usage alerts           |
+| GET    | /billing/v2/revenue/metrics                                 | Revenue metrics (admin)    |
+| GET    | /billing/v2/organizations/:orgId/health                     | Customer health            |
+| GET    | /billing/v2/pricing                                         | Pricing config             |
+| GET    | /billing/v2/policies/:key                                   | Get billing policy (admin) |
+| PUT    | /billing/v2/policies/:key                                   | Set billing policy (admin) |
+| POST   | /billing/v2/organizations/:orgId/governance/renew           | Enforce renewal            |
+| GET    | /billing/v2/organizations/:orgId/enterprise-access/:feature | Enterprise access check    |

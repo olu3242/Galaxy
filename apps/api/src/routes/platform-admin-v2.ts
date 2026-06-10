@@ -13,7 +13,7 @@ import {
   SupportService,
 } from '@galaxy/platform-admin';
 import type {
-  TenantLifecycleStatus,
+  TenantStatus,
   ConfigScope,
   TicketStatus,
   TicketPriority,
@@ -58,7 +58,7 @@ export function platformAdminV2Routes(fastify: FastifyInstance): void {
       if (!requireAdmin(request, reply)) return;
       const svc = new PlatformAdminService(fastify.pg);
       const orgs = await svc.getOrgDirectory({
-        ...(request.query.status ? { status: request.query.status as TenantLifecycleStatus } : {}),
+        ...(request.query.status ? { status: request.query.status as TenantStatus } : {}),
         ...(request.query.limit ? { limit: parseInt(request.query.limit, 10) } : {}),
         ...(request.query.offset ? { offset: parseInt(request.query.offset, 10) } : {}),
       });

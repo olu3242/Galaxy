@@ -41,53 +41,59 @@ packages/modules/platform-admin/src/
 ## Key Design Principles
 
 ### 1. Tenant Lifecycle State Machine
+
 Tenants progress through: `provisioning → active → suspended → reactivated → archived`.
 All transitions are logged in `tenant_lifecycle` for full auditability.
 
 ### 2. Feature Entitlement Hierarchy
+
 Feature access is resolved in order:
+
 1. Org-level override (`org_feature_overrides`) — takes precedence
 2. Plan-tier entitlement (`feature_entitlements`)
 3. Default deny
 
 ### 3. Configuration Scopes
+
 Org configurations are namespaced by `scope`: `workflow | approval | notification | security | policy`.
 Department-level overrides inherit from org-level.
 
 ### 4. Observability
+
 - `MetricsService` aggregates cross-tenant platform metrics
 - `PlatformHealthService` runs real-time health checks and computes SLOs
 
 ### 5. Audit Log Immutability
+
 `platform_audit_logs` is INSERT-only. Application code never performs UPDATE or DELETE on this table.
 
 ## API Routes
 
 All routes registered under `/api/v1/admin/v2/...` with `x-admin-secret` header authentication.
 
-| Method | Path | Description |
-|--------|------|-------------|
-| GET | /admin/v2/dashboard | Aggregate platform metrics |
-| GET | /admin/v2/health | Platform health summary |
-| GET | /admin/v2/orgs | Org directory |
-| POST | /admin/v2/tenants | Create tenant |
-| POST | /admin/v2/tenants/:orgId/provision | Provision tenant |
-| POST | /admin/v2/tenants/:orgId/activate | Activate tenant |
-| POST | /admin/v2/tenants/:orgId/suspend | Suspend tenant |
-| POST | /admin/v2/tenants/:orgId/reactivate | Reactivate tenant |
-| POST | /admin/v2/tenants/:orgId/archive | Archive tenant |
-| GET | /admin/v2/orgs/:orgId/lifecycle | Lifecycle state |
-| GET | /admin/v2/orgs/:orgId/readiness | Readiness score |
-| GET | /admin/v2/entitlements/:planTier | Plan entitlements |
-| POST | /admin/v2/entitlements | Upsert entitlement |
-| POST | /admin/v2/orgs/:orgId/feature-overrides | Set org feature override |
-| GET | /admin/v2/orgs/:orgId/config | List org configs |
-| PUT | /admin/v2/orgs/:orgId/config/:scope/:key | Set org config |
-| GET | /admin/v2/metrics/platform | Platform metrics |
-| GET | /admin/v2/metrics/tenant/:orgId | Tenant metrics |
-| GET | /admin/v2/health-checks | Run health checks |
-| GET | /admin/v2/audit-logs | Query audit logs |
-| GET | /admin/v2/support/tickets | List support tickets |
-| POST | /admin/v2/support/tickets | Create support ticket |
-| PATCH | /admin/v2/support/tickets/:ticketId/status | Update ticket status |
-| POST | /admin/v2/support/tickets/:ticketId/notes | Add ticket note |
+| Method | Path                                       | Description                |
+| ------ | ------------------------------------------ | -------------------------- |
+| GET    | /admin/v2/dashboard                        | Aggregate platform metrics |
+| GET    | /admin/v2/health                           | Platform health summary    |
+| GET    | /admin/v2/orgs                             | Org directory              |
+| POST   | /admin/v2/tenants                          | Create tenant              |
+| POST   | /admin/v2/tenants/:orgId/provision         | Provision tenant           |
+| POST   | /admin/v2/tenants/:orgId/activate          | Activate tenant            |
+| POST   | /admin/v2/tenants/:orgId/suspend           | Suspend tenant             |
+| POST   | /admin/v2/tenants/:orgId/reactivate        | Reactivate tenant          |
+| POST   | /admin/v2/tenants/:orgId/archive           | Archive tenant             |
+| GET    | /admin/v2/orgs/:orgId/lifecycle            | Lifecycle state            |
+| GET    | /admin/v2/orgs/:orgId/readiness            | Readiness score            |
+| GET    | /admin/v2/entitlements/:planTier           | Plan entitlements          |
+| POST   | /admin/v2/entitlements                     | Upsert entitlement         |
+| POST   | /admin/v2/orgs/:orgId/feature-overrides    | Set org feature override   |
+| GET    | /admin/v2/orgs/:orgId/config               | List org configs           |
+| PUT    | /admin/v2/orgs/:orgId/config/:scope/:key   | Set org config             |
+| GET    | /admin/v2/metrics/platform                 | Platform metrics           |
+| GET    | /admin/v2/metrics/tenant/:orgId            | Tenant metrics             |
+| GET    | /admin/v2/health-checks                    | Run health checks          |
+| GET    | /admin/v2/audit-logs                       | Query audit logs           |
+| GET    | /admin/v2/support/tickets                  | List support tickets       |
+| POST   | /admin/v2/support/tickets                  | Create support ticket      |
+| PATCH  | /admin/v2/support/tickets/:ticketId/status | Update ticket status       |
+| POST   | /admin/v2/support/tickets/:ticketId/notes  | Add ticket note            |
