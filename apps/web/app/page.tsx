@@ -379,6 +379,77 @@ export default function GalaxyPage(): React.ReactElement {
         </div>
       </section>
 
+      {/* BEFORE / AFTER */}
+      <section className="before-after-section">
+        <div className="section-header centered reveal">
+          <div className="section-chip">The Shift</div>
+          <h2 className="section-h2">
+            Before Galaxy.
+            <br />
+            After Galaxy.
+          </h2>
+          <p className="section-sub" style={{ textAlign: 'center' }}>
+            The difference isn&apos;t just efficiency — it&apos;s the confidence that comes from
+            knowing your organization is actually running.
+          </p>
+        </div>
+        <div className="ba-grid reveal">
+          <div className="ba-card before">
+            <div className="ba-label">
+              <span className="ba-label-dot"></span>Before Galaxy
+            </div>
+            <ul className="ba-items">
+              <li className="ba-item">
+                <span className="ba-item-icon">✗</span>Decisions buried in group chat — forgotten by
+                morning
+              </li>
+              <li className="ba-item">
+                <span className="ba-item-icon">✗</span>Tasks assigned verbally with no record or
+                follow-up
+              </li>
+              <li className="ba-item">
+                <span className="ba-item-icon">✗</span>Monthly reports take days to compile manually
+              </li>
+              <li className="ba-item">
+                <span className="ba-item-icon">✗</span>Leaders flying blind without real-time
+                visibility
+              </li>
+              <li className="ba-item">
+                <span className="ba-item-icon">✗</span>Coordination collapses as the organization
+                grows
+              </li>
+            </ul>
+          </div>
+          <div className="ba-card after">
+            <div className="ba-label">
+              <span className="ba-label-dot"></span>After Galaxy
+            </div>
+            <ul className="ba-items">
+              <li className="ba-item">
+                <span className="ba-item-icon">✓</span>Every decision is logged, timestamped, and
+                searchable
+              </li>
+              <li className="ba-item">
+                <span className="ba-item-icon">✓</span>Tasks have owners, deadlines, and automatic
+                reminders
+              </li>
+              <li className="ba-item">
+                <span className="ba-item-icon">✓</span>Reports generate themselves — ready in
+                minutes
+              </li>
+              <li className="ba-item">
+                <span className="ba-item-icon">✓</span>Real-time dashboards keep leaders fully
+                informed
+              </li>
+              <li className="ba-item">
+                <span className="ba-item-icon">✓</span>Structure scales automatically with your
+                growth
+              </li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
       {/* TRUST SECTION */}
       <section className="trust-section" id="customers">
         <div className="trust-label-row reveal">
@@ -580,6 +651,60 @@ export default function GalaxyPage(): React.ReactElement {
         </div>
       </section>
 
+      {/* EXECUTION FLOW */}
+      <section className="execution-flow-section">
+        <div className="section-header centered reveal">
+          <div className="section-chip">How It Works In Practice</div>
+          <h2 className="section-h2">From Conversation To Outcome</h2>
+          <p className="section-sub" style={{ textAlign: 'center' }}>
+            Every operation in your organization follows a simple, traceable path.
+          </p>
+        </div>
+        <div className="flow-steps reveal">
+          <div className="flow-step">
+            <div className="flow-step-num">1</div>
+            <div className="flow-step-title">Conversation</div>
+            <div className="flow-step-desc">
+              Your team communicates exactly as they do now — via WhatsApp. No new apps required.
+            </div>
+          </div>
+          <div className="flow-connector"></div>
+          <div className="flow-step">
+            <div className="flow-step-num">2</div>
+            <div className="flow-step-title">Action</div>
+            <div className="flow-step-desc">
+              Galaxy captures the intent — a task, approval, report, or decision — and structures it
+              automatically.
+            </div>
+          </div>
+          <div className="flow-connector"></div>
+          <div className="flow-step">
+            <div className="flow-step-num">3</div>
+            <div className="flow-step-title">Ownership</div>
+            <div className="flow-step-desc">
+              Every action is assigned to a named owner with a clear deadline and a tracked status.
+            </div>
+          </div>
+          <div className="flow-connector"></div>
+          <div className="flow-step">
+            <div className="flow-step-num">4</div>
+            <div className="flow-step-title">Tracking</div>
+            <div className="flow-step-desc">
+              Reminders go out automatically. Overdue items are escalated. Nothing falls through the
+              cracks.
+            </div>
+          </div>
+          <div className="flow-connector"></div>
+          <div className="flow-step">
+            <div className="flow-step-num">5</div>
+            <div className="flow-step-title">Outcome</div>
+            <div className="flow-step-desc">
+              Completion is logged with a timestamp and owner. Your audit trail builds itself.
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* BENTO GALLERY */}
       <section className="bento-section">
         <div className="section-header centered reveal">
@@ -663,6 +788,96 @@ export default function GalaxyPage(): React.ReactElement {
         </div>
       </section>
 
+      {/* PLAYBOOKS */}
+      <section className="playbooks-section">
+        <div className="section-header centered reveal">
+          <div className="section-chip">What Galaxy Manages</div>
+          <h2 className="section-h2">
+            Ready-To-Run Playbooks
+            <br />
+            For Every Team
+          </h2>
+          <p className="section-sub" style={{ textAlign: 'center' }}>
+            Galaxy comes pre-configured with the operational patterns your organization type already
+            runs — no setup from scratch.
+          </p>
+        </div>
+        <div className="playbooks-grid reveal">
+          <div className="playbook-item">
+            <div className="playbook-icon">📋</div>
+            <div className="playbook-title">Member Onboarding</div>
+            <div className="playbook-desc">
+              Capture new member details, assign follow-up owners, and track completion from
+              introduction to active status.
+            </div>
+            <span className="playbook-tag">Churches · Associations · NGOs</span>
+          </div>
+          <div className="playbook-item">
+            <div className="playbook-icon">✅</div>
+            <div className="playbook-title">Approval Workflows</div>
+            <div className="playbook-desc">
+              Route requests to the right approver, capture the decision, and log the outcome with
+              full audit trail.
+            </div>
+            <span className="playbook-tag">All Organizations</span>
+          </div>
+          <div className="playbook-item">
+            <div className="playbook-icon">📊</div>
+            <div className="playbook-title">Periodic Reporting</div>
+            <div className="playbook-desc">
+              Collect status updates from teams on schedule and compile them into a structured
+              report automatically.
+            </div>
+            <span className="playbook-tag">NGOs · Schools · Cooperatives</span>
+          </div>
+          <div className="playbook-item">
+            <div className="playbook-icon">📅</div>
+            <div className="playbook-title">Event Coordination</div>
+            <div className="playbook-desc">
+              Assign roles, track preparation tasks, manage RSVPs, and capture attendance — all from
+              WhatsApp.
+            </div>
+            <span className="playbook-tag">Churches · Communities</span>
+          </div>
+          <div className="playbook-item">
+            <div className="playbook-icon">💰</div>
+            <div className="playbook-title">Dues &amp; Contribution Tracking</div>
+            <div className="playbook-desc">
+              Record payments, send reminders to members in arrears, and generate collection
+              summaries without a spreadsheet.
+            </div>
+            <span className="playbook-tag">Cooperatives · Churches · Associations</span>
+          </div>
+          <div className="playbook-item">
+            <div className="playbook-icon">📌</div>
+            <div className="playbook-title">Field Operations</div>
+            <div className="playbook-desc">
+              Coordinate distributed teams, collect field data, and surface issues to headquarters
+              in real time.
+            </div>
+            <span className="playbook-tag">NGOs · Health Orgs</span>
+          </div>
+          <div className="playbook-item">
+            <div className="playbook-icon">🏫</div>
+            <div className="playbook-title">Academic Administration</div>
+            <div className="playbook-desc">
+              Manage teacher–parent communication, track attendance, and coordinate between
+              departments without friction.
+            </div>
+            <span className="playbook-tag">Schools</span>
+          </div>
+          <div className="playbook-item">
+            <div className="playbook-icon">📂</div>
+            <div className="playbook-title">Governance &amp; Compliance</div>
+            <div className="playbook-desc">
+              Record decisions from board or leadership meetings with full attribution, timestamps,
+              and searchable history.
+            </div>
+            <span className="playbook-tag">All Organizations</span>
+          </div>
+        </div>
+      </section>
+
       {/* OUTCOMES SECTION */}
       <section className="outcomes-section">
         <div className="outcomes-inner">
@@ -719,6 +934,64 @@ export default function GalaxyPage(): React.ReactElement {
         </div>
       </section>
 
+      {/* TRUST & GOVERNANCE */}
+      <section className="trust-gov-section">
+        <div className="section-header centered reveal">
+          <div className="section-chip">Built-In Accountability</div>
+          <h2 className="section-h2">Your Organization&apos;s Integrity, Protected</h2>
+          <p className="section-sub" style={{ textAlign: 'center' }}>
+            Galaxy isn&apos;t just an operations tool — it&apos;s the accountability layer your
+            organization has always needed.
+          </p>
+        </div>
+        <div className="trust-gov-grid reveal">
+          <div className="tg-card">
+            <div className="tg-icon">🔒</div>
+            <div className="tg-title">Security &amp; Isolation</div>
+            <div className="tg-tagline">Your data stays yours</div>
+            <ul className="tg-points">
+              <li className="tg-point">Each organization&apos;s data is completely isolated</li>
+              <li className="tg-point">End-to-end encryption in transit and at rest</li>
+              <li className="tg-point">Role-based access — members only see what they need</li>
+            </ul>
+          </div>
+          <div className="tg-card">
+            <div className="tg-icon">📋</div>
+            <div className="tg-title">Accountability</div>
+            <div className="tg-tagline">Every action has an owner</div>
+            <ul className="tg-points">
+              <li className="tg-point">Named ownership on every task, decision, and approval</li>
+              <li className="tg-point">
+                Automatic reminders and escalation when items are overdue
+              </li>
+              <li className="tg-point">
+                No more &ldquo;I didn&apos;t know it was my responsibility&rdquo;
+              </li>
+            </ul>
+          </div>
+          <div className="tg-card">
+            <div className="tg-icon">👁️</div>
+            <div className="tg-title">Visibility</div>
+            <div className="tg-tagline">Leaders always know</div>
+            <ul className="tg-points">
+              <li className="tg-point">Real-time dashboards for senior leadership</li>
+              <li className="tg-point">Cross-team status at a glance — no manual check-ins</li>
+              <li className="tg-point">Instant access to historical records and decisions</li>
+            </ul>
+          </div>
+          <div className="tg-card">
+            <div className="tg-icon">⚖️</div>
+            <div className="tg-title">Oversight</div>
+            <div className="tg-tagline">Built-in governance by default</div>
+            <ul className="tg-points">
+              <li className="tg-point">Immutable audit log for every operation</li>
+              <li className="tg-point">Approval chains enforced automatically</li>
+              <li className="tg-point">Full documentation for boards, donors, and regulators</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
       {/* TESTIMONIALS */}
       <section className="testimonials-section" id="testimonials">
         <div className="section-header centered reveal">
@@ -741,8 +1014,12 @@ export default function GalaxyPage(): React.ReactElement {
               <div>
                 <div className="testi-name">Pastor Emmanuel Adeyinka</div>
                 <div className="testi-role">Senior Pastor · Covenant Chapel Lagos</div>
+                <div className="testi-meta">Church · 800 members · Lagos, Nigeria</div>
               </div>
               <span className="testi-org-badge">Church</span>
+            </div>
+            <div className="testi-outcome">
+              <span className="testi-outcome-stat">↓ 80%</span> time spent chasing follow-ups
             </div>
           </div>
           <div className="testi-card reveal reveal-delay-1">
@@ -762,8 +1039,12 @@ export default function GalaxyPage(): React.ReactElement {
               <div>
                 <div className="testi-name">Mary Okonkwo</div>
                 <div className="testi-role">Country Director · Greenfields Foundation</div>
+                <div className="testi-meta">NGO · 3 countries · 120 field staff</div>
               </div>
               <span className="testi-org-badge">NGO</span>
+            </div>
+            <div className="testi-outcome">
+              <span className="testi-outcome-stat">100%</span> field visibility from headquarters
             </div>
           </div>
           <div className="testi-card reveal reveal-delay-2">
@@ -782,8 +1063,12 @@ export default function GalaxyPage(): React.ReactElement {
               <div>
                 <div className="testi-name">Thomas Chen</div>
                 <div className="testi-role">Executive Director · Community First Network</div>
+                <div className="testi-meta">Association · 400 members · Regional network</div>
               </div>
               <span className="testi-org-badge">Association</span>
+            </div>
+            <div className="testi-outcome">
+              <span className="testi-outcome-stat">↓ 90%</span> reporting time — 2 days to 20 mins
             </div>
           </div>
         </div>
@@ -832,14 +1117,28 @@ export default function GalaxyPage(): React.ReactElement {
             Early Access · Limited Spots
           </div>
           <h2 className="cta-h2">
-            Ready To Run Your Organization
+            Get Started In Minutes.
             <br />
-            <span className="accent">More Effectively?</span>
+            <span className="accent">No Disruption. No Learning Curve.</span>
           </h2>
           <p className="cta-sub">
-            Join forward-thinking organizations using Galaxy to stay organized, accountable, and
-            productive — without disrupting how their teams communicate.
+            Your team keeps communicating exactly as they do today. Galaxy layers structure,
+            accountability, and visibility on top — without asking anyone to change their behavior.
           </p>
+          <div className="cta-trust-strip">
+            <div className="cta-trust-item">
+              <span>✓</span> Get started in minutes
+            </div>
+            <div className="cta-trust-item">
+              <span>✓</span> No software installation for members
+            </div>
+            <div className="cta-trust-item">
+              <span>✓</span> Works with the tools your team already uses
+            </div>
+            <div className="cta-trust-item">
+              <span>✓</span> Hands-on onboarding included
+            </div>
+          </div>
           <div className="cta-actions">
             <a href="mailto:hello@galaxyos.co" className="btn-hero-primary">
               Book a Demo
@@ -893,9 +1192,7 @@ export default function GalaxyPage(): React.ReactElement {
               {ctaMsg.text}
             </div>
           )}
-          <p className="cta-note">
-            No credit card required. Hands-on onboarding included for early access organizations.
-          </p>
+          <p className="cta-note">No credit card required. No software installs for your team.</p>
         </div>
       </section>
 

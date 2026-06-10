@@ -1253,7 +1253,8 @@ nav.scrolled {
 .cta-bg-grid {
   position: absolute;
   inset: 0;
-  background-image: linear-gradient(rgba(109, 93, 252, 0.04) 1px, transparent 1px),
+  background-image:
+    linear-gradient(rgba(109, 93, 252, 0.04) 1px, transparent 1px),
     linear-gradient(90deg, rgba(109, 93, 252, 0.04) 1px, transparent 1px);
   background-size: 60px 60px;
   mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 0%, transparent 100%);
@@ -1538,5 +1539,433 @@ footer {
   }
   .mobile-close {
     right: 24px;
+  }
+}
+
+/* ─────────────── BEFORE / AFTER ─────────────── */
+.before-after-section {
+  padding: 120px 80px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+.ba-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-top: 64px;
+}
+.ba-card {
+  border-radius: var(--r2);
+  padding: 44px 40px;
+  position: relative;
+  overflow: hidden;
+}
+.ba-card.before {
+  background: rgba(239, 68, 68, 0.04);
+  border: 1px solid rgba(239, 68, 68, 0.12);
+}
+.ba-card.after {
+  background: rgba(34, 199, 169, 0.04);
+  border: 1px solid rgba(34, 199, 169, 0.12);
+}
+.ba-card-glow {
+  position: absolute;
+  top: -60px;
+  right: -60px;
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  pointer-events: none;
+}
+.ba-card.before .ba-card-glow {
+  background: radial-gradient(circle, rgba(239, 68, 68, 0.08) 0%, transparent 70%);
+}
+.ba-card.after .ba-card-glow {
+  background: radial-gradient(circle, rgba(34, 199, 169, 0.08) 0%, transparent 70%);
+}
+.ba-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 32px;
+  padding: 6px 14px;
+  border-radius: 100px;
+}
+.ba-card.before .ba-label {
+  background: rgba(239, 68, 68, 0.1);
+  color: #f87171;
+}
+.ba-card.after .ba-label {
+  background: rgba(34, 199, 169, 0.1);
+  color: var(--gteal);
+}
+.ba-label-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+.ba-card.before .ba-label-dot {
+  background: #ef4444;
+}
+.ba-card.after .ba-label-dot {
+  background: var(--gteal);
+  box-shadow: 0 0 6px var(--gteal);
+  animation: pulse 2s infinite;
+}
+.ba-items {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.ba-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.5;
+}
+.ba-card.before .ba-item {
+  color: var(--gs);
+}
+.ba-card.after .ba-item {
+  color: var(--gw);
+}
+.ba-item-icon {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+}
+.ba-card.before .ba-item-icon {
+  background: rgba(239, 68, 68, 0.1);
+  color: #f87171;
+}
+.ba-card.after .ba-item-icon {
+  background: rgba(34, 199, 169, 0.1);
+  color: var(--gteal);
+}
+.ba-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 8px;
+}
+
+/* ─────────────── EXECUTION FLOW ─────────────── */
+.execution-flow-section {
+  padding: 120px 80px;
+  background: rgba(15, 23, 42, 0.3);
+  border-top: 1px solid var(--gborder2);
+}
+.execution-flow-inner {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+.flow-steps {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  margin-top: 64px;
+  flex-wrap: wrap;
+}
+.flow-step {
+  flex: 1;
+  min-width: 160px;
+  text-align: center;
+  padding: 32px 20px;
+  position: relative;
+}
+.flow-step-num {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(109, 93, 252, 0.15), rgba(77, 124, 254, 0.08));
+  border: 1px solid rgba(109, 93, 252, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px;
+  font-size: 20px;
+  transition: all 0.3s;
+}
+.flow-step:hover .flow-step-num {
+  background: linear-gradient(135deg, var(--gv), var(--gblue));
+  border-color: var(--gv);
+  box-shadow: 0 0 24px rgba(109, 93, 252, 0.4);
+}
+.flow-step-title {
+  font-family: var(--font-head);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--gw);
+  margin-bottom: 8px;
+  letter-spacing: -0.3px;
+}
+.flow-step-desc {
+  font-size: 13px;
+  color: var(--gm);
+  line-height: 1.6;
+}
+.flow-connector {
+  width: 48px;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(109, 93, 252, 0.3), rgba(77, 124, 254, 0.3));
+  flex-shrink: 0;
+  position: relative;
+}
+.flow-connector::after {
+  content: '';
+  position: absolute;
+  right: -4px;
+  top: -3px;
+  width: 7px;
+  height: 7px;
+  border-right: 1.5px solid rgba(109, 93, 252, 0.5);
+  border-top: 1.5px solid rgba(109, 93, 252, 0.5);
+  transform: rotate(45deg);
+}
+
+/* ─────────────── TRUST GOVERNANCE ─────────────── */
+.trust-gov-section {
+  padding: 120px 80px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+.trust-gov-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-top: 64px;
+}
+.tg-card {
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid var(--gborder);
+  border-radius: var(--r2);
+  padding: 36px 28px;
+  transition: all 0.3s;
+  position: relative;
+  overflow: hidden;
+}
+.tg-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--gv), var(--gblue));
+  transform: scaleX(0);
+  transition: transform 0.3s;
+  transform-origin: left;
+}
+.tg-card:hover {
+  border-color: rgba(109, 93, 252, 0.2);
+  transform: translateY(-3px);
+}
+.tg-card:hover::before {
+  transform: scaleX(1);
+}
+.tg-icon {
+  font-size: 32px;
+  margin-bottom: 20px;
+}
+.tg-title {
+  font-family: var(--font-head);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--gw);
+  margin-bottom: 12px;
+  letter-spacing: -0.3px;
+}
+.tg-tagline {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--gv2);
+  margin-bottom: 16px;
+  font-style: italic;
+}
+.tg-points {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.tg-point {
+  font-size: 13px;
+  color: var(--gm);
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  line-height: 1.5;
+}
+.tg-point::before {
+  content: '·';
+  color: var(--gv2);
+  font-weight: 700;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* ─────────────── PLAYBOOKS ─────────────── */
+.playbooks-section {
+  padding: 120px 80px;
+  background: rgba(15, 23, 42, 0.3);
+  border-top: 1px solid var(--gborder2);
+}
+.playbooks-inner {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+.playbooks-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-top: 64px;
+}
+.playbook-item {
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid var(--gborder);
+  border-radius: var(--r);
+  padding: 24px 20px;
+  transition: all 0.25s;
+  cursor: default;
+  position: relative;
+  overflow: hidden;
+}
+.playbook-item::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(109, 93, 252, 0.06) 0%, transparent 60%);
+  opacity: 0;
+  transition: opacity 0.25s;
+}
+.playbook-item:hover {
+  border-color: rgba(109, 93, 252, 0.25);
+  transform: translateY(-2px);
+}
+.playbook-item:hover::after {
+  opacity: 1;
+}
+.playbook-icon {
+  font-size: 24px;
+  margin-bottom: 12px;
+}
+.playbook-title {
+  font-family: var(--font-head);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--gw);
+  margin-bottom: 6px;
+  letter-spacing: -0.2px;
+}
+.playbook-desc {
+  font-size: 12px;
+  color: var(--gm);
+  line-height: 1.55;
+}
+.playbook-tag {
+  display: inline-block;
+  margin-top: 12px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--gv2);
+  background: rgba(109, 93, 252, 0.08);
+  border: 1px solid rgba(109, 93, 252, 0.15);
+  border-radius: 100px;
+  padding: 3px 10px;
+}
+
+/* ─────────────── CTA ENHANCED ─────────────── */
+.cta-trust-strip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+  flex-wrap: wrap;
+  margin-top: 32px;
+  margin-bottom: 8px;
+}
+.cta-trust-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--gm);
+}
+.cta-trust-item span {
+  font-size: 15px;
+}
+
+/* ─────────────── TESTIMONIAL ENHANCEMENTS ─────────────── */
+.testi-meta {
+  font-size: 11px;
+  color: var(--gm);
+  margin-top: 2px;
+  letter-spacing: 0.3px;
+}
+.testi-outcome {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: 12px;
+  color: var(--gm);
+}
+.testi-outcome-stat {
+  font-family: var(--font-head);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--gteal);
+  margin-right: 4px;
+}
+
+/* ─────────────── RESPONSIVE ADDITIONS ─────────────── */
+@media (max-width: 1100px) {
+  .ba-grid {
+    grid-template-columns: 1fr;
+  }
+  .trust-gov-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .playbooks-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .flow-steps {
+    flex-wrap: wrap;
+    gap: 0;
+  }
+}
+@media (max-width: 768px) {
+  .before-after-section,
+  .execution-flow-section,
+  .trust-gov-section,
+  .playbooks-section {
+    padding: 80px 24px;
+  }
+  .trust-gov-grid {
+    grid-template-columns: 1fr;
+  }
+  .playbooks-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .flow-connector {
+    display: none;
+  }
+  .flow-steps {
+    gap: 0;
+  }
+  .flow-step {
+    min-width: 140px;
   }
 }
