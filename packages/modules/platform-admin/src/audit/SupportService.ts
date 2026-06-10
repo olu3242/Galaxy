@@ -61,13 +61,22 @@ export class SupportService {
   constructor(private readonly pool: Pool) {}
 
   async createTicket(input: CreateTicketInput): Promise<SupportTicket> {
-    await this.pool.query('SELECT set_config($1, $2, true)', ['app.current_tenant', input.organizationId]);
+    await this.pool.query('SELECT set_config($1, $2, true)', [
+      'app.current_tenant',
+      input.organizationId,
+    ]);
     const result = await this.pool.query<TicketRow>(
       `INSERT INTO support_tickets
          (organization_id, submitted_by, subject, description, status, priority)
        VALUES ($1, $2, $3, $4, 'open', $5)
        RETURNING *`,
-      [input.organizationId, input.submittedBy, input.subject, input.description, input.priority ?? 'medium'],
+      [
+        input.organizationId,
+        input.submittedBy,
+        input.subject,
+        input.description,
+        input.priority ?? 'medium',
+      ],
     );
     const row = result.rows[0];
     if (!row) throw new Error('Ticket creation failed');

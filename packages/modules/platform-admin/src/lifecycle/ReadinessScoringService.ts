@@ -46,11 +46,13 @@ export class ReadinessScoringService {
 
     const memberScore = Math.min(25, memberCount * 5);
     const workflowScore = Math.min(25, workflowCount * 3 + activeWorkflows * 2);
-    const activityScore = daysSinceActivity < 1 ? 25 : daysSinceActivity < 7 ? 20 : daysSinceActivity < 30 ? 10 : 0;
+    const activityScore =
+      daysSinceActivity < 1 ? 25 : daysSinceActivity < 7 ? 20 : daysSinceActivity < 30 ? 10 : 0;
     const configurationScore = memberCount > 0 && workflowCount > 0 ? 25 : 0;
 
     const score = memberScore + workflowScore + activityScore + configurationScore;
-    const grade = score >= 90 ? 'A' : score >= 75 ? 'B' : score >= 60 ? 'C' : score >= 40 ? 'D' : 'F';
+    const grade =
+      score >= 90 ? 'A' : score >= 75 ? 'B' : score >= 60 ? 'C' : score >= 40 ? 'D' : 'F';
 
     return {
       organizationId: orgId,

@@ -12,7 +12,12 @@ import {
   AuditService,
   SupportService,
 } from '@galaxy/platform-admin';
-import type { TenantLifecycleStatus, ConfigScope, TicketStatus, TicketPriority } from '@galaxy/platform-admin';
+import type {
+  TenantLifecycleStatus,
+  ConfigScope,
+  TicketStatus,
+  TicketPriority,
+} from '@galaxy/platform-admin';
 
 const ADMIN_SECRET = process.env.PLATFORM_ADMIN_SECRET ?? '';
 
@@ -45,15 +50,17 @@ export function platformAdminV2Routes(fastify: FastifyInstance): void {
   fastify.get(
     '/admin/v2/orgs',
     async (
-      request: FastifyRequest<{ Querystring: { status?: string; limit?: string; offset?: string } }>,
+      request: FastifyRequest<{
+        Querystring: { status?: string; limit?: string; offset?: string };
+      }>,
       reply: FastifyReply,
     ) => {
       if (!requireAdmin(request, reply)) return;
       const svc = new PlatformAdminService(fastify.pg);
       const orgs = await svc.getOrgDirectory({
-        status: request.query.status as TenantLifecycleStatus | undefined,
-        limit: request.query.limit ? parseInt(request.query.limit, 10) : undefined,
-        offset: request.query.offset ? parseInt(request.query.offset, 10) : undefined,
+        ...(request.query.status ? { status: request.query.status as TenantLifecycleStatus } : {}),
+        ...(request.query.limit ? { limit: parseInt(request.query.limit, 10) } : {}),
+        ...(request.query.offset ? { offset: parseInt(request.query.offset, 10) } : {}),
       });
       return reply.send({ orgs });
     },
@@ -62,15 +69,17 @@ export function platformAdminV2Routes(fastify: FastifyInstance): void {
   fastify.get(
     '/admin/v2/users',
     async (
-      request: FastifyRequest<{ Querystring: { organizationId?: string; limit?: string; offset?: string } }>,
+      request: FastifyRequest<{
+        Querystring: { organizationId?: string; limit?: string; offset?: string };
+      }>,
       reply: FastifyReply,
     ) => {
       if (!requireAdmin(request, reply)) return;
       const svc = new PlatformAdminService(fastify.pg);
       const users = await svc.getUserDirectory({
-        organizationId: request.query.organizationId,
-        limit: request.query.limit ? parseInt(request.query.limit, 10) : undefined,
-        offset: request.query.offset ? parseInt(request.query.offset, 10) : undefined,
+        ...(request.query.organizationId ? { organizationId: request.query.organizationId } : {}),
+        ...(request.query.limit ? { limit: parseInt(request.query.limit, 10) } : {}),
+        ...(request.query.offset ? { offset: parseInt(request.query.offset, 10) } : {}),
       });
       return reply.send({ users });
     },
@@ -81,7 +90,9 @@ export function platformAdminV2Routes(fastify: FastifyInstance): void {
   fastify.post(
     '/admin/v2/tenants',
     async (
-      request: FastifyRequest<{ Body: { name: string; slug: string; plan: string; adminEmail: string } }>,
+      request: FastifyRequest<{
+        Body: { name: string; slug: string; plan: string; adminEmail: string };
+      }>,
       reply: FastifyReply,
     ) => {
       if (!requireAdmin(request, reply)) return;
@@ -205,7 +216,12 @@ export function platformAdminV2Routes(fastify: FastifyInstance): void {
     '/admin/v2/entitlements',
     async (
       request: FastifyRequest<{
-        Body: { planTier: string; featureKey: string; isEnabled: boolean; config?: Record<string, unknown> };
+        Body: {
+          planTier: string;
+          featureKey: string;
+          isEnabled: boolean;
+          config?: Record<string, unknown>;
+        };
       }>,
       reply: FastifyReply,
     ) => {
@@ -229,7 +245,12 @@ export function platformAdminV2Routes(fastify: FastifyInstance): void {
       if (!requireAdmin(request, reply)) return;
       const svc = new EntitlementService(fastify.pg);
       const { featureKey, isEnabled, reason } = request.body;
-      const override = await svc.setOrgOverride(request.params.orgId, featureKey, isEnabled, reason);
+      const override = await svc.setOrgOverride(
+        request.params.orgId,
+        featureKey,
+        isEnabled,
+        reason,
+      );
       return reply.send({ override });
     },
   );
@@ -244,7 +265,10 @@ export function platformAdminV2Routes(fastify: FastifyInstance): void {
     ) => {
       if (!requireAdmin(request, reply)) return;
       const svc = new ConfigurationService(fastify.pg);
-      const configs = await svc.listConfigs(request.params.orgId, request.query.scope as ConfigScope | undefined);
+      const configs = await svc.listConfigs(
+        request.params.orgId,
+        request.query.scope as ConfigScope | undefined,
+      );
       return reply.send({ configs });
     },
   );
@@ -293,15 +317,12 @@ export function platformAdminV2Routes(fastify: FastifyInstance): void {
     },
   );
 
-  fastify.get(
-    '/admin/v2/health-checks',
-    async (request: FastifyRequest, reply: FastifyReply) => {
-      if (!requireAdmin(request, reply)) return;
-      const svc = new PlatformHealthService(fastify.pg);
-      const report = await svc.runHealthChecks();
-      return reply.send({ report });
-    },
-  );
+  fastify.get('/admin/v2/health-checks', async (request: FastifyRequest, reply: FastifyReply) => {
+    if (!requireAdmin(request, reply)) return;
+    const svc = new PlatformHealthService(fastify.pg);
+    const report = await svc.runHealthChecks();
+    return reply.send({ report });
+  });
 
   // ── Audit (Workstream G) ──────────────────────────────────────────────────
 
@@ -309,16 +330,22 @@ export function platformAdminV2Routes(fastify: FastifyInstance): void {
     '/admin/v2/audit-logs',
     async (
       request: FastifyRequest<{
-        Querystring: { organizationId?: string; actorId?: string; action?: string; limit?: string; offset?: string };
+        Querystring: {
+          organizationId?: string;
+          actorId?: string;
+          action?: string;
+          limit?: string;
+          offset?: string;
+        };
       }>,
       reply: FastifyReply,
     ) => {
       if (!requireAdmin(request, reply)) return;
       const svc = new AuditService(fastify.pg);
       const logs = await svc.queryLogs({
-        organizationId: request.query.organizationId,
-        actorId: request.query.actorId,
-        action: request.query.action,
+        ...(request.query.organizationId ? { organizationId: request.query.organizationId } : {}),
+        ...(request.query.actorId ? { actorId: request.query.actorId } : {}),
+        ...(request.query.action ? { action: request.query.action } : {}),
         limit: request.query.limit ? parseInt(request.query.limit, 10) : 50,
         offset: request.query.offset ? parseInt(request.query.offset, 10) : 0,
       });
@@ -339,8 +366,8 @@ export function platformAdminV2Routes(fastify: FastifyInstance): void {
       if (!requireAdmin(request, reply)) return;
       const svc = new SupportService(fastify.pg);
       const tickets = await svc.listTickets({
-        organizationId: request.query.organizationId,
-        status: request.query.status as TicketStatus | undefined,
+        ...(request.query.organizationId ? { organizationId: request.query.organizationId } : {}),
+        ...(request.query.status ? { status: request.query.status as TicketStatus } : {}),
         limit: request.query.limit ? parseInt(request.query.limit, 10) : 50,
         offset: request.query.offset ? parseInt(request.query.offset, 10) : 0,
       });

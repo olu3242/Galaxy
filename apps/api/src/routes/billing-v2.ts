@@ -77,7 +77,10 @@ export function billingV2Routes(fastify: FastifyInstance): void {
   fastify.get(
     '/billing/v2/organizations/:orgId/payments',
     async (
-      request: FastifyRequest<{ Params: { orgId: string }; Querystring: { limit?: string; offset?: string } }>,
+      request: FastifyRequest<{
+        Params: { orgId: string };
+        Querystring: { limit?: string; offset?: string };
+      }>,
       reply: FastifyReply,
     ) => {
       const svc = new PaymentService(fastify.pg);
@@ -123,11 +126,18 @@ export function billingV2Routes(fastify: FastifyInstance): void {
   fastify.post(
     '/billing/v2/organizations/:orgId/trials',
     async (
-      request: FastifyRequest<{ Params: { orgId: string }; Body: { planId: string; trialDays?: number } }>,
+      request: FastifyRequest<{
+        Params: { orgId: string };
+        Body: { planId: string; trialDays?: number };
+      }>,
       reply: FastifyReply,
     ) => {
       const svc = new TrialService(fastify.pg);
-      const trial = await svc.startTrial(request.params.orgId, request.body.planId, request.body.trialDays);
+      const trial = await svc.startTrial(
+        request.params.orgId,
+        request.body.planId,
+        request.body.trialDays,
+      );
       return reply.status(201).send({ trial });
     },
   );
@@ -163,7 +173,10 @@ export function billingV2Routes(fastify: FastifyInstance): void {
       reply: FastifyReply,
     ) => {
       const svc = new QuotaService(fastify.pg);
-      const quota = await svc.checkQuota(request.params.orgId, request.params.eventType as Parameters<QuotaService['checkQuota']>[1]);
+      const quota = await svc.checkQuota(
+        request.params.orgId,
+        request.params.eventType as Parameters<QuotaService['checkQuota']>[1],
+      );
       return reply.send({ quota });
     },
   );
@@ -220,12 +233,19 @@ export function billingV2Routes(fastify: FastifyInstance): void {
   fastify.put(
     '/billing/v2/policies/:key',
     async (
-      request: FastifyRequest<{ Params: { key: string }; Body: { value: unknown; description?: string } }>,
+      request: FastifyRequest<{
+        Params: { key: string };
+        Body: { value: unknown; description?: string };
+      }>,
       reply: FastifyReply,
     ) => {
       if (!requireAdmin(request, reply)) return;
       const svc = new CommercialService(fastify.pg);
-      const policy = await svc.setBillingPolicy(request.params.key, request.body.value, request.body.description);
+      const policy = await svc.setBillingPolicy(
+        request.params.key,
+        request.body.value,
+        request.body.description,
+      );
       return reply.send({ policy });
     },
   );
@@ -247,7 +267,10 @@ export function billingV2Routes(fastify: FastifyInstance): void {
       reply: FastifyReply,
     ) => {
       const svc = new SubscriptionGovernanceService(fastify.pg);
-      const hasAccess = await svc.validateEnterpriseAccess(request.params.orgId, request.params.feature);
+      const hasAccess = await svc.validateEnterpriseAccess(
+        request.params.orgId,
+        request.params.feature,
+      );
       return reply.send({ hasAccess });
     },
   );

@@ -85,7 +85,12 @@ export class SubscriptionGovernanceService {
     );
     const tier = result.rows[0]?.tier;
     if (!tier) return false;
-    const enterpriseFeatures = ['advanced_analytics', 'custom_workflows', 'sso', 'dedicated_support'];
+    const enterpriseFeatures = [
+      'advanced_analytics',
+      'custom_workflows',
+      'sso',
+      'dedicated_support',
+    ];
     if (enterpriseFeatures.includes(requiredFeature)) {
       return tier === 'enterprise';
     }

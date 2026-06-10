@@ -48,15 +48,39 @@ interface OrgRow {
 
 function defaultLimits(plan: string): TenantLimits {
   if (plan === 'enterprise') {
-    return { maxMembers: 10000, maxWorkflows: 10000, maxAgents: 1000, apiCallsPerMonth: 10000000, storageMb: 102400 };
+    return {
+      maxMembers: 10000,
+      maxWorkflows: 10000,
+      maxAgents: 1000,
+      apiCallsPerMonth: 10000000,
+      storageMb: 102400,
+    };
   }
   if (plan === 'professional') {
-    return { maxMembers: 500, maxWorkflows: 1000, maxAgents: 50, apiCallsPerMonth: 1000000, storageMb: 10240 };
+    return {
+      maxMembers: 500,
+      maxWorkflows: 1000,
+      maxAgents: 50,
+      apiCallsPerMonth: 1000000,
+      storageMb: 10240,
+    };
   }
   if (plan === 'growth') {
-    return { maxMembers: 100, maxWorkflows: 200, maxAgents: 10, apiCallsPerMonth: 100000, storageMb: 2048 };
+    return {
+      maxMembers: 100,
+      maxWorkflows: 200,
+      maxAgents: 10,
+      apiCallsPerMonth: 100000,
+      storageMb: 2048,
+    };
   }
-  return { maxMembers: 25, maxWorkflows: 50, maxAgents: 3, apiCallsPerMonth: 10000, storageMb: 512 };
+  return {
+    maxMembers: 25,
+    maxWorkflows: 50,
+    maxAgents: 3,
+    apiCallsPerMonth: 10000,
+    storageMb: 512,
+  };
 }
 
 export class TenantOperationsService {
@@ -84,7 +108,14 @@ export class TenantOperationsService {
          max_agents = EXCLUDED.max_agents,
          api_calls_per_month = EXCLUDED.api_calls_per_month,
          storage_mb = EXCLUDED.storage_mb`,
-      [row.id, limits.maxMembers, limits.maxWorkflows, limits.maxAgents, limits.apiCallsPerMonth, limits.storageMb],
+      [
+        row.id,
+        limits.maxMembers,
+        limits.maxWorkflows,
+        limits.maxAgents,
+        limits.apiCallsPerMonth,
+        limits.storageMb,
+      ],
     );
 
     await this.pool.query(
@@ -128,10 +159,9 @@ export class TenantOperationsService {
 
   async getTenant(orgId: string): Promise<TenantRecord | null> {
     await this.pool.query('SELECT set_config($1, $2, true)', ['app.current_tenant', orgId]);
-    const result = await this.pool.query<OrgRow>(
-      'SELECT * FROM organizations WHERE id = $1',
-      [orgId],
-    );
+    const result = await this.pool.query<OrgRow>('SELECT * FROM organizations WHERE id = $1', [
+      orgId,
+    ]);
     const row = result.rows[0];
     if (!row) return null;
     const limits = await this.getLimits(orgId);
@@ -167,10 +197,7 @@ export class TenantOperationsService {
       max_agents: number;
       api_calls_per_month: number;
       storage_mb: number;
-    }>(
-      'SELECT * FROM tenant_limits WHERE organization_id = $1',
-      [orgId],
-    );
+    }>('SELECT * FROM tenant_limits WHERE organization_id = $1', [orgId]);
     const row = result.rows[0];
     if (!row) return defaultLimits('starter');
     return {
@@ -189,7 +216,7 @@ export class TenantOperationsService {
       slug: row.slug,
       status: row.status as TenantLifecycleStatus,
       plan: row.plan,
-      settings: row.settings ?? {},
+      settings: row.settings,
       limits,
       createdAt: row.created_at,
       updatedAt: row.updated_at,

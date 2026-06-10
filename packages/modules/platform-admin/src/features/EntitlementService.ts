@@ -123,7 +123,7 @@ export class EntitlementService {
       planTier: row.plan_tier,
       featureKey: row.feature_key,
       isEnabled: row.is_enabled,
-      config: row.config ?? {},
+      config: row.config,
       createdAt: row.created_at,
     };
   }

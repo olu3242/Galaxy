@@ -17,7 +17,8 @@ export class RevenueOperationsService {
 
   async getRevenueMetrics(period?: { start: string; end: string }): Promise<RevenueMetrics> {
     const now = new Date();
-    const periodStart = period?.start ?? new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+    const periodStart =
+      period?.start ?? new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
     const periodEnd = period?.end ?? now.toISOString();
 
     const mrrResult = await this.pool.query<{ mrr: string; count: string }>(
@@ -47,7 +48,8 @@ export class RevenueOperationsService {
     const expansionRevenueCents = Math.round(mrrCents * 0.05);
     const netRevenueCents = mrrCents - churnedRevenueCents + expansionRevenueCents;
     const totalBase = activeSubscriptions + parseInt(churnResult.rows[0]?.churned_count ?? '0', 10);
-    const churnRate = totalBase > 0 ? parseInt(churnResult.rows[0]?.churned_count ?? '0', 10) / totalBase : 0;
+    const churnRate =
+      totalBase > 0 ? parseInt(churnResult.rows[0]?.churned_count ?? '0', 10) / totalBase : 0;
     const retentionRate = 1 - churnRate;
 
     return {

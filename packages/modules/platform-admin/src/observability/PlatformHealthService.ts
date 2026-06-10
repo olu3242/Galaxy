@@ -94,7 +94,7 @@ export class PlatformHealthService {
         name: 'tenant_health',
         status,
         latencyMs: Date.now() - start,
-        message: `${suspended}/${total} tenants suspended`,
+        message: `${String(suspended)}/${String(total)} tenants suspended`,
         checkedAt: new Date().toISOString(),
       };
     } catch (err) {

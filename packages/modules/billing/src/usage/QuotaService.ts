@@ -40,7 +40,11 @@ interface AlertRow {
 export class QuotaService {
   constructor(private readonly pool: Pool) {}
 
-  async checkQuota(orgId: string, eventType: UsageEventType, period?: { start: string; end: string }): Promise<QuotaCheck> {
+  async checkQuota(
+    orgId: string,
+    eventType: UsageEventType,
+    period?: { start: string; end: string },
+  ): Promise<QuotaCheck> {
     await this.pool.query('SELECT set_config($1, $2, true)', ['app.current_tenant', orgId]);
 
     const limitResult = await this.pool.query<LimitRow>(
@@ -52,8 +56,10 @@ export class QuotaService {
     const limit = this.getLimitForType(limits, eventType);
 
     const now = new Date();
-    const periodStart = period?.start ?? new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
-    const periodEnd = period?.end ?? new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString();
+    const periodStart =
+      period?.start ?? new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+    const periodEnd =
+      period?.end ?? new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString();
 
     const usageResult = await this.pool.query<{ total: string }>(
       `SELECT COALESCE(SUM(quantity), 0)::text AS total
@@ -91,7 +97,12 @@ export class QuotaService {
     }));
   }
 
-  private async raiseAlert(orgId: string, eventType: string, threshold: number, currentValue: number): Promise<void> {
+  private async raiseAlert(
+    orgId: string,
+    eventType: string,
+    threshold: number,
+    currentValue: number,
+  ): Promise<void> {
     await this.pool.query(
       `INSERT INTO usage_alerts (organization_id, event_type, threshold, current_value)
        VALUES ($1, $2, $3, $4)
@@ -103,11 +114,16 @@ export class QuotaService {
   private getLimitForType(limits: LimitRow | undefined, eventType: UsageEventType): number {
     if (!limits) return 0;
     switch (eventType) {
-      case 'member_seat': return limits.max_members;
-      case 'workflow_run': return limits.api_calls_per_month;
-      case 'agent_execution': return limits.max_agents * 1000;
-      case 'api_call': return limits.api_calls_per_month;
-      case 'storage_mb': return limits.storage_mb;
+      case 'member_seat':
+        return limits.max_members;
+      case 'workflow_run':
+        return limits.api_calls_per_month;
+      case 'agent_execution':
+        return limits.max_agents * 1000;
+      case 'api_call':
+        return limits.api_calls_per_month;
+      case 'storage_mb':
+        return limits.storage_mb;
     }
   }
 }

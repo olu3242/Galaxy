@@ -2,7 +2,12 @@ export * from './types.js';
 
 // Workstream H — Billing Platform
 export { BillingService } from './BillingService.js';
-export type { BillingAccount, CreateBillingAccountInput, UpdateBillingAccountInput, BillingAccountStatus } from './BillingService.js';
+export type {
+  BillingAccount,
+  CreateBillingAccountInput,
+  UpdateBillingAccountInput,
+  BillingAccountStatus,
+} from './BillingService.js';
 export { InvoiceService } from './invoices/InvoiceService.js';
 export { PaymentService } from './PaymentService.js';
 export type { Payment, RecordPaymentInput } from './PaymentService.js';

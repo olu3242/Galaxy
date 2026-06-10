@@ -25,7 +25,11 @@ interface ConfigRow {
 export class ConfigurationService {
   constructor(private readonly pool: Pool) {}
 
-  async getConfig(orgId: string, scope: ConfigScope, key: string): Promise<OrgConfiguration | null> {
+  async getConfig(
+    orgId: string,
+    scope: ConfigScope,
+    key: string,
+  ): Promise<OrgConfiguration | null> {
     await this.pool.query('SELECT set_config($1, $2, true)', ['app.current_tenant', orgId]);
     const result = await this.pool.query<ConfigRow>(
       'SELECT * FROM org_configurations WHERE organization_id = $1 AND scope = $2 AND key = $3 LIMIT 1',

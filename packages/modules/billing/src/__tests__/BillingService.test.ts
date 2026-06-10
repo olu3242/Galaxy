@@ -26,11 +26,13 @@ const accountRow = {
 };
 
 describe('BillingService', () => {
-  beforeEach(() => { vi.clearAllMocks(); });
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
 
   it('createBillingAccount inserts and returns account', async () => {
     const pool = makePool([
-      [],          // set_config
+      [], // set_config
       [accountRow], // INSERT billing_accounts
     ]);
     const svc = new BillingService(pool);
@@ -54,8 +56,8 @@ describe('BillingService', () => {
   it('updateBillingAccount updates fields', async () => {
     const updatedRow = { ...accountRow, billing_email: 'new@acme.com' };
     const pool = makePool([
-      [],            // set_config
-      [updatedRow],  // UPDATE billing_accounts
+      [], // set_config
+      [updatedRow], // UPDATE billing_accounts
     ]);
     const svc = new BillingService(pool);
     const account = await svc.updateBillingAccount('org-1', { billingEmail: 'new@acme.com' });

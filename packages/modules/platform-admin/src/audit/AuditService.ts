@@ -114,7 +114,7 @@ export class AuditService {
       action: row.action,
       resourceType: row.resource_type,
       resourceId: row.resource_id,
-      metadata: row.metadata ?? {},
+      metadata: row.metadata,
       ipAddress: row.ip_address,
       createdAt: row.created_at,
     };

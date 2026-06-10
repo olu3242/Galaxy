@@ -32,9 +32,9 @@ describe('TenantOperationsService', () => {
 
   it('createTenant inserts org, limits, and lifecycle', async () => {
     pool = makePool([
-      [orgRow],          // INSERT organizations
-      [],                // INSERT tenant_limits
-      [],                // INSERT tenant_lifecycle
+      [orgRow], // INSERT organizations
+      [], // INSERT tenant_limits
+      [], // INSERT tenant_lifecycle
     ]);
     const svc = new TenantOperationsService(pool);
     const tenant = await svc.createTenant({
@@ -52,10 +52,10 @@ describe('TenantOperationsService', () => {
   it('suspendTenant updates status and logs lifecycle', async () => {
     const suspendedRow = { ...orgRow, status: 'suspended' };
     pool = makePool([
-      [],               // INSERT tenant_lifecycle (pre-transition log)
-      [suspendedRow],   // UPDATE organizations
-      [],               // INSERT tenant_lifecycle (post-transition)
-      [],               // SELECT tenant_limits
+      [], // INSERT tenant_lifecycle (pre-transition log)
+      [suspendedRow], // UPDATE organizations
+      [], // INSERT tenant_lifecycle (post-transition)
+      [], // SELECT tenant_limits
     ]);
     const svc = new TenantOperationsService(pool);
     const tenant = await svc.suspendTenant('org-1', 'Non-payment');
@@ -64,8 +64,8 @@ describe('TenantOperationsService', () => {
 
   it('getTenant returns null when not found', async () => {
     pool = makePool([
-      [],    // set_config
-      [],    // SELECT organizations
+      [], // set_config
+      [], // SELECT organizations
     ]);
     const svc = new TenantOperationsService(pool);
     const result = await svc.getTenant('nonexistent');
@@ -75,9 +75,9 @@ describe('TenantOperationsService', () => {
   it('activateTenant transitions to active', async () => {
     const activeRow = { ...orgRow, status: 'active' };
     pool = makePool([
-      [activeRow],  // UPDATE organizations
-      [],           // INSERT tenant_lifecycle
-      [],           // SELECT tenant_limits
+      [activeRow], // UPDATE organizations
+      [], // INSERT tenant_lifecycle
+      [], // SELECT tenant_limits
     ]);
     const svc = new TenantOperationsService(pool);
     const tenant = await svc.activateTenant('org-1');

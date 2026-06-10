@@ -41,9 +41,10 @@ export class CommercialService {
 
     return result.rows.map((row) => {
       const annualMonthly = Math.round(row.annual_price_cents / 12);
-      const discountPercent = row.monthly_price_cents > 0
-        ? Math.round(((row.monthly_price_cents - annualMonthly) / row.monthly_price_cents) * 100)
-        : 0;
+      const discountPercent =
+        row.monthly_price_cents > 0
+          ? Math.round(((row.monthly_price_cents - annualMonthly) / row.monthly_price_cents) * 100)
+          : 0;
       return {
         planId: row.id,
         planName: row.name,
@@ -63,10 +64,20 @@ export class CommercialService {
     );
     const row = result.rows[0];
     if (!row) return null;
-    return { id: row.id, key: row.key, value: row.value, description: row.description, updatedAt: row.updated_at };
+    return {
+      id: row.id,
+      key: row.key,
+      value: row.value,
+      description: row.description,
+      updatedAt: row.updated_at,
+    };
   }
 
-  async setBillingPolicy(key: string, value: unknown, description?: string): Promise<BillingPolicy> {
+  async setBillingPolicy(
+    key: string,
+    value: unknown,
+    description?: string,
+  ): Promise<BillingPolicy> {
     const result = await this.pool.query<PolicyRow>(
       `INSERT INTO billing_policies (key, value, description)
        VALUES ($1, $2, $3)
@@ -76,6 +87,12 @@ export class CommercialService {
     );
     const row = result.rows[0];
     if (!row) throw new Error('Policy upsert failed');
-    return { id: row.id, key: row.key, value: row.value, description: row.description, updatedAt: row.updated_at };
+    return {
+      id: row.id,
+      key: row.key,
+      value: row.value,
+      description: row.description,
+      updatedAt: row.updated_at,
+    };
   }
 }
