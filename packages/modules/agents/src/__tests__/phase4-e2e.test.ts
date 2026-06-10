@@ -394,7 +394,13 @@ describe('DecisionEngine', () => {
         createdAt: NOW,
         updatedAt: NOW,
       });
-      const rules = [makeRule('r1'), makeRule('r2'), makeRule('r3'), makeRule('r4'), makeRule('r5')];
+      const rules = [
+        makeRule('r1'),
+        makeRule('r2'),
+        makeRule('r3'),
+        makeRule('r4'),
+        makeRule('r5'),
+      ];
       const result = engine.evaluate(rules, { x: true }, 0);
       expect(result.confidence).toBeLessThanOrEqual(95);
       expect(result.confidence).toBeGreaterThan(70);
@@ -403,7 +409,11 @@ describe('DecisionEngine', () => {
 
   describe('recordDecision', () => {
     it('inserts with parameterized query; sets requiresHumanOverride when confidence < 60', async () => {
-      const lowConfidenceRow = { ...decisionRow, confidence_score: '55.00', requires_human_override: true };
+      const lowConfidenceRow = {
+        ...decisionRow,
+        confidence_score: '55.00',
+        requires_human_override: true,
+      };
       (pool.query as ReturnType<typeof vi.fn>).mockResolvedValue(ok([lowConfidenceRow]));
 
       const decision = await engine.recordDecision(
@@ -434,7 +444,16 @@ describe('DecisionEngine', () => {
       (pool.query as ReturnType<typeof vi.fn>).mockResolvedValue(ok([escalatedRow]));
 
       const decision = await engine.recordDecision(
-        ORG, AGENT_ID, 'action', 'test', {}, 'escalated', 90, 'escalated', [], CORR_ID,
+        ORG,
+        AGENT_ID,
+        'action',
+        'test',
+        {},
+        'escalated',
+        90,
+        'escalated',
+        [],
+        CORR_ID,
       );
       expect(decision.requiresHumanOverride).toBe(true);
     });
@@ -452,7 +471,11 @@ describe('DecisionEngine', () => {
       (pool.query as ReturnType<typeof vi.fn>).mockResolvedValue(ok([overrideRow]));
 
       const decision = await engine.applyHumanOverride(
-        ORG, DECISION_ID, ACTOR_ID, 'approved', 'Director approval',
+        ORG,
+        DECISION_ID,
+        ACTOR_ID,
+        'approved',
+        'Director approval',
       );
 
       expect(decision.outcome).toBe('approved');
@@ -559,7 +582,7 @@ describe('GovernanceEngine', () => {
     (pool.query as ReturnType<typeof vi.fn>).mockResolvedValue(ok([memberWithRole('member')]));
     const result = await engine.validateCapability(ORG, ACTOR_ID, 'trigger_workflows');
     expect(result.allowed).toBe(false);
-    expect(result.reason).toContain("not authorized");
+    expect(result.reason).toContain('not authorized');
   });
 
   it('validateCapability — member can read_workflows', async () => {
@@ -642,20 +665,20 @@ describe('AgentRuntime', () => {
     // 13: INSERT decisions → decisionRow
     // 14: UPDATE agent_executions → completed
     query
-      .mockResolvedValueOnce(ok([]))                               //  0: set_config
-      .mockResolvedValueOnce(ok([execRow]))                        //  1: INSERT exec
-      .mockResolvedValueOnce(ok([]))                               //  2: set_config context
-      .mockResolvedValueOnce(ok([]))                               //  3: SELECT workflow_runs
-      .mockResolvedValueOnce(ok([]))                               //  4: SELECT approvals
-      .mockResolvedValueOnce(ok([]))                               //  5: SELECT decisions
+      .mockResolvedValueOnce(ok([])) //  0: set_config
+      .mockResolvedValueOnce(ok([execRow])) //  1: INSERT exec
+      .mockResolvedValueOnce(ok([])) //  2: set_config context
+      .mockResolvedValueOnce(ok([])) //  3: SELECT workflow_runs
+      .mockResolvedValueOnce(ok([])) //  4: SELECT approvals
+      .mockResolvedValueOnce(ok([])) //  5: SELECT decisions
       .mockResolvedValueOnce(ok([{ member_count: '0', workflow_count: '0' }])) // 6: org counts
-      .mockResolvedValueOnce(ok([contextRow]))                     //  7: INSERT context_snapshots
-      .mockResolvedValueOnce(ok([]))                               //  8: set_config risk
-      .mockResolvedValueOnce(ok([riskRow]))                        //  9: INSERT risk_assessments
-      .mockResolvedValueOnce(ok([]))                               // 10: set_config rules
-      .mockResolvedValueOnce(ok([]))                               // 11: SELECT decision_rules
-      .mockResolvedValueOnce(ok([]))                               // 12: set_config decision
-      .mockResolvedValueOnce(ok([decisionRow]))                    // 13: INSERT decisions
+      .mockResolvedValueOnce(ok([contextRow])) //  7: INSERT context_snapshots
+      .mockResolvedValueOnce(ok([])) //  8: set_config risk
+      .mockResolvedValueOnce(ok([riskRow])) //  9: INSERT risk_assessments
+      .mockResolvedValueOnce(ok([])) // 10: set_config rules
+      .mockResolvedValueOnce(ok([])) // 11: SELECT decision_rules
+      .mockResolvedValueOnce(ok([])) // 12: set_config decision
+      .mockResolvedValueOnce(ok([decisionRow])) // 13: INSERT decisions
       .mockResolvedValueOnce(ok([{ ...execRow, status: 'completed' }])); // 14: UPDATE exec
     return { query } as unknown as Pool;
   }
@@ -715,9 +738,9 @@ describe('AgentRuntime', () => {
   it('execute — marks execution as failed and rethrows on pipeline error', async () => {
     const errorPool = { query: vi.fn() } as unknown as Pool;
     (errorPool.query as ReturnType<typeof vi.fn>)
-      .mockResolvedValueOnce(ok([]))         // set_config (runtime)
-      .mockResolvedValueOnce(ok([execRow]))   // INSERT exec
-      .mockResolvedValueOnce(ok([]))         // set_config (context engine)
+      .mockResolvedValueOnce(ok([])) // set_config (runtime)
+      .mockResolvedValueOnce(ok([execRow])) // INSERT exec
+      .mockResolvedValueOnce(ok([])) // set_config (context engine)
       .mockRejectedValueOnce(new Error('context engine failure')); // first parallel query fails
 
     const errorRuntime = new AgentRuntime(errorPool);
@@ -748,7 +771,10 @@ describe('AgentRuntime', () => {
     } as unknown as Pool;
     const listRuntime = new AgentRuntime(listPool);
 
-    const results = await listRuntime.listExecutions(ORG, { agentId: AGENT_ID, status: 'completed' });
+    const results = await listRuntime.listExecutions(ORG, {
+      agentId: AGENT_ID,
+      status: 'completed',
+    });
     expect(results).toHaveLength(1);
 
     const query = listPool.query as ReturnType<typeof vi.fn>;
@@ -838,7 +864,7 @@ describe('Cross-tenant isolation — set_config called before every query', () =
 
     const query = pool.query as ReturnType<typeof vi.fn>;
     const calls = query.mock.calls as [string, unknown[]][];
-    const configs = calls.filter(([sql]) => (sql).includes('set_config'));
+    const configs = calls.filter(([sql]) => sql.includes('set_config'));
     // each call is [sql, [key, value]] — tenant is the second param element
     expect((configs[0]?.[1] as string[])[1]).toBe('tenant-A');
     expect((configs[1]?.[1] as string[])[1]).toBe('tenant-B');
