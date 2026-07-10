@@ -63,7 +63,7 @@ async function buildApp(): Promise<FastifyInstance> {
 
   // Enable raw body capture for HMAC signature verification on webhook routes
   fastify.addContentTypeParser('application/json', { parseAs: 'buffer' }, (req, body, done) => {
-    (req as typeof req & { rawBody: Buffer }).rawBody = body;
+    (req as typeof req & { rawBody: Buffer }).rawBody = body as Buffer;
     try {
       done(null, JSON.parse(body.toString()) as unknown);
     } catch (err) {

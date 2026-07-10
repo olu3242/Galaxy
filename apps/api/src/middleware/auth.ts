@@ -9,9 +9,9 @@ export interface JwtUser {
   exp: number;
 }
 
-declare module 'fastify' {
-  interface FastifyRequest {
-    user?: JwtUser;
+declare module '@fastify/jwt' {
+  interface FastifyJWT {
+    user: JwtUser;
   }
 }
 

@@ -43,7 +43,7 @@ export class WhatsAppProvider implements MessagingProvider {
       };
     }
 
-    const data = (await response.json()) as { messages?: Array<{ id: string }> };
+    const data = (await response.json()) as { messages?: { id: string }[] };
     const messageId = data.messages?.[0]?.id;
 
     return {
