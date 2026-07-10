@@ -29,6 +29,7 @@
     "@fastify/swagger": "^8.0.0",
     "@fastify/swagger-ui": "^4.0.0",
     "@fastify/websocket": "^8.0.0",
+    "@galaxy/communication": "workspace:*",
     "@galaxy/config": "workspace:*",
     "@galaxy/events": "workspace:*",
     "@galaxy/identity": "workspace:*",

@@ -1,5 +1,8 @@
 import Fastify, { type FastifyInstance } from 'fastify';
 import { Pool } from 'pg';
+import { registerAuth } from './middleware/auth.js';
+import { registerTenantContext } from './middleware/tenant.js';
+import { whatsappWebhookRoutes } from './routes/webhooks-whatsapp.js';
 import { organizationRoutes } from './routes/organizations.js';
 import { memberRoutes } from './routes/members.js';
 import { departmentRoutes } from './routes/departments.js';
@@ -58,6 +61,16 @@ async function buildApp(): Promise<FastifyInstance> {
     },
   });
 
+  // Enable raw body capture for HMAC signature verification on webhook routes
+  fastify.addContentTypeParser('application/json', { parseAs: 'buffer' }, (req, body, done) => {
+    (req as typeof req & { rawBody: Buffer }).rawBody = body;
+    try {
+      done(null, JSON.parse(body.toString()) as unknown);
+    } catch (err) {
+      done(err as Error);
+    }
+  });
+
   // Database pool
   const databaseUrl = process.env.DATABASE_URL;
   if (!databaseUrl) {
@@ -69,10 +82,19 @@ async function buildApp(): Promise<FastifyInstance> {
   // Decorate fastify with pg pool
   fastify.decorate('pg', pool);
 
+  // Auth — JWT verification (skips /health and /api/v1/webhooks/whatsapp)
+  await registerAuth(fastify);
+
+  // Tenant context — injects organizationId into DB session (skips public paths)
+  registerTenantContext(fastify, pool);
+
   // Health check — no auth required
   fastify.get('/health', async (_request, reply) => {
     return reply.send({ status: 'ok', timestamp: new Date().toISOString() });
   });
+
+  // WhatsApp inbound webhook — no JWT, uses HMAC signature verification
+  await fastify.register(whatsappWebhookRoutes, { prefix: '/api/v1' });
 
   // Register API routes
   await fastify.register(organizationRoutes, { prefix: '/api/v1' });

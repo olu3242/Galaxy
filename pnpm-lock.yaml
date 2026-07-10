@@ -87,6 +87,9 @@ importers:
       '@galaxy/billing':
         specifier: workspace:*
         version: link:../../packages/modules/billing
+      '@galaxy/communication':
+        specifier: workspace:*
+        version: link:../../packages/modules/communication
       '@galaxy/config':
         specifier: workspace:*
         version: link:../../packages/config
