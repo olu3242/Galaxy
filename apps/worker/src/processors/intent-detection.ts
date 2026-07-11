@@ -28,11 +28,39 @@ type AutomationDomain =
 
 type FlowType = 'screen_flow' | 'record_trigger' | 'scheduled' | 'automated' | 'ai_flow' | null;
 
-interface IntentJobData {
+/** Payload emitted by the direct API path */
+interface DirectIntentJobData {
   rawInput: string;
   organizationId: string;
   sourceType: string;
   sourceId?: string;
+}
+
+/** Normalized inbound message shape (mirrors NormalizedInboundMessage from @galaxy/communication) */
+interface NormalizedContent {
+  type: 'text' | 'image' | 'file' | 'audio' | 'video' | 'template';
+  text?: string;
+  mediaUrl?: string;
+}
+
+interface NormalizedMessage {
+  externalId: string;
+  senderPhone: string;
+  receivedAt: string;
+  content: NormalizedContent;
+}
+
+/** Payload emitted by the WhatsApp webhook route */
+interface WebhookIntentJobData {
+  phoneNumberId: string;
+  normalized: NormalizedMessage;
+  rawMessageId: string;
+}
+
+type IntentJobData = DirectIntentJobData | WebhookIntentJobData;
+
+function isWebhookPayload(data: IntentJobData): data is WebhookIntentJobData {
+  return 'phoneNumberId' in data && 'normalized' in data && 'rawMessageId' in data;
 }
 
 interface ClassificationResult {
@@ -134,7 +162,41 @@ export function createIntentProcessor(
   const anthropic = new Anthropic({ apiKey: anthropicApiKey });
 
   return async (job: Job): Promise<void> => {
-    const { rawInput, organizationId, sourceType, sourceId } = job.data as IntentJobData;
+    const jobData = job.data as IntentJobData;
+
+    let rawInput: string;
+    let organizationId: string;
+    let sourceType: string;
+    let sourceId: string | undefined;
+
+    if (isWebhookPayload(jobData)) {
+      // Resolve organizationId from phoneNumberId WITHOUT RLS context — we don't have the
+      // tenant yet, so this must be a plain lookup before set_config is called.
+      const orgResult = await pool.query<{ id: string }>(
+        'SELECT id FROM organizations WHERE whatsapp_phone_number_id = $1 LIMIT 1',
+        [jobData.phoneNumberId],
+      );
+
+      if (orgResult.rows.length === 0) {
+        console.warn(
+          `[intent-detection] No organization found for phoneNumberId=${jobData.phoneNumberId}; skipping job ${String(job.id)}`,
+        );
+        return;
+      }
+
+      organizationId = orgResult.rows[0].id;
+      rawInput =
+        jobData.normalized.content.type === 'text' && jobData.normalized.content.text
+          ? jobData.normalized.content.text
+          : '[media message]';
+      sourceType = 'whatsapp';
+      sourceId = jobData.rawMessageId;
+    } else {
+      rawInput = jobData.rawInput;
+      organizationId = jobData.organizationId;
+      sourceType = jobData.sourceType;
+      sourceId = jobData.sourceId;
+    }
 
     await pool.query('SELECT set_config($1, $2, true)', ['app.current_tenant', organizationId]);
 

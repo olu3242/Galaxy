@@ -132,6 +132,9 @@ importers:
       '@galaxy/knowledge':
         specifier: workspace:*
         version: link:../../packages/modules/knowledge
+      '@galaxy/loop':
+        specifier: workspace:*
+        version: link:../../packages/modules/loop
       '@galaxy/marketplace':
         specifier: workspace:*
         version: link:../../packages/modules/marketplace
@@ -801,6 +804,25 @@ importers:
       zod:
         specifier: ^3.23.0
         version: 3.25.76
+    devDependencies:
+      '@types/node':
+        specifier: ^20.0.0
+        version: 20.19.42
+      '@types/pg':
+        specifier: ^8.11.0
+        version: 8.20.0
+      vitest:
+        specifier: ^2.0.0
+        version: 2.1.9(@types/node@20.19.42)
+
+  packages/modules/loop:
+    dependencies:
+      '@galaxy/types':
+        specifier: workspace:*
+        version: link:../../types
+      pg:
+        specifier: ^8.12.0
+        version: 8.21.0
     devDependencies:
       '@types/node':
         specifier: ^20.0.0
