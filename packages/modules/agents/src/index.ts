@@ -15,6 +15,16 @@ export { FinanceCopilot } from './copilots/FinanceCopilot.js';
 export { AgentFactory } from './factory/AgentFactory.js';
 export type { AgentProvisionConfig } from './factory/AgentFactory.js';
 export {
+  MultiAgentOrchestrator,
+} from './orchestrator/MultiAgentOrchestrator.js';
+export type {
+  OrchestrationTask,
+  OrchestrationResult,
+  OrchestrationPlan,
+} from './orchestrator/MultiAgentOrchestrator.js';
+export { DigitalTwin } from './twin/DigitalTwin.js';
+export type { DigitalTwinSnapshot } from './twin/DigitalTwin.js';
+export {
   ALL_MANIFESTS,
   ALICE_MANIFEST,
   MAX_MANIFEST,
