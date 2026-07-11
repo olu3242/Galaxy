@@ -32,9 +32,7 @@ export function broadcastRoutes(fastify: FastifyInstance): void {
     ) => {
       const { organizationId, title, content, targetType, targetIds, sentBy } = request.body;
       if (!organizationId || !title || !content || !sentBy) {
-        return reply
-          .status(400)
-          .send({ error: 'organizationId, title, content, sentBy required' });
+        return reply.status(400).send({ error: 'organizationId, title, content, sentBy required' });
       }
       const broadcast = await broadcastService.create({
         organizationId,
