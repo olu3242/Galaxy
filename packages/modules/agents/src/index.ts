@@ -10,3 +10,5 @@ export { AgentRuntime } from './runtime/AgentRuntime.js';
 export { ExecutiveCopilot } from './copilots/ExecutiveCopilot.js';
 export { OperationsCopilot } from './copilots/OperationsCopilot.js';
 export { ComplianceCopilot } from './copilots/ComplianceCopilot.js';
+export { HrCopilot } from './copilots/HrCopilot.js';
+export { FinanceCopilot } from './copilots/FinanceCopilot.js';

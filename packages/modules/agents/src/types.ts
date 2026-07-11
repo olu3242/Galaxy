@@ -2,6 +2,8 @@ export type AgentType =
   | 'executive_copilot'
   | 'operations_copilot'
   | 'compliance_copilot'
+  | 'hr_copilot'
+  | 'finance_copilot'
   | 'custom';
 
 export type AgentCapability =

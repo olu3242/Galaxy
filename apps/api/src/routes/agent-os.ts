@@ -8,6 +8,8 @@ import {
   ExecutiveCopilot,
   OperationsCopilot,
   ComplianceCopilot,
+  HrCopilot,
+  FinanceCopilot,
 } from '@galaxy/agents';
 import type { AgentType, AgentCapability, DecisionOutcome, RiskLevel } from '@galaxy/agents';
 
@@ -505,6 +507,78 @@ export function agentOsRoutes(fastify: FastifyInstance): void {
       }
 
       const copilot = new ComplianceCopilot(fastify.pg);
+      const response = await copilot.query({
+        organizationId,
+        actorId,
+        query,
+        correlationId,
+        ...(request.body.context !== undefined ? { context: request.body.context } : {}),
+      });
+
+      return reply.send(responseEnvelope(response, request.id));
+    },
+  );
+
+  // ── HR Copilot ──────────────────────────────────────────────────────────────
+
+  fastify.post(
+    '/copilots/hr',
+    async (
+      request: FastifyRequest<{
+        Body: {
+          organizationId: string;
+          actorId: string;
+          query: string;
+          correlationId: string;
+          context?: Record<string, unknown>;
+        };
+      }>,
+      reply: FastifyReply,
+    ) => {
+      const { organizationId, actorId, query, correlationId } = request.body;
+      if (!organizationId || !actorId || !query || !correlationId) {
+        return reply
+          .status(400)
+          .send({ error: 'organizationId, actorId, query, correlationId required' });
+      }
+
+      const copilot = new HrCopilot(fastify.pg);
+      const response = await copilot.query({
+        organizationId,
+        actorId,
+        query,
+        correlationId,
+        ...(request.body.context !== undefined ? { context: request.body.context } : {}),
+      });
+
+      return reply.send(responseEnvelope(response, request.id));
+    },
+  );
+
+  // ── Finance Copilot ─────────────────────────────────────────────────────────
+
+  fastify.post(
+    '/copilots/finance',
+    async (
+      request: FastifyRequest<{
+        Body: {
+          organizationId: string;
+          actorId: string;
+          query: string;
+          correlationId: string;
+          context?: Record<string, unknown>;
+        };
+      }>,
+      reply: FastifyReply,
+    ) => {
+      const { organizationId, actorId, query, correlationId } = request.body;
+      if (!organizationId || !actorId || !query || !correlationId) {
+        return reply
+          .status(400)
+          .send({ error: 'organizationId, actorId, query, correlationId required' });
+      }
+
+      const copilot = new FinanceCopilot(fastify.pg);
       const response = await copilot.query({
         organizationId,
         actorId,

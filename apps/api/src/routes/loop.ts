@@ -290,10 +290,7 @@ export function loopRoutes(fastify: FastifyInstance): void {
 
   fastify.post(
     '/loops/learning/generate-insights',
-    async (
-      request: FastifyRequest<{ Body: { organizationId: string } }>,
-      reply: FastifyReply,
-    ) => {
+    async (request: FastifyRequest<{ Body: { organizationId: string } }>, reply: FastifyReply) => {
       const { organizationId } = request.body;
       if (!organizationId) return reply.status(400).send({ error: 'organizationId required' });
       const insights = await learningSvc.generateInsights(organizationId);
@@ -334,10 +331,7 @@ export function loopRoutes(fastify: FastifyInstance): void {
 
   fastify.post(
     '/loops/optimization/generate',
-    async (
-      request: FastifyRequest<{ Body: { organizationId: string } }>,
-      reply: FastifyReply,
-    ) => {
+    async (request: FastifyRequest<{ Body: { organizationId: string } }>, reply: FastifyReply) => {
       const { organizationId } = request.body;
       if (!organizationId) return reply.status(400).send({ error: 'organizationId required' });
       const recommendations = await optimizationSvc.generateRecommendations(organizationId);
