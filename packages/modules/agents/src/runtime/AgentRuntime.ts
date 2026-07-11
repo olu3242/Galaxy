@@ -4,6 +4,8 @@ import type {
   AgentDecision,
   AgentExecution,
   AgentExecutionStatus,
+  AgentLifecycleTrace,
+  AgentRuntimeState,
   ExecuteAgentInput,
   Recommendation,
   RiskAssessment,
@@ -12,6 +14,19 @@ import { AgentContextEngine } from '../context/AgentContextEngine.js';
 import { DecisionEngine } from '../decisions/DecisionEngine.js';
 import { RecommendationEngine } from '../recommendations/RecommendationEngine.js';
 import { RiskScoringEngine } from '../decisions/RiskScoringEngine.js';
+import {
+  GxContextEngine,
+  GxIntentEngine,
+  GxReasoningEngine,
+  GxPlanningEngine,
+  GxExecutionEngine,
+  GxVerificationEngine,
+  GxLearningEngine,
+  GxOptimizationEngine,
+  GxGovernanceEngine,
+} from '@galaxy/cognitive-engine';
+import type { IntentAnalysis, ReasoningInput, GovernanceCheckInput } from '@galaxy/cognitive-engine';
+import { ALL_MANIFESTS } from '../manifests/index.js';
 
 interface AgentExecutionRow {
   id: string;
@@ -59,17 +74,73 @@ function rowToExecution(row: AgentExecutionRow): AgentExecution {
   };
 }
 
+interface StateEntry {
+  state: AgentRuntimeState;
+  enteredAt: string;
+  durationMs?: number;
+}
+
+function buildTrace(
+  executionId: string,
+  agentId: string,
+  states: StateEntry[],
+  startMs: number,
+  extras: {
+    intentAnalysis?: unknown;
+    reasoningTrace?: unknown;
+    planSummary?: unknown;
+    verificationResult?: unknown;
+    governanceDecision?: unknown;
+    learningEventId?: string;
+  },
+): AgentLifecycleTrace {
+  const trace: AgentLifecycleTrace = {
+    executionId,
+    agentId,
+    states,
+    totalDurationMs: Date.now() - startMs,
+  };
+  if (extras.intentAnalysis !== undefined) trace.intentAnalysis = extras.intentAnalysis;
+  if (extras.reasoningTrace !== undefined) trace.reasoningTrace = extras.reasoningTrace;
+  if (extras.planSummary !== undefined) trace.planSummary = extras.planSummary;
+  if (extras.verificationResult !== undefined) trace.verificationResult = extras.verificationResult;
+  if (extras.governanceDecision !== undefined) trace.governanceDecision = extras.governanceDecision;
+  if (extras.learningEventId !== undefined) trace.learningEventId = extras.learningEventId;
+  return trace;
+}
+
 export class AgentRuntime {
   private readonly contextEngine: AgentContextEngine;
   private readonly decisionEngine: DecisionEngine;
   private readonly recommendationEngine: RecommendationEngine;
   private readonly riskEngine: RiskScoringEngine;
 
+  // GX cognitive engines
+  private readonly gxContext: GxContextEngine;
+  private readonly gxIntent: GxIntentEngine;
+  private readonly gxReasoning: GxReasoningEngine;
+  private readonly gxPlanning: GxPlanningEngine;
+  private readonly gxExecution: GxExecutionEngine;
+  private readonly gxVerification: GxVerificationEngine;
+  private readonly gxLearning: GxLearningEngine;
+  private readonly gxOptimization: GxOptimizationEngine;
+  private readonly gxGovernance: GxGovernanceEngine;
+
   constructor(private readonly pool: Pool) {
     this.contextEngine = new AgentContextEngine(pool);
     this.decisionEngine = new DecisionEngine(pool);
     this.recommendationEngine = new RecommendationEngine();
     this.riskEngine = new RiskScoringEngine(pool);
+
+    this.gxContext = new GxContextEngine(pool);
+    this.gxIntent = new GxIntentEngine();
+    this.gxReasoning = new GxReasoningEngine();
+    this.gxPlanning = new GxPlanningEngine();
+    this.gxExecution = new GxExecutionEngine(pool);
+    this.gxVerification = new GxVerificationEngine();
+    this.gxLearning = new GxLearningEngine(pool);
+    this.gxOptimization = new GxOptimizationEngine(pool);
+    this.gxGovernance = new GxGovernanceEngine(pool);
   }
 
   private async setTenantContext(organizationId: string): Promise<void> {
@@ -101,15 +172,117 @@ export class AgentRuntime {
     if (!execRow) throw new Error('INSERT INTO agent_executions returned no row');
     const executionId = execRow.id;
 
+    const startMs = Date.now();
+    const states: StateEntry[] = [];
+    let lastStateEnteredAt = new Date().toISOString();
+    let lastStateMs = Date.now();
+
+    const transitionState = (next: AgentRuntimeState): void => {
+      const now = Date.now();
+      const last = states[states.length - 1];
+      if (last !== undefined) {
+        last.durationMs = now - lastStateMs;
+      }
+      lastStateEnteredAt = new Date().toISOString();
+      lastStateMs = now;
+      states.push({ state: next, enteredAt: lastStateEnteredAt });
+    };
+
+    // Suppress unused variable warning — lastStateEnteredAt is used by transitionState
+    void lastStateEnteredAt;
+
+    const manifest = ALL_MANIFESTS.find((m) => m.agentType === agent.agentType);
+
     try {
+      // STAGE 1 — OBSERVE
+      transitionState('OBSERVING');
+      const agentContext = await this.gxContext.enrich({
+        tenantId: input.organizationId,
+        actorId: input.actorId,
+        organizationId: input.organizationId,
+        sessionMetadata: { correlationId: input.correlationId },
+      });
+
+      // STAGE 2 — UNDERSTAND
+      transitionState('UNDERSTANDING');
+      const rawInput = JSON.stringify(input.input);
+      const intentAnalysis: IntentAnalysis = this.gxIntent.analyze(rawInput);
+
+      // STAGE 3 — REASON (THINKING)
+      transitionState('THINKING');
+      const contextFacts: Record<string, unknown> = {
+        organizationId: agentContext.organizationId,
+        memberRole: agentContext.memberRole,
+        activeWorkflows: agentContext.activeWorkflows,
+        pendingApprovals: agentContext.pendingApprovals,
+      };
+      const reasoningInput: ReasoningInput = {
+        question: intentAnalysis.goal.description,
+        contextFacts,
+      };
+      if (manifest?.defaultStrategy !== undefined) {
+        reasoningInput.strategy = manifest.defaultStrategy;
+      }
+      const reasoningTrace = this.gxReasoning.reason(reasoningInput);
+
+      // STAGE 4 — PLAN
+      transitionState('PLANNING');
+      const plan = this.gxPlanning.createPlan({
+        goal: intentAnalysis.goal.description,
+        organizationId: input.organizationId,
+      });
+
+      // STAGE 5 — GOVERNANCE CHECK (before execution)
+      const governanceCheckInput: GovernanceCheckInput = {
+        organizationId: input.organizationId,
+        actorId: input.actorId,
+        agentId: agent.id,
+        action: intentAnalysis.intent,
+        resourceType: 'agent_execution',
+        impactTier: manifest?.impactTier ?? 3,
+      };
+      const governanceDecision = await this.gxGovernance.evaluate(governanceCheckInput);
+
+      if (governanceDecision.humanApprovalRequired) {
+        transitionState('WAITING');
+        const trace = buildTrace(executionId, agent.id, states, startMs, {
+          intentAnalysis,
+          reasoningTrace,
+          planSummary: { goal: plan.goal, taskCount: plan.tasks.length },
+          governanceDecision,
+        });
+
+        const waitOutput: Record<string, unknown> = {
+          lifecycleTrace: trace,
+          governanceReason: governanceDecision.reason,
+          riskLevel: governanceDecision.riskLevel,
+        };
+
+        const waitResult = await this.pool.query<AgentExecutionRow>(
+          `UPDATE agent_executions
+           SET status = 'awaiting_human', output = $2, requires_human_approval = true,
+               updated_at = NOW()
+           WHERE organization_id = $3 AND id = $1
+           RETURNING *`,
+          [executionId, JSON.stringify(waitOutput), input.organizationId],
+        );
+        const waitRow = waitResult.rows[0];
+        if (!waitRow) throw new Error('Failed to update execution to awaiting_human');
+        return rowToExecution(waitRow);
+      }
+
+      // STAGE 6 — EXECUTE
+      transitionState('EXECUTING');
+
+      // Legacy engines — backward compat
       const context = await this.contextEngine.buildContext(
         input.organizationId,
         agent.id,
         executionId,
         { automationDomains: agent.automationDomains },
       );
-
       const contextData = context.contextData;
+
       const riskAssessment = await this.riskEngine.assessRisk(
         input.organizationId,
         agent.id,
@@ -122,13 +295,11 @@ export class AgentRuntime {
         input.organizationId,
         agent.automationDomains[0],
       );
-
       const evalResult = this.decisionEngine.evaluate(
         rules,
         { ...input.input, ...contextData },
         riskAssessment.riskScore,
       );
-
       const decision = await this.decisionEngine.recordDecision(
         input.organizationId,
         agent.id,
@@ -142,22 +313,69 @@ export class AgentRuntime {
         input.correlationId,
         executionId,
       );
-
       const recommendations = this.recommendationEngine.generate(context, riskAssessment.riskScore);
 
-      const requiresHumanApproval =
-        decision.requiresHumanOverride || riskAssessment.riskLevel === 'critical';
+      // GX execution engine — run plan
+      const executionResults = await this.gxExecution.executePlan(plan, {
+        organizationId: input.organizationId,
+        actorId: input.actorId,
+        correlationId: input.correlationId,
+        pool: this.pool,
+      });
 
-      const finalStatus: AgentExecutionStatus = requiresHumanApproval
-        ? 'awaiting_human'
-        : 'completed';
-
-      const output: Record<string, unknown> = {
+      // STAGE 7 — VERIFY
+      transitionState('VERIFYING');
+      const planOutput: Record<string, unknown> = {
         decisionOutcome: decision.outcome,
         confidenceScore: decision.confidenceScore,
         riskScore: riskAssessment.riskScore,
         riskLevel: riskAssessment.riskLevel,
         recommendationCount: recommendations.length,
+        executionResults,
+      };
+      const verificationResult = this.gxVerification.verify({ output: planOutput });
+
+      // STAGE 8 — LEARN
+      transitionState('LEARNING');
+      const success = verificationResult.status === 'passed' || verificationResult.status === 'warning';
+      await this.gxLearning.recordOutcome({
+        agentId: agent.id,
+        organizationId: input.organizationId,
+        executionId,
+        outcome: success ? 'success' : 'failure',
+        intent: intentAnalysis.intent,
+        actions: intentAnalysis.predictedActions,
+        durationMs: Date.now() - startMs,
+        confidenceScore: verificationResult.confidenceScore,
+        humanEscalated: false,
+      });
+
+      // STAGE 9 — OPTIMIZE (fire-and-forget)
+      transitionState('OPTIMIZING');
+      this.gxOptimization.detectBottlenecks(agent.id, input.organizationId).catch(() => {
+        /* best-effort */
+      });
+
+      // REPORT
+      const requiresHumanApproval =
+        decision.requiresHumanOverride ||
+        riskAssessment.riskLevel === 'critical' ||
+        verificationResult.requiresHumanReview;
+
+      const finalStatus: AgentExecutionStatus = requiresHumanApproval ? 'awaiting_human' : 'completed';
+      transitionState(requiresHumanApproval ? 'ESCALATED' : 'COMPLETED');
+
+      const trace = buildTrace(executionId, agent.id, states, startMs, {
+        intentAnalysis,
+        reasoningTrace,
+        planSummary: { goal: plan.goal, taskCount: plan.tasks.length, complexity: plan.complexity },
+        verificationResult,
+        governanceDecision,
+      });
+
+      const output: Record<string, unknown> = {
+        ...planOutput,
+        lifecycleTrace: trace,
       };
 
       const updateResult = await this.pool.query<AgentExecutionRow>(
@@ -184,6 +402,7 @@ export class AgentRuntime {
       if (!updated) throw new Error('Failed to update agent execution');
       return rowToExecution(updated);
     } catch (err) {
+      transitionState('FAILED');
       await this.pool.query(
         `UPDATE agent_executions SET status = 'failed', updated_at = NOW()
          WHERE organization_id = $1 AND id = $2`,

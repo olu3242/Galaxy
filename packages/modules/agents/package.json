@@ -20,6 +20,7 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.39.0",
+    "@galaxy/cognitive-engine": "workspace:*",
     "@galaxy/events": "workspace:*",
     "@galaxy/types": "workspace:*",
     "pg": "^8.13.3"

@@ -377,6 +377,9 @@ importers:
       '@anthropic-ai/sdk':
         specifier: ^0.39.0
         version: 0.39.0
+      '@galaxy/cognitive-engine':
+        specifier: workspace:*
+        version: link:../cognitive-engine
       '@galaxy/events':
         specifier: workspace:*
         version: link:../../events

@@ -4,7 +4,22 @@ export type AgentType =
   | 'compliance_copilot'
   | 'hr_copilot'
   | 'finance_copilot'
-  | 'custom';
+  | 'custom'
+  | 'alice'
+  | 'max'
+  | 'finn'
+  | 'eva'
+  | 'atlas'
+  | 'sage'
+  | 'nova'
+  | 'lyra'
+  | 'aurora'
+  | 'titan'
+  | 'orion'
+  | 'mercury'
+  | 'phoenix'
+  | 'apollo'
+  | 'guardian';
 
 export type AgentCapability =
   | 'read_workflows'
@@ -214,4 +229,47 @@ export interface HumanOverrideInput {
   outcome: DecisionOutcome;
   reason: string;
   correlationId: string;
+}
+
+export type AgentRuntimeState =
+  | 'IDLE'
+  | 'OBSERVING'
+  | 'UNDERSTANDING'
+  | 'THINKING'
+  | 'PLANNING'
+  | 'EXECUTING'
+  | 'WAITING'
+  | 'VERIFYING'
+  | 'LEARNING'
+  | 'OPTIMIZING'
+  | 'COMPLETED'
+  | 'FAILED'
+  | 'ESCALATED';
+
+export interface AgentManifest {
+  id: string;
+  name: string;
+  fullName: string;
+  agentType: AgentType;
+  version: string;
+  capabilities: AgentCapability[];
+  automationDomains: string[];
+  defaultStrategy: 'chain_of_thought' | 'tree_of_thought' | 'evidence_gathering';
+  maxConcurrentTasks: number;
+  requiresHumanApprovalFor: string[];
+  impactTier: 1 | 2 | 3 | 4 | 5;
+  description: string;
+}
+
+export interface AgentLifecycleTrace {
+  executionId: string;
+  agentId: string;
+  states: { state: AgentRuntimeState; enteredAt: string; durationMs?: number }[];
+  intentAnalysis?: unknown;
+  reasoningTrace?: unknown;
+  planSummary?: unknown;
+  verificationResult?: unknown;
+  governanceDecision?: unknown;
+  learningEventId?: string;
+  totalDurationMs: number;
 }
