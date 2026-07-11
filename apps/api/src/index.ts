@@ -2,6 +2,7 @@ import Fastify, { type FastifyInstance } from 'fastify';
 import { Pool } from 'pg';
 import { registerAuth } from './middleware/auth.js';
 import { registerTenantContext } from './middleware/tenant.js';
+import { registerAbacPlugin } from './middleware/abac.js';
 import { whatsappWebhookRoutes } from './routes/webhooks-whatsapp.js';
 import { organizationRoutes } from './routes/organizations.js';
 import { memberRoutes } from './routes/members.js';
@@ -90,6 +91,9 @@ async function buildApp(): Promise<FastifyInstance> {
 
   // Tenant context — injects organizationId into DB session (skips public paths)
   registerTenantContext(fastify, pool);
+
+  // ABAC — attribute-based access control decorators (checkAbac, assertAbac)
+  registerAbacPlugin(fastify);
 
   // Health check — no auth required
   fastify.get('/health', async (_request, reply) => {
