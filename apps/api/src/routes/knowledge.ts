@@ -274,34 +274,92 @@ export function knowledgeRoutes(fastify: FastifyInstance): void {
 
       const topK = limit ? parseInt(limit, 10) : 5;
 
-      // Fall back to full-text search when pgvector embeddings are not yet populated
-      const result = await fastify.pg.query<{
+      const voyageApiKey = process.env.VOYAGE_API_KEY;
+      let chunks: {
         document_id: string;
         chunk_index: number;
         content: string;
         token_count: number | null;
-        rank: number;
-      }>(
-        `SELECT
-           kc.document_id,
-           kc.chunk_index,
-           kc.content,
-           kc.token_count,
-           ts_rank(to_tsvector('english', kc.content), plainto_tsquery('english', $2)) AS rank
-         FROM knowledge_chunks kc
-         WHERE kc.organization_id = $1
-           AND to_tsvector('english', kc.content) @@ plainto_tsquery('english', $2)
-         ORDER BY rank DESC
-         LIMIT $3`,
-        [organizationId, query, topK],
-      );
+        score: number;
+      }[];
+      let searchMethod: 'vector' | 'fulltext';
+
+      if (voyageApiKey) {
+        // Real pgvector cosine-similarity search
+        const embRes = await fetch('https://api.voyageai.com/v1/embeddings', {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${voyageApiKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ model: 'voyage-3', input: [query], input_type: 'query' }),
+        });
+
+        if (!embRes.ok) {
+          return reply.status(502).send({ error: 'Embedding service unavailable' });
+        }
+
+        const embData = (await embRes.json()) as {
+          data: { embedding: number[] }[];
+        };
+        const queryVector = embData.data[0]?.embedding ?? [];
+
+        const vectorResult = await fastify.pg.query<{
+          document_id: string;
+          chunk_index: number;
+          content: string;
+          token_count: number | null;
+          score: number;
+        }>(
+          `SELECT
+             kc.document_id,
+             kc.chunk_index,
+             kc.content,
+             kc.token_count,
+             1 - (kc.embedding <=> $2::vector) AS score
+           FROM knowledge_chunks kc
+           WHERE kc.organization_id = $1
+           ORDER BY kc.embedding <=> $2::vector
+           LIMIT $3`,
+          [organizationId, `[${queryVector.join(',')}]`, topK],
+        );
+
+        chunks = vectorResult.rows;
+        searchMethod = 'vector';
+      } else {
+        // Fallback: full-text search when embeddings are not configured
+        const ftResult = await fastify.pg.query<{
+          document_id: string;
+          chunk_index: number;
+          content: string;
+          token_count: number | null;
+          score: number;
+        }>(
+          `SELECT
+             kc.document_id,
+             kc.chunk_index,
+             kc.content,
+             kc.token_count,
+             ts_rank(to_tsvector('english', kc.content), plainto_tsquery('english', $2)) AS score
+           FROM knowledge_chunks kc
+           WHERE kc.organization_id = $1
+             AND to_tsvector('english', kc.content) @@ plainto_tsquery('english', $2)
+           ORDER BY score DESC
+           LIMIT $3`,
+          [organizationId, query, topK],
+        );
+
+        chunks = ftResult.rows;
+        searchMethod = 'fulltext';
+      }
 
       return reply.send(
         responseEnvelope(
           {
             query,
-            chunks: result.rows,
-            count: result.rows.length,
+            chunks,
+            count: chunks.length,
+            searchMethod,
           },
           request.id,
         ),

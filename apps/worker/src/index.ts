@@ -77,10 +77,11 @@ loopLearningWorker.on('failed', (job, err) => {
   logger.error({ jobId: job?.id, err }, 'loop learning job failed');
 });
 
-// Knowledge ingestion worker (RAG embedding pipeline)
+// Knowledge ingestion worker (RAG embedding pipeline — real embeddings via Voyage AI)
+const voyageApiKey = process.env.VOYAGE_API_KEY;
 const knowledgeWorker = new Worker(
   'knowledge-ingestion',
-  createKnowledgeIngestionProcessor(pool, anthropicKey),
+  createKnowledgeIngestionProcessor(pool, voyageApiKey),
   { connection },
 );
 knowledgeWorker.on('completed', (job) => {
