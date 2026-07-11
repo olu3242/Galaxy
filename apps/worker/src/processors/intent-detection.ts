@@ -184,7 +184,9 @@ export function createIntentProcessor(
         return;
       }
 
-      organizationId = orgResult.rows[0].id;
+      const firstRow = orgResult.rows[0];
+      if (!firstRow) return;
+      organizationId = firstRow.id;
       rawInput =
         jobData.normalized.content.type === 'text' && jobData.normalized.content.text
           ? jobData.normalized.content.text
