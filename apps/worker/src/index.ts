@@ -9,6 +9,7 @@ import { processAgentJob } from './processors/agent-execution.js';
 import { createNotificationDispatchProcessor } from './processors/notification-dispatch.js';
 import { createKnowledgeIngestionProcessor } from './processors/knowledge-ingestion.js';
 import { createLoopLearningProcessor } from './processors/loop-learning.js';
+import { createAuditSyncProcessor } from './processors/audit-sync.js';
 
 const logger = pino({ level: process.env.LOG_LEVEL ?? 'info' });
 
@@ -92,6 +93,18 @@ knowledgeWorker.on('failed', (job, err) => {
   logger.error({ jobId: job?.id, err }, 'knowledge ingestion job failed');
 });
 
+// Audit sync worker — streams audit log entries to Elasticsearch
+const elasticsearchUrl = process.env.ELASTICSEARCH_URL;
+const auditSyncWorker = new Worker('audit-sync', createAuditSyncProcessor(pool, elasticsearchUrl), {
+  connection,
+});
+auditSyncWorker.on('completed', (job) => {
+  logger.info({ jobId: job.id }, 'audit sync job completed');
+});
+auditSyncWorker.on('failed', (job, err) => {
+  logger.error({ jobId: job?.id, err }, 'audit sync job failed');
+});
+
 // Agent execution worker
 const agentWorker = new Worker('agent-execution', processAgentJob, { connection });
 agentWorker.on('completed', (job) => {
@@ -110,6 +123,7 @@ async function shutdown(): Promise<void> {
   await loopLearningWorker.close();
   await knowledgeWorker.close();
   await notificationWorker.close();
+  await auditSyncWorker.close();
   await agentWorker.close();
   await pool.end();
   await connection.quit();

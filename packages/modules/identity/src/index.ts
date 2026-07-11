@@ -16,3 +16,4 @@ export * from './auth/crypto.js';
 export * from './audit/AuditRepository.js';
 export * from './audit/AuditService.js';
 export * from './audit/AuditEventPublisher.js';
+export * from './audit/AuditSearchService.js';

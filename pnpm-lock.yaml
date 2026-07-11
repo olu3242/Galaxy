@@ -293,6 +293,9 @@ importers:
       '@galaxy/events':
         specifier: workspace:*
         version: link:../../packages/events
+      '@galaxy/identity':
+        specifier: workspace:*
+        version: link:../../packages/modules/identity
       '@galaxy/types':
         specifier: workspace:*
         version: link:../../packages/types
