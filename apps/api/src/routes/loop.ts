@@ -31,7 +31,7 @@ export function loopRoutes(fastify: FastifyInstance): void {
       const loop = await instanceSvc.create({
         organizationId,
         workflowInstanceId,
-        verificationDeadlineHours,
+        ...(verificationDeadlineHours !== undefined ? { verificationDeadlineHours } : {}),
       });
       return reply.status(201).send(envelope(loop, request.id));
     },
@@ -139,7 +139,13 @@ export function loopRoutes(fastify: FastifyInstance): void {
         return reply.status(400).send({ error: 'organizationId, verifiedBy, status required' });
       }
       const verification = await verifySvc.submit(
-        { loopInstanceId: id, verifiedBy, status, notes, evidenceUrls },
+        {
+          loopInstanceId: id,
+          verifiedBy,
+          status,
+          ...(notes !== undefined ? { notes } : {}),
+          ...(evidenceUrls !== undefined ? { evidenceUrls } : {}),
+        },
         organizationId,
       );
       return reply.status(201).send(envelope(verification, request.id));
@@ -177,7 +183,7 @@ export function loopRoutes(fastify: FastifyInstance): void {
         return reply.status(400).send({ error: 'organizationId, submittedBy, score required' });
       }
       const feedback = await feedbackSvc.submit(
-        { loopInstanceId: id, submittedBy, score, comment },
+        { loopInstanceId: id, submittedBy, score, ...(comment !== undefined ? { comment } : {}) },
         organizationId,
       );
       return reply.status(201).send(envelope(feedback, request.id));
