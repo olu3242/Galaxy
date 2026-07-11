@@ -1,6 +1,8 @@
 import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { KnowledgeService, KnowledgeSearchService } from '@galaxy/knowledge';
 import type { DocumentStatus } from '@galaxy/knowledge';
+import { Queue } from 'bullmq';
+import { Redis } from 'ioredis';
 
 function responseEnvelope<T>(data: T, requestId: string) {
   return {
@@ -215,6 +217,95 @@ export function knowledgeRoutes(fastify: FastifyInstance): void {
       );
 
       return reply.send(responseEnvelope(result.rows, request.id));
+    },
+  );
+
+  // ── Document ingestion (enqueue RAG embedding job) ──────────────────────────
+
+  fastify.post(
+    '/knowledge/documents/:id/ingest',
+    async (
+      request: FastifyRequest<{
+        Params: { id: string };
+        Body: { organizationId: string };
+      }>,
+      reply: FastifyReply,
+    ) => {
+      const { id } = request.params;
+      const { organizationId } = request.body;
+      if (!organizationId) return reply.status(400).send({ error: 'organizationId required' });
+
+      const redis = new Redis(process.env.REDIS_URL ?? 'redis://localhost:6379', {
+        maxRetriesPerRequest: null,
+      });
+      const ingestionQueue = new Queue('knowledge-ingestion', { connection: redis });
+
+      try {
+        await ingestionQueue.add('ingest-document', { organizationId, documentId: id });
+        return await reply
+          .status(202)
+          .send(responseEnvelope({ queued: true, documentId: id }, request.id));
+      } finally {
+        await ingestionQueue.close();
+        await redis.quit();
+      }
+    },
+  );
+
+  // ── RAG semantic search ─────────────────────────────────────────────────────
+
+  fastify.get(
+    '/knowledge/rag',
+    async (
+      request: FastifyRequest<{
+        Querystring: { organizationId: string; query: string; limit?: string };
+      }>,
+      reply: FastifyReply,
+    ) => {
+      const { organizationId, query, limit } = request.query;
+      if (!organizationId || !query) {
+        return reply.status(400).send({ error: 'organizationId and query required' });
+      }
+
+      await fastify.pg.query('SELECT set_config($1, $2, true)', [
+        'app.current_tenant',
+        organizationId,
+      ]);
+
+      const topK = limit ? parseInt(limit, 10) : 5;
+
+      // Fall back to full-text search when pgvector embeddings are not yet populated
+      const result = await fastify.pg.query<{
+        document_id: string;
+        chunk_index: number;
+        content: string;
+        token_count: number | null;
+        rank: number;
+      }>(
+        `SELECT
+           kc.document_id,
+           kc.chunk_index,
+           kc.content,
+           kc.token_count,
+           ts_rank(to_tsvector('english', kc.content), plainto_tsquery('english', $2)) AS rank
+         FROM knowledge_chunks kc
+         WHERE kc.organization_id = $1
+           AND to_tsvector('english', kc.content) @@ plainto_tsquery('english', $2)
+         ORDER BY rank DESC
+         LIMIT $3`,
+        [organizationId, query, topK],
+      );
+
+      return reply.send(
+        responseEnvelope(
+          {
+            query,
+            chunks: result.rows,
+            count: result.rows.length,
+          },
+          request.id,
+        ),
+      );
     },
   );
 }

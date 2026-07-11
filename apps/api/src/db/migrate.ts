@@ -44,6 +44,7 @@ import * as migration050 from './migrations/050_coo_org_memory.js';
 import * as migration051 from './migrations/051_predictive.js';
 import * as migration052 from './migrations/052_economy.js';
 import * as migration071 from './migrations/071_loop_os.js';
+import * as migration072 from './migrations/072_knowledge_embeddings.js';
 
 interface Migration {
   up: (pool: Pool) => Promise<void>;
@@ -96,6 +97,7 @@ const migrations: { name: string; migration: Migration }[] = [
   { name: '051_predictive', migration: migration051 },
   { name: '052_economy', migration: migration052 },
   { name: '071_loop_os', migration: migration071 },
+  { name: '072_knowledge_embeddings', migration: migration072 },
 ];
 
 async function ensureMigrationsTable(pool: Pool): Promise<void> {

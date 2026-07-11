@@ -7,6 +7,7 @@ import { createSlaProcessor } from './processors/sla-monitoring.js';
 import { createIntentProcessor } from './processors/intent-detection.js';
 import { processAgentJob } from './processors/agent-execution.js';
 import { createNotificationDispatchProcessor } from './processors/notification-dispatch.js';
+import { createKnowledgeIngestionProcessor } from './processors/knowledge-ingestion.js';
 
 const logger = pino({ level: process.env.LOG_LEVEL ?? 'info' });
 
@@ -62,6 +63,19 @@ notificationWorker.on('failed', (job, err) => {
   logger.error({ jobId: job?.id, err }, 'notification dispatch job failed');
 });
 
+// Knowledge ingestion worker (RAG embedding pipeline)
+const knowledgeWorker = new Worker(
+  'knowledge-ingestion',
+  createKnowledgeIngestionProcessor(pool, anthropicKey),
+  { connection },
+);
+knowledgeWorker.on('completed', (job) => {
+  logger.info({ jobId: job.id }, 'knowledge ingestion job completed');
+});
+knowledgeWorker.on('failed', (job, err) => {
+  logger.error({ jobId: job?.id, err }, 'knowledge ingestion job failed');
+});
+
 // Agent execution worker
 const agentWorker = new Worker('agent-execution', processAgentJob, { connection });
 agentWorker.on('completed', (job) => {
@@ -77,6 +91,7 @@ async function shutdown(): Promise<void> {
   await workflowWorker.close();
   await slaWorker.close();
   await intentWorker.close();
+  await knowledgeWorker.close();
   await notificationWorker.close();
   await agentWorker.close();
   await pool.end();
