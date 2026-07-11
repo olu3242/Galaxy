@@ -47,6 +47,7 @@ import { platformRoutes } from './routes/platform.js';
 import { platformAdminV2Routes } from './routes/platform-admin-v2.js';
 import { billingV2Routes } from './routes/billing-v2.js';
 import { loopRoutes } from './routes/loop.js';
+import { broadcastRoutes } from './routes/broadcast.js';
 
 declare module 'fastify' {
   interface FastifyInstance {
@@ -142,6 +143,7 @@ async function buildApp(): Promise<FastifyInstance> {
   await fastify.register(platformAdminV2Routes, { prefix: '/api/v1' });
   await fastify.register(billingV2Routes, { prefix: '/api/v1' });
   await fastify.register(loopRoutes, { prefix: '/api/v1' });
+  await fastify.register(broadcastRoutes, { prefix: '/api/v1' });
 
   // Graceful shutdown
   fastify.addHook('onClose', async () => {
