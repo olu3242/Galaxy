@@ -6,6 +6,7 @@ export * from './services/AnnouncementService.js';
 export * from './services/CommunicationService.js';
 export * from './messaging/MessagingProvider.js';
 export * from './messaging/WhatsAppProvider.js';
+export * from './messaging/SendGridProvider.js';
 export * from './messaging/ProviderRegistry.js';
 export * from './messaging/MessageDispatcher.js';
 export * from './messaging/InboundMessageProcessor.js';

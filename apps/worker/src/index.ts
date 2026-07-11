@@ -51,10 +51,11 @@ intentWorker.on('failed', (job, err) => {
   logger.error({ jobId: job?.id, err }, 'intent detection job failed');
 });
 
-// Notification dispatch worker
+// Notification dispatch worker (email via SendGrid, whatsapp via channel providers)
+const sendGridApiKey = process.env.SENDGRID_API_KEY;
 const notificationWorker = new Worker(
   'notification-dispatch',
-  createNotificationDispatchProcessor(pool),
+  createNotificationDispatchProcessor(pool, sendGridApiKey),
   { connection },
 );
 notificationWorker.on('completed', (job) => {

@@ -1,5 +1,6 @@
 import type { Pool } from 'pg';
 import type { Job } from 'bullmq';
+import { SendGridProvider } from '@galaxy/communication';
 
 interface NotificationDispatchJobData {
   organizationId: string;
@@ -15,7 +16,21 @@ interface RecipientRow {
   email: string | null;
 }
 
-export function createNotificationDispatchProcessor(pool: Pool): (job: Job) => Promise<void> {
+export function createNotificationDispatchProcessor(
+  pool: Pool,
+  sendGridApiKey: string | undefined,
+): (job: Job) => Promise<void> {
+  const sendGridFromEmail = process.env.SENDGRID_FROM_EMAIL;
+  const sendGridFromName = process.env.SENDGRID_FROM_NAME;
+  const emailProvider =
+    sendGridApiKey && sendGridFromEmail
+      ? new SendGridProvider({
+          apiKey: sendGridApiKey,
+          fromEmail: sendGridFromEmail,
+          ...(sendGridFromName !== undefined ? { fromName: sendGridFromName } : {}),
+        })
+      : null;
+
   return async (job: Job): Promise<void> => {
     const data = job.data as NotificationDispatchJobData;
     const { organizationId, broadcastId, recipientIds, content, channel } = data;
@@ -33,26 +48,65 @@ export function createNotificationDispatchProcessor(pool: Pool): (job: Job) => P
       );
 
       for (const recipient of rows) {
-        const destination = channel === 'whatsapp' ? recipient.whatsapp_phone : recipient.email;
-        if (!destination) {
-          failedCount += 1;
-          continue;
+        if (channel === 'email') {
+          const emailAddress = recipient.email;
+          if (!emailAddress) {
+            failedCount += 1;
+            continue;
+          }
+
+          if (!emailProvider) {
+            // SendGrid not configured — log and skip rather than silently dropping
+            console.warn(
+              JSON.stringify({
+                level: 'warn',
+                event: 'notification.email.provider_unavailable',
+                broadcastId,
+                organizationId,
+                recipientId: recipient.id,
+              }),
+            );
+            failedCount += 1;
+            continue;
+          }
+
+          const result = await emailProvider.send(emailAddress, { type: 'text', text: content });
+          if (result.success) {
+            sentCount += 1;
+          } else {
+            failedCount += 1;
+            console.warn(
+              JSON.stringify({
+                level: 'warn',
+                event: 'notification.email.send_failed',
+                broadcastId,
+                organizationId,
+                recipientId: recipient.id,
+                errorMessage: result.errorMessage,
+              }),
+            );
+          }
+        } else {
+          // whatsapp / sms — log dispatch intent; actual send delegated to channel providers
+          const destination = channel === 'whatsapp' ? recipient.whatsapp_phone : recipient.email;
+          if (!destination) {
+            failedCount += 1;
+            continue;
+          }
+
+          console.warn(
+            JSON.stringify({
+              level: 'info',
+              event: 'notification.dispatched',
+              broadcastId,
+              organizationId,
+              recipientId: recipient.id,
+              channel,
+              contentLength: content.length,
+            }),
+          );
+          sentCount += 1;
         }
-
-        // Log dispatch intent — actual channel send delegated to channel providers
-        console.warn(
-          JSON.stringify({
-            level: 'info',
-            event: 'notification.dispatched',
-            broadcastId,
-            organizationId,
-            recipientId: recipient.id,
-            channel,
-            contentLength: content.length,
-          }),
-        );
-
-        sentCount += 1;
       }
     }
 
