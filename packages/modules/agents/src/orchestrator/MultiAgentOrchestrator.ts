@@ -95,10 +95,7 @@ export class MultiAgentOrchestrator {
     ]);
   }
 
-  private async resolveAgent(
-    organizationId: string,
-    agentType: AgentType,
-  ): Promise<Agent | null> {
+  private async resolveAgent(organizationId: string, agentType: AgentType): Promise<Agent | null> {
     await this.setTenantContext(organizationId);
     const result = await this.pool.query<AgentConfigRow>(
       `SELECT * FROM agent_configs
@@ -140,7 +137,6 @@ export class MultiAgentOrchestrator {
     };
   }
 
-
   async orchestrate(plan: OrchestrationPlan): Promise<OrchestrationResult[]> {
     const results: OrchestrationResult[] = [];
 
@@ -149,9 +145,7 @@ export class MultiAgentOrchestrator {
         .map((taskId) => plan.tasks.find((t) => t.id === taskId))
         .filter((t): t is OrchestrationTask => t !== undefined);
 
-      const batchResults = await Promise.all(
-        batchTasks.map((task) => this.executeTask(task)),
-      );
+      const batchResults = await Promise.all(batchTasks.map((task) => this.executeTask(task)));
 
       results.push(...batchResults);
     }

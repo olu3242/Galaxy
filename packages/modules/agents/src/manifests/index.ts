@@ -210,12 +210,7 @@ export const ORION_MANIFEST: AgentManifest = {
   fullName: 'Project Intelligence Agent',
   agentType: 'orion',
   version: '1.0.0',
-  capabilities: [
-    'read_workflows',
-    'read_analytics',
-    'write_tasks',
-    'generate_recommendations',
-  ],
+  capabilities: ['read_workflows', 'read_analytics', 'write_tasks', 'generate_recommendations'],
   automationDomains: ['projects', 'tasks', 'milestones'],
   defaultStrategy: 'chain_of_thought',
   maxConcurrentTasks: 10,

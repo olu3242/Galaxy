@@ -9,9 +9,5 @@
     "tsBuildInfoFile": ".tsbuildinfo"
   },
   "include": ["src/**/*"],
-  "references": [
-    { "path": "../../types" },
-    { "path": "../../events" },
-    { "path": "../../utils" }
-  ]
+  "references": [{ "path": "../../types" }, { "path": "../../events" }, { "path": "../../utils" }]
 }

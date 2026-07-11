@@ -14,9 +14,7 @@ export { HrCopilot } from './copilots/HrCopilot.js';
 export { FinanceCopilot } from './copilots/FinanceCopilot.js';
 export { AgentFactory } from './factory/AgentFactory.js';
 export type { AgentProvisionConfig } from './factory/AgentFactory.js';
-export {
-  MultiAgentOrchestrator,
-} from './orchestrator/MultiAgentOrchestrator.js';
+export { MultiAgentOrchestrator } from './orchestrator/MultiAgentOrchestrator.js';
 export type {
   OrchestrationTask,
   OrchestrationResult,

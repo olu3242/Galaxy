@@ -25,7 +25,11 @@ import {
   GxOptimizationEngine,
   GxGovernanceEngine,
 } from '@galaxy/cognitive-engine';
-import type { IntentAnalysis, ReasoningInput, GovernanceCheckInput } from '@galaxy/cognitive-engine';
+import type {
+  IntentAnalysis,
+  ReasoningInput,
+  GovernanceCheckInput,
+} from '@galaxy/cognitive-engine';
 import { ALL_MANIFESTS } from '../manifests/index.js';
 
 interface AgentExecutionRow {
@@ -337,7 +341,8 @@ export class AgentRuntime {
 
       // STAGE 8 — LEARN
       transitionState('LEARNING');
-      const success = verificationResult.status === 'passed' || verificationResult.status === 'warning';
+      const success =
+        verificationResult.status === 'passed' || verificationResult.status === 'warning';
       await this.gxLearning.recordOutcome({
         agentId: agent.id,
         organizationId: input.organizationId,
@@ -362,7 +367,9 @@ export class AgentRuntime {
         riskAssessment.riskLevel === 'critical' ||
         verificationResult.requiresHumanReview;
 
-      const finalStatus: AgentExecutionStatus = requiresHumanApproval ? 'awaiting_human' : 'completed';
+      const finalStatus: AgentExecutionStatus = requiresHumanApproval
+        ? 'awaiting_human'
+        : 'completed';
       transitionState(requiresHumanApproval ? 'ESCALATED' : 'COMPLETED');
 
       const trace = buildTrace(executionId, agent.id, states, startMs, {
