@@ -1,5 +1,11 @@
 import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
-import { LoopInstanceService, LoopVerificationService, LoopFeedbackService } from '@galaxy/loop';
+import {
+  LoopInstanceService,
+  LoopVerificationService,
+  LoopFeedbackService,
+  LoopLearningService,
+  LoopOptimizationService,
+} from '@galaxy/loop';
 import { Queue } from 'bullmq';
 import { Redis } from 'ioredis';
 
@@ -11,6 +17,8 @@ export function loopRoutes(fastify: FastifyInstance): void {
   const instanceSvc = new LoopInstanceService(fastify.pg);
   const verifySvc = new LoopVerificationService(fastify.pg);
   const feedbackSvc = new LoopFeedbackService(fastify.pg);
+  const learningSvc = new LoopLearningService(fastify.pg);
+  const optimizationSvc = new LoopOptimizationService(fastify.pg);
 
   // ── Loop instances ──────────────────────────────────────────────────────────
 
@@ -275,6 +283,117 @@ export function loopRoutes(fastify: FastifyInstance): void {
 
       const insight = result.rows[0] ?? null;
       return reply.send(envelope(insight, request.id));
+    },
+  );
+
+  // ── Learning Phase — pattern analysis and insight generation ─────────────────
+
+  fastify.post(
+    '/loops/learning/generate-insights',
+    async (
+      request: FastifyRequest<{ Body: { organizationId: string } }>,
+      reply: FastifyReply,
+    ) => {
+      const { organizationId } = request.body;
+      if (!organizationId) return reply.status(400).send({ error: 'organizationId required' });
+      const insights = await learningSvc.generateInsights(organizationId);
+      return reply.status(201).send(envelope({ insights, count: insights.length }, request.id));
+    },
+  );
+
+  fastify.get(
+    '/loops/learning/phase-insights',
+    async (
+      request: FastifyRequest<{ Querystring: { organizationId: string; limit?: string } }>,
+      reply: FastifyReply,
+    ) => {
+      const { organizationId, limit } = request.query;
+      if (!organizationId) return reply.status(400).send({ error: 'organizationId required' });
+      const insights = await learningSvc.listInsights(
+        organizationId,
+        limit ? parseInt(limit, 10) : undefined,
+      );
+      return reply.send(envelope(insights, request.id));
+    },
+  );
+
+  fastify.get(
+    '/loops/learning/patterns',
+    async (
+      request: FastifyRequest<{ Querystring: { organizationId: string } }>,
+      reply: FastifyReply,
+    ) => {
+      const { organizationId } = request.query;
+      if (!organizationId) return reply.status(400).send({ error: 'organizationId required' });
+      const patterns = await learningSvc.analyzePatterns(organizationId);
+      return reply.send(envelope(patterns, request.id));
+    },
+  );
+
+  // ── Optimization Phase — recommendations ─────────────────────────────────────
+
+  fastify.post(
+    '/loops/optimization/generate',
+    async (
+      request: FastifyRequest<{ Body: { organizationId: string } }>,
+      reply: FastifyReply,
+    ) => {
+      const { organizationId } = request.body;
+      if (!organizationId) return reply.status(400).send({ error: 'organizationId required' });
+      const recommendations = await optimizationSvc.generateRecommendations(organizationId);
+      return reply
+        .status(201)
+        .send(envelope({ recommendations, count: recommendations.length }, request.id));
+    },
+  );
+
+  fastify.get(
+    '/loops/optimization/recommendations',
+    async (
+      request: FastifyRequest<{
+        Querystring: { organizationId: string; status?: string };
+      }>,
+      reply: FastifyReply,
+    ) => {
+      const { organizationId, status } = request.query;
+      if (!organizationId) return reply.status(400).send({ error: 'organizationId required' });
+      const validStatuses = ['pending', 'applied', 'dismissed'] as const;
+      type ValidStatus = (typeof validStatuses)[number];
+      const typedStatus = validStatuses.includes(status as ValidStatus)
+        ? (status as ValidStatus)
+        : undefined;
+      const recs = await optimizationSvc.listRecommendations(organizationId, typedStatus);
+      return reply.send(envelope(recs, request.id));
+    },
+  );
+
+  fastify.post(
+    '/loops/optimization/recommendations/:id/apply',
+    async (
+      request: FastifyRequest<{ Params: { id: string }; Body: { organizationId: string } }>,
+      reply: FastifyReply,
+    ) => {
+      const { id } = request.params;
+      const { organizationId } = request.body;
+      if (!organizationId) return reply.status(400).send({ error: 'organizationId required' });
+      const rec = await optimizationSvc.applyRecommendation(organizationId, id);
+      if (!rec) return reply.status(404).send({ error: 'Recommendation not found' });
+      return reply.send(envelope(rec, request.id));
+    },
+  );
+
+  fastify.post(
+    '/loops/optimization/recommendations/:id/dismiss',
+    async (
+      request: FastifyRequest<{ Params: { id: string }; Body: { organizationId: string } }>,
+      reply: FastifyReply,
+    ) => {
+      const { id } = request.params;
+      const { organizationId } = request.body;
+      if (!organizationId) return reply.status(400).send({ error: 'organizationId required' });
+      const rec = await optimizationSvc.dismissRecommendation(organizationId, id);
+      if (!rec) return reply.status(404).send({ error: 'Recommendation not found' });
+      return reply.send(envelope(rec, request.id));
     },
   );
 }
