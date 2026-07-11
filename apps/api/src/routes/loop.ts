@@ -1,5 +1,7 @@
 import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { LoopInstanceService, LoopVerificationService, LoopFeedbackService } from '@galaxy/loop';
+import { Queue } from 'bullmq';
+import { Redis } from 'ioredis';
 
 function envelope<T>(data: T, requestId: string) {
   return { data, meta: { requestId, timestamp: new Date().toISOString() } };
@@ -201,6 +203,78 @@ export function loopRoutes(fastify: FastifyInstance): void {
       if (!organizationId) return reply.status(400).send({ error: 'organizationId required' });
       const feedbackList = await feedbackSvc.listByLoop(id, organizationId);
       return reply.send(envelope(feedbackList, request.id));
+    },
+  );
+
+  // ── Loop Learning — trigger insight generation ──────────────────────────────
+
+  fastify.post(
+    '/loops/learning/analyze',
+    async (
+      request: FastifyRequest<{
+        Body: { organizationId: string; workflowTemplateId: string };
+      }>,
+      reply: FastifyReply,
+    ) => {
+      const { organizationId, workflowTemplateId } = request.body;
+      if (!organizationId || !workflowTemplateId) {
+        return reply.status(400).send({ error: 'organizationId and workflowTemplateId required' });
+      }
+
+      const redis = new Redis(process.env.REDIS_URL ?? 'redis://localhost:6379', {
+        maxRetriesPerRequest: null,
+      });
+      const learningQueue = new Queue('loop-learning', { connection: redis });
+
+      try {
+        await learningQueue.add('analyze', { organizationId, workflowTemplateId });
+        return await reply
+          .status(202)
+          .send(envelope({ queued: true, workflowTemplateId }, request.id));
+      } finally {
+        await learningQueue.close();
+        await redis.quit();
+      }
+    },
+  );
+
+  // ── Loop Learning — get insights for a template ─────────────────────────────
+
+  fastify.get(
+    '/loops/learning/insights',
+    async (
+      request: FastifyRequest<{
+        Querystring: { organizationId: string; workflowTemplateId: string };
+      }>,
+      reply: FastifyReply,
+    ) => {
+      const { organizationId, workflowTemplateId } = request.query;
+      if (!organizationId || !workflowTemplateId) {
+        return reply.status(400).send({ error: 'organizationId and workflowTemplateId required' });
+      }
+
+      await fastify.pg.query('SELECT set_config($1, $2, true)', [
+        'app.current_tenant',
+        organizationId,
+      ]);
+
+      const result = await fastify.pg.query<{
+        id: string;
+        summary: string;
+        recommendations: string[];
+        optimization_score: number;
+        priority: string;
+        metrics_snapshot: Record<string, unknown>;
+        period_days: number;
+        updated_at: string;
+      }>(
+        `SELECT * FROM loop_learning_insights
+         WHERE organization_id = $1 AND workflow_template_id = $2`,
+        [organizationId, workflowTemplateId],
+      );
+
+      const insight = result.rows[0] ?? null;
+      return reply.send(envelope(insight, request.id));
     },
   );
 }

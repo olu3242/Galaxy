@@ -8,6 +8,7 @@ import { createIntentProcessor } from './processors/intent-detection.js';
 import { processAgentJob } from './processors/agent-execution.js';
 import { createNotificationDispatchProcessor } from './processors/notification-dispatch.js';
 import { createKnowledgeIngestionProcessor } from './processors/knowledge-ingestion.js';
+import { createLoopLearningProcessor } from './processors/loop-learning.js';
 
 const logger = pino({ level: process.env.LOG_LEVEL ?? 'info' });
 
@@ -63,6 +64,19 @@ notificationWorker.on('failed', (job, err) => {
   logger.error({ jobId: job?.id, err }, 'notification dispatch job failed');
 });
 
+// Loop learning worker (AI-driven optimization insights)
+const loopLearningWorker = new Worker(
+  'loop-learning',
+  createLoopLearningProcessor(pool, anthropicKey),
+  { connection },
+);
+loopLearningWorker.on('completed', (job) => {
+  logger.info({ jobId: job.id }, 'loop learning job completed');
+});
+loopLearningWorker.on('failed', (job, err) => {
+  logger.error({ jobId: job?.id, err }, 'loop learning job failed');
+});
+
 // Knowledge ingestion worker (RAG embedding pipeline)
 const knowledgeWorker = new Worker(
   'knowledge-ingestion',
@@ -91,6 +105,7 @@ async function shutdown(): Promise<void> {
   await workflowWorker.close();
   await slaWorker.close();
   await intentWorker.close();
+  await loopLearningWorker.close();
   await knowledgeWorker.close();
   await notificationWorker.close();
   await agentWorker.close();
