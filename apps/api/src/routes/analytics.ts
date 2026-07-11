@@ -139,4 +139,80 @@ export function analyticsRoutes(fastify: FastifyInstance): void {
       return reply.status(201).send(responseEnvelope(report, request.id));
     },
   );
+
+  fastify.get(
+    '/analytics/org-health',
+    async (
+      request: FastifyRequest<{ Querystring: { organizationId: string } }>,
+      reply: FastifyReply,
+    ) => {
+      const { organizationId } = request.query;
+      if (!organizationId) return reply.status(400).send({ error: 'organizationId required' });
+
+      const [workflowResult, loopResult] = await Promise.all([
+        fastify.pg.query<{
+          active_workflows: string;
+          completed_today: string;
+          pending_approval: string;
+          sla_breaches: string;
+        }>(
+          `SELECT
+            COUNT(*) FILTER (WHERE status = 'active') AS active_workflows,
+            COUNT(*) FILTER (WHERE status = 'completed' AND updated_at > NOW() - INTERVAL '24 hours') AS completed_today,
+            COUNT(*) FILTER (WHERE status IN ('pending_approval','pending_finance_review')) AS pending_approval,
+            COUNT(*) FILTER (WHERE sla_deadline < NOW() AND status NOT IN ('completed','rejected')) AS sla_breaches
+          FROM workflow_instances
+          WHERE organization_id = $1`,
+          [organizationId],
+        ),
+        fastify.pg.query<{ completed: string; total: string }>(
+          `SELECT
+            COUNT(*) FILTER (WHERE status = 'completed') AS completed,
+            COUNT(*) AS total
+          FROM loop_instances
+          WHERE organization_id = $1`,
+          [organizationId],
+        ),
+      ]);
+
+      const wf = workflowResult.rows[0] ?? {
+        active_workflows: '0',
+        completed_today: '0',
+        pending_approval: '0',
+        sla_breaches: '0',
+      };
+      const lp = loopResult.rows[0] ?? { completed: '0', total: '0' };
+
+      const totalLoops = parseInt(lp.total, 10);
+      const loopCompletionRate =
+        totalLoops > 0 ? (parseInt(lp.completed, 10) / totalLoops) * 100 : 100;
+      const slaBreaches = parseInt(wf.sla_breaches, 10);
+      const activeWorkflows = parseInt(wf.active_workflows, 10);
+      const slaCompliance =
+        activeWorkflows > 0
+          ? Math.max(0, ((activeWorkflows - slaBreaches) / activeWorkflows) * 100)
+          : 100;
+      const overall = Math.round(loopCompletionRate * 0.4 + slaCompliance * 0.6);
+
+      return reply.send(
+        responseEnvelope(
+          {
+            overall,
+            workflowMetrics: {
+              activeWorkflows,
+              completedToday: parseInt(wf.completed_today, 10),
+              pendingApproval: parseInt(wf.pending_approval, 10),
+              slaBreaches,
+            },
+            loopMetrics: {
+              completionRate: Math.round(loopCompletionRate),
+              totalLoops,
+              completedLoops: parseInt(lp.completed, 10),
+            },
+          },
+          request.id,
+        ),
+      );
+    },
+  );
 }
