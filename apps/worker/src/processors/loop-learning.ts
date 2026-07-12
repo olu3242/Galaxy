@@ -1,6 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk';
 import type { Pool } from 'pg';
 import type { Job } from 'bullmq';
+import { withEngineLifecycle } from '../lib/withEngineLifecycle.js';
 
 interface LoopLearningJobData {
   organizationId: string;
@@ -25,13 +26,14 @@ export function createLoopLearningProcessor(
 ): (job: Job) => Promise<void> {
   const anthropic = new Anthropic({ apiKey: anthropicApiKey });
 
-  return async (job: Job): Promise<void> => {
-    const { organizationId, workflowTemplateId } = job.data as LoopLearningJobData;
+  return async (job: Job): Promise<void> =>
+    withEngineLifecycle(job, pool, async () => {
+      const { organizationId, workflowTemplateId } = job.data as LoopLearningJobData;
 
-    await pool.query('SELECT set_config($1, $2, true)', ['app.current_tenant', organizationId]);
+      await pool.query('SELECT set_config($1, $2, true)', ['app.current_tenant', organizationId]);
 
-    const metricsResult = await pool.query<LoopMetricsRow>(
-      `SELECT
+      const metricsResult = await pool.query<LoopMetricsRow>(
+        `SELECT
          AVG(lf.score)::text AS avg_feedback_score,
          (COUNT(*) FILTER (WHERE li.status = 'completed')::float /
           NULLIF(COUNT(*), 0) * 100)::text AS completion_rate,
@@ -46,21 +48,21 @@ export function createLoopLearningProcessor(
            WHERE organization_id = $1 AND template_id = $2
          )
          AND li.created_at > NOW() - INTERVAL '30 days'`,
-      [organizationId, workflowTemplateId],
-    );
+        [organizationId, workflowTemplateId],
+      );
 
-    const metrics = metricsResult.rows[0];
-    if (!metrics || parseInt(metrics.total_loops, 10) < 3) {
-      // Not enough data to generate insights
-      return;
-    }
+      const metrics = metricsResult.rows[0];
+      if (!metrics || parseInt(metrics.total_loops, 10) < 3) {
+        // Not enough data to generate insights
+        return;
+      }
 
-    const avgScore = metrics.avg_feedback_score ? parseFloat(metrics.avg_feedback_score) : null;
-    const completionRate = metrics.completion_rate ? parseFloat(metrics.completion_rate) : null;
-    const totalLoops = parseInt(metrics.total_loops, 10);
-    const escalatedLoops = parseInt(metrics.escalated_loops, 10);
+      const avgScore = metrics.avg_feedback_score ? parseFloat(metrics.avg_feedback_score) : null;
+      const completionRate = metrics.completion_rate ? parseFloat(metrics.completion_rate) : null;
+      const totalLoops = parseInt(metrics.total_loops, 10);
+      const escalatedLoops = parseInt(metrics.escalated_loops, 10);
 
-    const prompt = `You are analyzing Loop OS performance data for a workflow template. Generate actionable improvement recommendations.
+      const prompt = `You are analyzing Loop OS performance data for a workflow template. Generate actionable improvement recommendations.
 
 Metrics (last 30 days):
 - Total loops: ${String(totalLoops)}
@@ -77,49 +79,50 @@ Respond with ONLY a JSON object:
   "priority": "low" | "medium" | "high"
 }`;
 
-    const response = await anthropic.messages.create({
-      model: 'claude-haiku-4-5-20251001',
-      max_tokens: 512,
-      messages: [{ role: 'user', content: prompt }],
-    });
+      const response = await anthropic.messages.create({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 512,
+        messages: [{ role: 'user', content: prompt }],
+      });
 
-    const firstBlock = response.content[0];
-    const rawText = firstBlock?.type === 'text' ? firstBlock.text : '{}';
+      const firstBlock = response.content[0];
+      const rawText = firstBlock?.type === 'text' ? firstBlock.text : '{}';
 
-    let insight: {
-      summary: string;
-      recommendations: string[];
-      optimizationScore: number;
-      priority: string;
-    };
-
-    try {
-      const parsed = JSON.parse(rawText) as Record<string, unknown>;
-      insight = {
-        summary: typeof parsed.summary === 'string' ? parsed.summary : 'Loop performance analyzed',
-        recommendations: Array.isArray(parsed.recommendations)
-          ? (parsed.recommendations as string[]).filter((r): r is string => typeof r === 'string')
-          : [],
-        optimizationScore:
-          typeof parsed.optimizationScore === 'number'
-            ? Math.min(100, Math.max(0, parsed.optimizationScore))
-            : 50,
-        priority:
-          parsed.priority === 'high' || parsed.priority === 'medium' || parsed.priority === 'low'
-            ? parsed.priority
-            : 'medium',
+      let insight: {
+        summary: string;
+        recommendations: string[];
+        optimizationScore: number;
+        priority: string;
       };
-    } catch {
-      insight = {
-        summary: 'Loop performance analyzed',
-        recommendations: [],
-        optimizationScore: 50,
-        priority: 'medium',
-      };
-    }
 
-    await pool.query<InsightRow>(
-      `INSERT INTO loop_learning_insights
+      try {
+        const parsed = JSON.parse(rawText) as Record<string, unknown>;
+        insight = {
+          summary:
+            typeof parsed.summary === 'string' ? parsed.summary : 'Loop performance analyzed',
+          recommendations: Array.isArray(parsed.recommendations)
+            ? (parsed.recommendations as string[]).filter((r): r is string => typeof r === 'string')
+            : [],
+          optimizationScore:
+            typeof parsed.optimizationScore === 'number'
+              ? Math.min(100, Math.max(0, parsed.optimizationScore))
+              : 50,
+          priority:
+            parsed.priority === 'high' || parsed.priority === 'medium' || parsed.priority === 'low'
+              ? parsed.priority
+              : 'medium',
+        };
+      } catch {
+        insight = {
+          summary: 'Loop performance analyzed',
+          recommendations: [],
+          optimizationScore: 50,
+          priority: 'medium',
+        };
+      }
+
+      await pool.query<InsightRow>(
+        `INSERT INTO loop_learning_insights
          (organization_id, workflow_template_id, summary, recommendations, optimization_score,
           priority, metrics_snapshot, period_days)
        VALUES ($1, $2, $3, $4, $5, $6, $7, 30)
@@ -131,15 +134,15 @@ Respond with ONLY a JSON object:
          priority = EXCLUDED.priority,
          metrics_snapshot = EXCLUDED.metrics_snapshot,
          updated_at = NOW()`,
-      [
-        organizationId,
-        workflowTemplateId,
-        insight.summary,
-        JSON.stringify(insight.recommendations),
-        insight.optimizationScore,
-        insight.priority,
-        JSON.stringify({ avgScore, completionRate, totalLoops, escalatedLoops }),
-      ],
-    );
-  };
+        [
+          organizationId,
+          workflowTemplateId,
+          insight.summary,
+          JSON.stringify(insight.recommendations),
+          insight.optimizationScore,
+          insight.priority,
+          JSON.stringify({ avgScore, completionRate, totalLoops, escalatedLoops }),
+        ],
+      );
+    });
 }

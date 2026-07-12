@@ -1,6 +1,7 @@
 import type { Pool } from 'pg';
 import type { Job } from 'bullmq';
 import { AuditSearchService } from '@galaxy/identity';
+import { withEngineLifecycle } from '../lib/withEngineLifecycle.js';
 import type { AuditLogDoc } from '@galaxy/identity';
 
 export interface AuditSyncJobData {
@@ -24,19 +25,20 @@ export function createAuditSyncProcessor(
     );
   });
 
-  return async (job: Job): Promise<void> => {
-    const { doc } = job.data as AuditSyncJobData;
+  return async (job: Job): Promise<void> =>
+    withEngineLifecycle(job, pool, async () => {
+      const { doc } = job.data as AuditSyncJobData;
 
-    await searchService.indexDocument(doc);
+      await searchService.indexDocument(doc);
 
-    console.warn(
-      JSON.stringify({
-        level: 'info',
-        event: 'audit.synced_to_elasticsearch',
-        auditId: doc.id,
-        organizationId: doc.organizationId,
-        action: doc.action,
-      }),
-    );
-  };
+      console.warn(
+        JSON.stringify({
+          level: 'info',
+          event: 'audit.synced_to_elasticsearch',
+          auditId: doc.id,
+          organizationId: doc.organizationId,
+          action: doc.action,
+        }),
+      );
+    });
 }

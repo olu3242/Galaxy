@@ -1,5 +1,6 @@
 import type { Pool } from 'pg';
 import type { Job } from 'bullmq';
+import { withEngineLifecycle } from '../lib/withEngineLifecycle.js';
 
 interface KnowledgeIngestionJobData {
   organizationId: string;
@@ -86,82 +87,83 @@ export function createKnowledgeIngestionProcessor(
     );
   }
 
-  return async (job: Job): Promise<void> => {
-    const { organizationId, documentId } = job.data as KnowledgeIngestionJobData;
+  return async (job: Job): Promise<void> =>
+    withEngineLifecycle(job, pool, async () => {
+      const { organizationId, documentId } = job.data as KnowledgeIngestionJobData;
 
-    await pool.query('SELECT set_config($1, $2, true)', ['app.current_tenant', organizationId]);
+      await pool.query('SELECT set_config($1, $2, true)', ['app.current_tenant', organizationId]);
 
-    const docResult = await pool.query<DocumentRow>(
-      'SELECT id, organization_id, content, title FROM knowledge_documents WHERE id = $1 AND organization_id = $2',
-      [documentId, organizationId],
-    );
-
-    const doc = docResult.rows[0];
-    if (!doc) {
-      console.warn(
-        JSON.stringify({
-          level: 'warn',
-          event: 'knowledge.ingestion.document_not_found',
-          documentId,
-          organizationId,
-        }),
+      const docResult = await pool.query<DocumentRow>(
+        'SELECT id, organization_id, content, title FROM knowledge_documents WHERE id = $1 AND organization_id = $2',
+        [documentId, organizationId],
       );
-      return;
-    }
 
-    const fullText = `${doc.title}\n\n${doc.content}`;
-    const chunks = chunkText(fullText);
-
-    await pool.query(
-      'DELETE FROM knowledge_chunks WHERE document_id = $1 AND organization_id = $2',
-      [documentId, organizationId],
-    );
-
-    let totalTokens = 0;
-
-    for (let i = 0; i < chunks.length; i++) {
-      const chunk = chunks[i];
-      if (!chunk) continue;
-
-      let embedding: number[];
-      let tokenCount: number;
-
-      if (useRealEmbeddings && voyageApiKey) {
-        const result = await embedText(chunk, voyageApiKey);
-        embedding = result.embedding;
-        tokenCount = result.tokens;
-      } else {
-        // Deterministic mock: stable across re-ingestions of the same document
-        embedding = mockEmbedding(i, chunk.length);
-        tokenCount = Math.ceil(chunk.length / 4);
+      const doc = docResult.rows[0];
+      if (!doc) {
+        console.warn(
+          JSON.stringify({
+            level: 'warn',
+            event: 'knowledge.ingestion.document_not_found',
+            documentId,
+            organizationId,
+          }),
+        );
+        return;
       }
 
-      totalTokens += tokenCount;
+      const fullText = `${doc.title}\n\n${doc.content}`;
+      const chunks = chunkText(fullText);
 
       await pool.query(
-        `INSERT INTO knowledge_chunks (organization_id, document_id, chunk_index, content, embedding, token_count)
-         VALUES ($1, $2, $3, $4, $5::vector, $6)`,
-        [organizationId, documentId, i, chunk, `[${embedding.join(',')}]`, tokenCount],
+        'DELETE FROM knowledge_chunks WHERE document_id = $1 AND organization_id = $2',
+        [documentId, organizationId],
       );
-    }
 
-    await pool.query(
-      `UPDATE knowledge_documents
+      let totalTokens = 0;
+
+      for (let i = 0; i < chunks.length; i++) {
+        const chunk = chunks[i];
+        if (!chunk) continue;
+
+        let embedding: number[];
+        let tokenCount: number;
+
+        if (useRealEmbeddings && voyageApiKey) {
+          const result = await embedText(chunk, voyageApiKey);
+          embedding = result.embedding;
+          tokenCount = result.tokens;
+        } else {
+          // Deterministic mock: stable across re-ingestions of the same document
+          embedding = mockEmbedding(i, chunk.length);
+          tokenCount = Math.ceil(chunk.length / 4);
+        }
+
+        totalTokens += tokenCount;
+
+        await pool.query(
+          `INSERT INTO knowledge_chunks (organization_id, document_id, chunk_index, content, embedding, token_count)
+         VALUES ($1, $2, $3, $4, $5::vector, $6)`,
+          [organizationId, documentId, i, chunk, `[${embedding.join(',')}]`, tokenCount],
+        );
+      }
+
+      await pool.query(
+        `UPDATE knowledge_documents
        SET ingested_at = NOW(), updated_at = NOW()
        WHERE id = $1 AND organization_id = $2`,
-      [documentId, organizationId],
-    );
+        [documentId, organizationId],
+      );
 
-    console.warn(
-      JSON.stringify({
-        level: 'info',
-        event: 'knowledge.ingested',
-        documentId,
-        organizationId,
-        chunkCount: chunks.length,
-        totalTokens,
-        embeddingSource: useRealEmbeddings ? 'voyage-ai' : 'mock',
-      }),
-    );
-  };
+      console.warn(
+        JSON.stringify({
+          level: 'info',
+          event: 'knowledge.ingested',
+          documentId,
+          organizationId,
+          chunkCount: chunks.length,
+          totalTokens,
+          embeddingSource: useRealEmbeddings ? 'voyage-ai' : 'mock',
+        }),
+      );
+    });
 }

@@ -26,19 +26,19 @@ Every record at every layer references the same `correlationId`, enabling full-c
 
 ### Current Trace Infrastructure
 
-| Component | Status | File |
-|---|---|---|
-| `correlationId` generation | ✅ Defined in type system | `packages/types/src/events.ts` |
-| `GalaxyEvent` envelope | ✅ Fully specified | `packages/types/src/events.ts` |
-| `KafkaEventBus` / `EventPublisher` | ✅ Implemented | `packages/events/src/kafka.ts` |
-| `AuditLogger` / `AuditSearchService` | ✅ Implemented | `packages/modules/identity/src/audit/` |
-| Structured logging (Pino) | ✅ In API | `apps/api/src/` |
-| `GxLearningEngine.recordOutcome` | ✅ Implemented | `packages/modules/cognitive-engine/src/engines/` |
-| `AgentLifecycleTrace` | ✅ In AgentRuntime | `packages/modules/agents/src/runtime/AgentRuntime.ts` |
-| Correlation ID threading to workers | ❌ Missing | BullMQ job payloads don't universally include correlationId |
-| Audit writes in workers | ❌ Missing | No worker calls `AuditLogger` |
-| Event emission in workers | ❌ Missing | No worker calls `EventPublisher` after completion |
-| Mission Control WebSocket broadcast | ❌ Partial | Routes exist; real-time push not implemented |
+| Component                            | Status                    | File                                                        |
+| ------------------------------------ | ------------------------- | ----------------------------------------------------------- |
+| `correlationId` generation           | ✅ Defined in type system | `packages/types/src/events.ts`                              |
+| `GalaxyEvent` envelope               | ✅ Fully specified        | `packages/types/src/events.ts`                              |
+| `KafkaEventBus` / `EventPublisher`   | ✅ Implemented            | `packages/events/src/kafka.ts`                              |
+| `AuditLogger` / `AuditSearchService` | ✅ Implemented            | `packages/modules/identity/src/audit/`                      |
+| Structured logging (Pino)            | ✅ In API                 | `apps/api/src/`                                             |
+| `GxLearningEngine.recordOutcome`     | ✅ Implemented            | `packages/modules/cognitive-engine/src/engines/`            |
+| `AgentLifecycleTrace`                | ✅ In AgentRuntime        | `packages/modules/agents/src/runtime/AgentRuntime.ts`       |
+| Correlation ID threading to workers  | ❌ Missing                | BullMQ job payloads don't universally include correlationId |
+| Audit writes in workers              | ❌ Missing                | No worker calls `AuditLogger`                               |
+| Event emission in workers            | ❌ Missing                | No worker calls `EventPublisher` after completion           |
+| Mission Control WebSocket broadcast  | ❌ Partial                | Routes exist; real-time push not implemented                |
 
 ---
 
@@ -46,25 +46,26 @@ Every record at every layer references the same `correlationId`, enabling full-c
 
 ### Fully Traceable (end-to-end trace confirmed)
 
-| Feature | Trace Coverage | Notes |
-|---|---|---|
-| `AgentRuntime.execute()` | ✅ Full | Produces `AgentLifecycleTrace` with all 9 lifecycle states, governance decision, learning event ID |
-| `AuthMiddleware` | ✅ Full | Sets `request.user` with actorId; JWT claims audited |
-| `TenantContextMiddleware` | ✅ Full | Sets RLS context; tenant ID available downstream |
-| Knowledge ingestion (pgvector) | ✅ Partial | Embedding stored with chunk metadata; no correlationId on embedding records |
+| Feature                        | Trace Coverage | Notes                                                                                              |
+| ------------------------------ | -------------- | -------------------------------------------------------------------------------------------------- |
+| `AgentRuntime.execute()`       | ✅ Full        | Produces `AgentLifecycleTrace` with all 9 lifecycle states, governance decision, learning event ID |
+| `AuthMiddleware`               | ✅ Full        | Sets `request.user` with actorId; JWT claims audited                                               |
+| `TenantContextMiddleware`      | ✅ Full        | Sets RLS context; tenant ID available downstream                                                   |
+| Knowledge ingestion (pgvector) | ✅ Partial     | Embedding stored with chunk metadata; no correlationId on embedding records                        |
 
 ### Partially Traceable
 
-| Feature | What Exists | What's Missing |
-|---|---|---|
-| WhatsApp Webhook | Signature verified; phone identity resolved | No audit log written; no GalaxyEvent published after message processed |
-| Knowledge RAG endpoint | Query logged; search method recorded | No correlationId linked to embedding query; no audit entry |
-| workflow-execution processor | Job ID tracked in BullMQ | No correlationId from original HTTP request; no completion event |
-| Audit routes | Elasticsearch index writes | Audit sync processor doesn't emit GalaxyEvent on completion |
+| Feature                      | What Exists                                 | What's Missing                                                         |
+| ---------------------------- | ------------------------------------------- | ---------------------------------------------------------------------- |
+| WhatsApp Webhook             | Signature verified; phone identity resolved | No audit log written; no GalaxyEvent published after message processed |
+| Knowledge RAG endpoint       | Query logged; search method recorded        | No correlationId linked to embedding query; no audit entry             |
+| workflow-execution processor | Job ID tracked in BullMQ                    | No correlationId from original HTTP request; no completion event       |
+| Audit routes                 | Elasticsearch index writes                  | Audit sync processor doesn't emit GalaxyEvent on completion            |
 
 ### Not Traceable (complete trace gap)
 
 All 44 API route VIOLATION features produce no trace:
+
 - No `correlationId` propagated from request header
 - No `GalaxyEvent` published
 - No `audit_log` entry written
@@ -84,8 +85,10 @@ await queue.add('agent-execution', { agentId, input, organizationId });
 
 // Required:
 await queue.add('agent-execution', {
-  agentId, input, organizationId,
-  correlationId: request.correlationId,  // ← must be threaded
+  agentId,
+  input,
+  organizationId,
+  correlationId: request.correlationId, // ← must be threaded
   actorId: request.user.id,
 });
 ```
@@ -120,18 +123,18 @@ await queue.add('agent-execution', {
 
 ## 4. Observability Completeness
 
-| Observability Dimension | Coverage | Gap |
-|---|---|---|
-| Structured request logs (Pino) | ✅ API layer | Workers use console.log in some cases |
-| Correlation ID on HTTP requests | ⚠️ Header exists | Not universally propagated through the call chain |
-| Distributed trace IDs (OpenTelemetry) | ❌ Not implemented | No OTel instrumentation found |
-| Agent lifecycle traces | ✅ AgentRuntime | `AgentLifecycleTrace` with per-state timing |
-| Worker job execution metrics | ⚠️ BullMQ dashboard | No custom metric emission (latency, success rate, token cost) |
-| Event stream (Kafka) | ⚠️ Infrastructure ready | Only AgentRuntime emits events; 96 features do not |
-| Audit log (PostgreSQL) | ⚠️ Table + RLS | Only 8 features write audit entries |
-| Elasticsearch audit search | ✅ Implemented | `AuditSearchService` with index + ILIKE fallback |
-| Mission Control real-time | ❌ Not wired | WebSocket routes exist; no push implementation |
-| Performance metrics (tokens, cost, latency) | ⚠️ AgentRuntime only | `AgentLifecycleTrace.totalDurationMs` tracked; no token cost tracking |
+| Observability Dimension                     | Coverage                | Gap                                                                   |
+| ------------------------------------------- | ----------------------- | --------------------------------------------------------------------- |
+| Structured request logs (Pino)              | ✅ API layer            | Workers use console.log in some cases                                 |
+| Correlation ID on HTTP requests             | ⚠️ Header exists        | Not universally propagated through the call chain                     |
+| Distributed trace IDs (OpenTelemetry)       | ❌ Not implemented      | No OTel instrumentation found                                         |
+| Agent lifecycle traces                      | ✅ AgentRuntime         | `AgentLifecycleTrace` with per-state timing                           |
+| Worker job execution metrics                | ⚠️ BullMQ dashboard     | No custom metric emission (latency, success rate, token cost)         |
+| Event stream (Kafka)                        | ⚠️ Infrastructure ready | Only AgentRuntime emits events; 96 features do not                    |
+| Audit log (PostgreSQL)                      | ⚠️ Table + RLS          | Only 8 features write audit entries                                   |
+| Elasticsearch audit search                  | ✅ Implemented          | `AuditSearchService` with index + ILIKE fallback                      |
+| Mission Control real-time                   | ❌ Not wired            | WebSocket routes exist; no push implementation                        |
+| Performance metrics (tokens, cost, latency) | ⚠️ AgentRuntime only    | `AgentLifecycleTrace.totalDurationMs` tracked; no token cost tracking |
 
 ---
 
@@ -235,4 +238,4 @@ await queue.add('agent-execution', {
 
 ---
 
-*This report is based on static code analysis. A full dynamic trace test requires running the platform with real requests and verifying that every trace link is populated in the database and event stream.*
+_This report is based on static code analysis. A full dynamic trace test requires running the platform with real requests and verifying that every trace link is populated in the database and event stream._

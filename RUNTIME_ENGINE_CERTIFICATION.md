@@ -24,21 +24,21 @@ Of the 137 audited features, only 17 (12.4%) are fully certified. 89 features (6
 
 ### 2.1 Audited Components
 
-| Layer | Components Audited |
-|---|---|
-| API Route Handlers | 38 route modules across all surface areas |
-| BullMQ Worker Processors | 9 background job processors |
-| Agent OS Module | 14 services, engines, and copilots |
-| Cognitive Engine (Gx) | 12 engine implementations |
-| Communication OS Module | 10 services and providers |
-| Identity OS Module | 10 services, repositories, and auth providers |
-| Workflow OS Module | 7 services |
-| People OS Module | 5 services |
-| Knowledge OS Module | 5 services |
-| Governance OS Module | 5 services |
-| Analytics OS Module | 5 services |
-| Loop OS Module | 6 services |
-| **Total** | **137 features** |
+| Layer                    | Components Audited                            |
+| ------------------------ | --------------------------------------------- |
+| API Route Handlers       | 38 route modules across all surface areas     |
+| BullMQ Worker Processors | 9 background job processors                   |
+| Agent OS Module          | 14 services, engines, and copilots            |
+| Cognitive Engine (Gx)    | 12 engine implementations                     |
+| Communication OS Module  | 10 services and providers                     |
+| Identity OS Module       | 10 services, repositories, and auth providers |
+| Workflow OS Module       | 7 services                                    |
+| People OS Module         | 5 services                                    |
+| Knowledge OS Module      | 5 services                                    |
+| Governance OS Module     | 5 services                                    |
+| Analytics OS Module      | 5 services                                    |
+| Loop OS Module           | 6 services                                    |
+| **Total**                | **137 features**                              |
 
 ### 2.2 Out of Scope
 
@@ -54,22 +54,22 @@ Of the 137 audited features, only 17 (12.4%) are fully certified. 89 features (6
 
 The Galaxy Runtime Engine defines fourteen lifecycle stages that every feature must traverse in order to be considered compliant. Each stage is evaluated as **PASS**, **FAIL**, or **N/A** (not applicable to the feature type).
 
-| Stage | Description | Applicability |
-|---|---|---|
-| **Identity Resolution** | JWT or WhatsApp identity validated; caller identity bound to request | API routes |
-| **Tenant Resolution** | `set_config('app.current_tenant', ...)` called before any DB query | Routes and services with DB access |
-| **Authorization/ABAC** | PermissionGuard or `assertAbac` enforced for the requested action | API routes |
-| **Policy Engine** | GovernanceEngine or AutomationGovernanceGuard consulted for AI/agent writes | AI, agent, and governance features |
-| **Workflow Engine** | Operations enqueued to BullMQ; never executed synchronously from HTTP handlers | API routes with mutations |
-| **Runtime Engine** | Core business logic executed by appropriate engine or runtime | All operational features |
-| **Agent Engine** | AgentRuntime or MultiAgentOrchestrator used for AI execution | Agent and copilot features |
-| **Knowledge Engine** | KnowledgeService or pgvector semantic retrieval used for AI-relevant context | AI and search features |
-| **Event Emission** | GalaxyEvent published with `correlationId`, `tenantId`, and `actor` | All state-mutating features |
-| **Notification Engine** | Downstream notifications dispatched where business logic requires it | Features with stakeholder-visible outcomes |
-| **Audit Logging** | Immutable INSERT into `audit_logs` table (never UPDATE or DELETE) | All state-mutating features |
-| **Loop OS** | Loop learning/optimization trigger fired after operation completion | Post-execution features |
-| **Analytics Update** | Metrics emitted to the analytics module | Features with measurable outcomes |
-| **Mission Control Update** | Relevant state changes propagated to Mission Control dashboard | Features affecting operational dashboards |
+| Stage                      | Description                                                                    | Applicability                              |
+| -------------------------- | ------------------------------------------------------------------------------ | ------------------------------------------ |
+| **Identity Resolution**    | JWT or WhatsApp identity validated; caller identity bound to request           | API routes                                 |
+| **Tenant Resolution**      | `set_config('app.current_tenant', ...)` called before any DB query             | Routes and services with DB access         |
+| **Authorization/ABAC**     | PermissionGuard or `assertAbac` enforced for the requested action              | API routes                                 |
+| **Policy Engine**          | GovernanceEngine or AutomationGovernanceGuard consulted for AI/agent writes    | AI, agent, and governance features         |
+| **Workflow Engine**        | Operations enqueued to BullMQ; never executed synchronously from HTTP handlers | API routes with mutations                  |
+| **Runtime Engine**         | Core business logic executed by appropriate engine or runtime                  | All operational features                   |
+| **Agent Engine**           | AgentRuntime or MultiAgentOrchestrator used for AI execution                   | Agent and copilot features                 |
+| **Knowledge Engine**       | KnowledgeService or pgvector semantic retrieval used for AI-relevant context   | AI and search features                     |
+| **Event Emission**         | GalaxyEvent published with `correlationId`, `tenantId`, and `actor`            | All state-mutating features                |
+| **Notification Engine**    | Downstream notifications dispatched where business logic requires it           | Features with stakeholder-visible outcomes |
+| **Audit Logging**          | Immutable INSERT into `audit_logs` table (never UPDATE or DELETE)              | All state-mutating features                |
+| **Loop OS**                | Loop learning/optimization trigger fired after operation completion            | Post-execution features                    |
+| **Analytics Update**       | Metrics emitted to the analytics module                                        | Features with measurable outcomes          |
+| **Mission Control Update** | Relevant state changes propagated to Mission Control dashboard                 | Features affecting operational dashboards  |
 
 The architecture mandates a strict sequential dependency for the security perimeter stages: Identity Resolution must precede Tenant Resolution, which must precede Authorization/ABAC.
 
@@ -91,10 +91,10 @@ Each feature was audited by static analysis of its source code entry point and a
 
 ### 4.2 Classification Criteria
 
-| Status | Criteria |
-|---|---|
-| **CERTIFIED** | All applicable lifecycle stages PASS; zero violations |
-| **PARTIAL** | One or more lifecycle stages FAIL, but no stage failure constitutes a critical security breach |
+| Status        | Criteria                                                                                                            |
+| ------------- | ------------------------------------------------------------------------------------------------------------------- |
+| **CERTIFIED** | All applicable lifecycle stages PASS; zero violations                                                               |
+| **PARTIAL**   | One or more lifecycle stages FAIL, but no stage failure constitutes a critical security breach                      |
 | **VIOLATION** | One or more lifecycle stage failures constitute a security, multi-tenancy, financial, or governance compliance risk |
 
 ### 4.3 Severity Tiers
@@ -110,41 +110,41 @@ Each feature was audited by static analysis of its source code entry point and a
 
 ### 5.1 Overall Counts
 
-| Status | Count | Percentage |
-|---|---|---|
-| CERTIFIED | 17 | 12.4% |
-| PARTIAL | 31 | 22.6% |
-| VIOLATION | 89 | 65.0% |
-| **Total** | **137** | **100%** |
+| Status    | Count   | Percentage |
+| --------- | ------- | ---------- |
+| CERTIFIED | 17      | 12.4%      |
+| PARTIAL   | 31      | 22.6%      |
+| VIOLATION | 89      | 65.0%      |
+| **Total** | **137** | **100%**   |
 
 ### 5.2 Results by Component Layer
 
-| Layer | Total | Certified | Partial | Violation |
-|---|---|---|---|---|
-| API Route Handlers | 38 | 0 | 3 | 35 |
-| BullMQ Worker Processors | 9 | 0 | 3 | 6 |
-| Agent OS Module | 14 | 1 | 2 | 11 |
-| Cognitive Engine (Gx) | 12 | 3 | 5 | 4 |
-| Communication OS Module | 10 | 4 | 1 | 5 |
-| Identity OS Module | 10 | 5 | 4 | 1 |
-| Workflow OS Module | 7 | 0 | 0 | 7 |
-| People OS Module | 5 | 0 | 1 | 4 |
-| Knowledge OS Module | 5 | 0 | 2 | 3 |
-| Governance OS Module | 5 | 0 | 1 | 4 |
-| Analytics OS Module | 5 | 2 | 0 | 3 |
-| Loop OS Module | 6 | 0 | 1 | 5 |
+| Layer                    | Total | Certified | Partial | Violation |
+| ------------------------ | ----- | --------- | ------- | --------- |
+| API Route Handlers       | 38    | 0         | 3       | 35        |
+| BullMQ Worker Processors | 9     | 0         | 3       | 6         |
+| Agent OS Module          | 14    | 1         | 2       | 11        |
+| Cognitive Engine (Gx)    | 12    | 3         | 5       | 4         |
+| Communication OS Module  | 10    | 4         | 1       | 5         |
+| Identity OS Module       | 10    | 5         | 4       | 1         |
+| Workflow OS Module       | 7     | 0         | 0       | 7         |
+| People OS Module         | 5     | 0         | 1       | 4         |
+| Knowledge OS Module      | 5     | 0         | 2       | 3         |
+| Governance OS Module     | 5     | 0         | 1       | 4         |
+| Analytics OS Module      | 5     | 2         | 0       | 3         |
+| Loop OS Module           | 6     | 0         | 1       | 5         |
 
 ### 5.3 Stage-Level Failure Rate (across all applicable features)
 
-| Stage | Failures | Notes |
-|---|---|---|
-| Identity Resolution | 30+ route-level failures | Zero API routes except Mission Control and Org Health pass |
-| Tenant Resolution | 25+ failures | Loop OS module entirely missing `set_config` calls |
-| Authorization/ABAC | 30+ failures | No PermissionGuard applied to the vast majority of routes |
-| Event Emission | 80+ failures | Most pervasive gap across all layers |
-| Audit Logging | 85+ failures | Second most pervasive gap; present only in a handful of services |
-| Workflow Engine (async) | 20+ failures | Synchronous HTTP execution is widespread |
-| Policy/Governance Engine | 15+ failures | GovernanceGuard missing on most agent write paths |
+| Stage                    | Failures                 | Notes                                                            |
+| ------------------------ | ------------------------ | ---------------------------------------------------------------- |
+| Identity Resolution      | 30+ route-level failures | Zero API routes except Mission Control and Org Health pass       |
+| Tenant Resolution        | 25+ failures             | Loop OS module entirely missing `set_config` calls               |
+| Authorization/ABAC       | 30+ failures             | No PermissionGuard applied to the vast majority of routes        |
+| Event Emission           | 80+ failures             | Most pervasive gap across all layers                             |
+| Audit Logging            | 85+ failures             | Second most pervasive gap; present only in a handful of services |
+| Workflow Engine (async)  | 20+ failures             | Synchronous HTTP execution is widespread                         |
+| Policy/Governance Engine | 15+ failures             | GovernanceGuard missing on most agent write paths                |
 
 ---
 
@@ -190,6 +190,7 @@ The architecture mandates that all operations are async via BullMQ — never exe
 **6.2.4 GovernanceGuard Absent on Agent Write Operations**
 
 CLAUDE.md Section 6 states: "Before any AI agent performs a write operation, the `AutomationGovernanceGuard` must run." This is violated in:
+
 - All five Copilots (ExecutiveCopilot, OperationsCopilot, ComplianceCopilot, HrCopilot, FinanceCopilot) — invoked without governance validation at the route or copilot layer
 - `agent-execution` worker processor — AutomationGovernanceGuard not invoked
 - `loop-learning` processor — calls Anthropic SDK directly without routing through AgentRuntime
@@ -198,6 +199,7 @@ CLAUDE.md Section 6 states: "Before any AI agent performs a write operation, the
 **6.2.5 Financial and Credential Operations Without Audit Trail**
 
 The following high-risk surfaces have zero audit logging:
+
 - Billing routes (V1 and V2) — subscription creation, cancellation, payment recording
 - Developer routes — API key generation, rotation, and revocation
 - Platform Admin V2 — tenant provisioning, suspension, archival (a **regression** from V1 which correctly used `AdminActionLogService`)
@@ -238,163 +240,163 @@ All 35 violating route modules require the following baseline remediation patter
 
 Feature-specific additional remediation:
 
-| Feature | Additional Required Fixes |
-|---|---|
-| **Agent OS routes** | Apply `AutomationGovernanceGuard` on all agent write endpoints; enqueue `AgentRuntime.execute()` via BullMQ |
-| **Autonomous Intelligence routes** | Apply `AutomationGovernanceGuard`; route all AI execution through `AgentRuntime`; integrate `KnowledgeService` |
-| **Billing routes (V1 and V2)** | Add `NotificationEngine` calls on subscription state changes; replace shared-secret `requireAdmin` with JWT-based identity |
-| **COO routes** | Route `DigitalCOOService` through `AgentRuntime`; add `KnowledgeService` lookup; apply `AutomationGovernanceGuard` |
-| **Developer routes** | Audit logging on credential operations is a critical security control; add immediately |
-| **Governance routes** | Governance management endpoints must themselves be protected by governance validation |
-| **Intelligence routes** | Route all AI inference through `AgentRuntime`; integrate `KnowledgeService` |
-| **Integrations routes** | Validate third-party credentials before storage; encrypt at rest |
-| **Observability routes** | Replace `x-organization-id` header with middleware-derived identity |
-| **Platform Admin V2 routes** | Restore audit logging regression: add `AdminActionLogService.logAction()` on all mutations; add GalaxyEvent emission |
-| **Self-Healing routes** | Enqueue `runHealingCycle()` via BullMQ; trigger Loop OS on completion |
-| **Workflow OS routes** | Derive `organizationId` from `request.user` not from request body |
+| Feature                            | Additional Required Fixes                                                                                                  |
+| ---------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| **Agent OS routes**                | Apply `AutomationGovernanceGuard` on all agent write endpoints; enqueue `AgentRuntime.execute()` via BullMQ                |
+| **Autonomous Intelligence routes** | Apply `AutomationGovernanceGuard`; route all AI execution through `AgentRuntime`; integrate `KnowledgeService`             |
+| **Billing routes (V1 and V2)**     | Add `NotificationEngine` calls on subscription state changes; replace shared-secret `requireAdmin` with JWT-based identity |
+| **COO routes**                     | Route `DigitalCOOService` through `AgentRuntime`; add `KnowledgeService` lookup; apply `AutomationGovernanceGuard`         |
+| **Developer routes**               | Audit logging on credential operations is a critical security control; add immediately                                     |
+| **Governance routes**              | Governance management endpoints must themselves be protected by governance validation                                      |
+| **Intelligence routes**            | Route all AI inference through `AgentRuntime`; integrate `KnowledgeService`                                                |
+| **Integrations routes**            | Validate third-party credentials before storage; encrypt at rest                                                           |
+| **Observability routes**           | Replace `x-organization-id` header with middleware-derived identity                                                        |
+| **Platform Admin V2 routes**       | Restore audit logging regression: add `AdminActionLogService.logAction()` on all mutations; add GalaxyEvent emission       |
+| **Self-Healing routes**            | Enqueue `runHealingCycle()` via BullMQ; trigger Loop OS on completion                                                      |
+| **Workflow OS routes**             | Derive `organizationId` from `request.user` not from request body                                                          |
 
 #### BullMQ Worker Processors (6 violations)
 
-| Processor | Required Fixes |
-|---|---|
-| **agent-execution** | Call `AutomationGovernanceGuard` before execution; establish `set_config` tenant context; publish GalaxyEvent; write audit log; trigger Loop OS; update analytics and Mission Control |
-| **loop-learning** | Route Anthropic SDK call through `AgentRuntime`; publish GalaxyEvent; write audit log; update analytics and Mission Control |
-| **notification-dispatch** | Publish `notification.dispatched` GalaxyEvent; write audit log; emit analytics metrics |
-| **sla-monitoring** | Move initial cross-tenant SELECT inside per-tenant loop with `set_config`; publish GalaxyEvent on breach; dispatch notifications; write audit log |
-| **workflow-execution** | Publish GalaxyEvent on all workflow state transitions; write audit log (not just `workflow_history`); enqueue loop-learning job on completion; update analytics |
-| **intent-detection** | Publish GalaxyEvent after classification; dispatch notification when `requiresHumanReview = true`; write audit log |
+| Processor                 | Required Fixes                                                                                                                                                                        |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **agent-execution**       | Call `AutomationGovernanceGuard` before execution; establish `set_config` tenant context; publish GalaxyEvent; write audit log; trigger Loop OS; update analytics and Mission Control |
+| **loop-learning**         | Route Anthropic SDK call through `AgentRuntime`; publish GalaxyEvent; write audit log; update analytics and Mission Control                                                           |
+| **notification-dispatch** | Publish `notification.dispatched` GalaxyEvent; write audit log; emit analytics metrics                                                                                                |
+| **sla-monitoring**        | Move initial cross-tenant SELECT inside per-tenant loop with `set_config`; publish GalaxyEvent on breach; dispatch notifications; write audit log                                     |
+| **workflow-execution**    | Publish GalaxyEvent on all workflow state transitions; write audit log (not just `workflow_history`); enqueue loop-learning job on completion; update analytics                       |
+| **intent-detection**      | Publish GalaxyEvent after classification; dispatch notification when `requiresHumanReview = true`; write audit log                                                                    |
 
 #### Agent OS Module (11 violations)
 
-| Feature | Required Fixes |
-|---|---|
-| **All five Copilots** | Route execution through BullMQ (not inline); add ABAC check; integrate `KnowledgeService`; publish GalaxyEvent; write audit log; dispatch notification |
-| **HrCopilot / FinanceCopilot** | Fix `buildResponse()` data loss — propagate `decisions` and `recommendations` from `AgentRuntime` result |
-| **GovernanceEngine** | Persist `auditTrail` object to `audit_logs` inside `validateAgentWriteAction()`; publish GalaxyEvent on governance decision |
-| **AgentRegistryService** | Publish GalaxyEvent on `registerAgent` and `deactivateAgent`; write audit log |
-| **AgentMemoryService** | Publish GalaxyEvent on `remember` and `forget`; write audit log |
-| **AgentFactory** | Publish GalaxyEvent on `provision`; write audit log |
-| **MultiAgentOrchestrator** | Add ABAC check before dispatch; publish GalaxyEvent on orchestration start and completion; write audit log |
-| **DecisionEngine** | Publish GalaxyEvent and write audit log in `recordDecision` and `createRule` |
-| **RiskScoringEngine** | Publish GalaxyEvent and write audit log in `assessRisk` |
-| **DigitalTwin** | Push `capture()` snapshot to analytics store; signal Mission Control |
+| Feature                        | Required Fixes                                                                                                                                         |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **All five Copilots**          | Route execution through BullMQ (not inline); add ABAC check; integrate `KnowledgeService`; publish GalaxyEvent; write audit log; dispatch notification |
+| **HrCopilot / FinanceCopilot** | Fix `buildResponse()` data loss — propagate `decisions` and `recommendations` from `AgentRuntime` result                                               |
+| **GovernanceEngine**           | Persist `auditTrail` object to `audit_logs` inside `validateAgentWriteAction()`; publish GalaxyEvent on governance decision                            |
+| **AgentRegistryService**       | Publish GalaxyEvent on `registerAgent` and `deactivateAgent`; write audit log                                                                          |
+| **AgentMemoryService**         | Publish GalaxyEvent on `remember` and `forget`; write audit log                                                                                        |
+| **AgentFactory**               | Publish GalaxyEvent on `provision`; write audit log                                                                                                    |
+| **MultiAgentOrchestrator**     | Add ABAC check before dispatch; publish GalaxyEvent on orchestration start and completion; write audit log                                             |
+| **DecisionEngine**             | Publish GalaxyEvent and write audit log in `recordDecision` and `createRule`                                                                           |
+| **RiskScoringEngine**          | Publish GalaxyEvent and write audit log in `assessRisk`                                                                                                |
+| **DigitalTwin**                | Push `capture()` snapshot to analytics store; signal Mission Control                                                                                   |
 
 #### Cognitive Engine (4 violations)
 
-| Feature | Required Fixes |
-|---|---|
-| **GxCommunicationEngine** | Establish tenant context before `send()`; publish GalaxyEvent on delivery; write audit log |
-| **GxExecutionEngine** | Publish GalaxyEvent on task completion/failure; fix `audit_logger` tool stub to write real `audit_logs` INSERT |
-| **GxGovernanceEngine** | Publish GalaxyEvent from `logDecision()`; fix always-allow logic to evaluate explicit deny rules |
-| **GxMemoryEngine** | Fix SQL injection in `read()` — replace bare integer parameters and interpolated LIMIT with proper `$N` positional parameters; publish GalaxyEvent and write audit log on `write`, `forget`, `consolidate` |
+| Feature                   | Required Fixes                                                                                                                                                                                             |
+| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **GxCommunicationEngine** | Establish tenant context before `send()`; publish GalaxyEvent on delivery; write audit log                                                                                                                 |
+| **GxExecutionEngine**     | Publish GalaxyEvent on task completion/failure; fix `audit_logger` tool stub to write real `audit_logs` INSERT                                                                                             |
+| **GxGovernanceEngine**    | Publish GalaxyEvent from `logDecision()`; fix always-allow logic to evaluate explicit deny rules                                                                                                           |
+| **GxMemoryEngine**        | Fix SQL injection in `read()` — replace bare integer parameters and interpolated LIMIT with proper `$N` positional parameters; publish GalaxyEvent and write audit log on `write`, `forget`, `consolidate` |
 
 #### Communication OS Module (5 violations)
 
-| Feature | Required Fixes |
-|---|---|
-| **AnnouncementService** | Publish GalaxyEvent and write audit log for `create()` and `archive()`; add `NotificationEngine` calls for published announcements |
-| **BroadcastService** | Write audit log in `create()` |
-| **ChannelService** | Publish GalaxyEvent and write audit log in `delete()` and `removeMember()` |
-| **MessageService** | Publish GalaxyEvent in `softDelete()` |
-| **InboundMessageProcessor / OutboundMessageProcessor** | Establish tenant context; publish GalaxyEvent; write audit log; trigger Loop OS |
+| Feature                                                | Required Fixes                                                                                                                     |
+| ------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------- |
+| **AnnouncementService**                                | Publish GalaxyEvent and write audit log for `create()` and `archive()`; add `NotificationEngine` calls for published announcements |
+| **BroadcastService**                                   | Write audit log in `create()`                                                                                                      |
+| **ChannelService**                                     | Publish GalaxyEvent and write audit log in `delete()` and `removeMember()`                                                         |
+| **MessageService**                                     | Publish GalaxyEvent in `softDelete()`                                                                                              |
+| **InboundMessageProcessor / OutboundMessageProcessor** | Establish tenant context; publish GalaxyEvent; write audit log; trigger Loop OS                                                    |
 
 #### Identity OS Module (1 violation)
 
-| Feature | Required Fixes |
-|---|---|
+| Feature                 | Required Fixes                                                                                                                                                    |
+| ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **OrganizationService** | Publish GalaxyEvent for `update()`, `activate()`, `suspend()`; make `publisher` required (not optional); add `AuditService` and write audit log for all mutations |
-| **IdentityService** | Inject `AuditService`; write audit log for `provisionOrganization()` |
+| **IdentityService**     | Inject `AuditService`; write audit log for `provisionOrganization()`                                                                                              |
 
 #### Workflow OS Module (7 violations)
 
-| Feature | Required Fixes |
-|---|---|
-| **ApprovalService** | Add ABAC check on `submitDecision`; add GovernanceEngine call; publish GalaxyEvent; dispatch notifications to approvers and requestors; write to `audit_logs` (not just `approval_history`) |
-| **WorkflowDefinitionService** | Publish GalaxyEvent and write audit log for `createWorkflow`, `activateWorkflow`, `deactivateWorkflow` |
-| **WorkflowEngineService** | Publish GalaxyEvent on all transitions; write `audit_logs` entries (not just `workflow_history`); enqueue loop-learning job on completion |
-| **AutomationService** | Enqueue automation execution to BullMQ; publish GalaxyEvent; write audit log |
-| **TaskEngineService** | Publish GalaxyEvent; dispatch notification to assignee; write `audit_logs` (not just `task_history`) |
-| **WorkflowDiscoveryService** | Replace `ILIKE` match with `KnowledgeService`/pgvector semantic search |
-| **WorkflowGenerator routes** | Apply ABAC; enqueue `generateWorkflow()` to BullMQ; publish GalaxyEvent; write audit log |
+| Feature                       | Required Fixes                                                                                                                                                                              |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **ApprovalService**           | Add ABAC check on `submitDecision`; add GovernanceEngine call; publish GalaxyEvent; dispatch notifications to approvers and requestors; write to `audit_logs` (not just `approval_history`) |
+| **WorkflowDefinitionService** | Publish GalaxyEvent and write audit log for `createWorkflow`, `activateWorkflow`, `deactivateWorkflow`                                                                                      |
+| **WorkflowEngineService**     | Publish GalaxyEvent on all transitions; write `audit_logs` entries (not just `workflow_history`); enqueue loop-learning job on completion                                                   |
+| **AutomationService**         | Enqueue automation execution to BullMQ; publish GalaxyEvent; write audit log                                                                                                                |
+| **TaskEngineService**         | Publish GalaxyEvent; dispatch notification to assignee; write `audit_logs` (not just `task_history`)                                                                                        |
+| **WorkflowDiscoveryService**  | Replace `ILIKE` match with `KnowledgeService`/pgvector semantic search                                                                                                                      |
+| **WorkflowGenerator routes**  | Apply ABAC; enqueue `generateWorkflow()` to BullMQ; publish GalaxyEvent; write audit log                                                                                                    |
 
 #### People OS Module (4 violations)
 
-| Feature | Required Fixes |
-|---|---|
+| Feature               | Required Fixes                                                                                               |
+| --------------------- | ------------------------------------------------------------------------------------------------------------ |
 | **DepartmentService** | Publish GalaxyEvent for `update()` and `archive()`; add `AuditService` and write audit log for all mutations |
-| **TeamService** | Publish GalaxyEvent for `addMember()`, `removeMember()`, `archive()`; write audit log for all mutations |
-| **MemberService** | Write audit log for `update()` and `updateStatus()` |
+| **TeamService**       | Publish GalaxyEvent for `addMember()`, `removeMember()`, `archive()`; write audit log for all mutations      |
+| **MemberService**     | Write audit log for `update()` and `updateStatus()`                                                          |
 
 #### Knowledge OS Module (3 violations)
 
-| Feature | Required Fixes |
-|---|---|
-| **KnowledgeService** | Inject `EventPublisher`; publish GalaxyEvent for all state-changing operations; write audit log |
-| **KnowledgePublishingService** | Publish GalaxyEvent for `publish()` and `unpublish()`; write audit log |
-| **KnowledgeVersionService** | Publish GalaxyEvent for `createVersion()` and `restoreVersion()`; write audit log |
+| Feature                        | Required Fixes                                                                                  |
+| ------------------------------ | ----------------------------------------------------------------------------------------------- |
+| **KnowledgeService**           | Inject `EventPublisher`; publish GalaxyEvent for all state-changing operations; write audit log |
+| **KnowledgePublishingService** | Publish GalaxyEvent for `publish()` and `unpublish()`; write audit log                          |
+| **KnowledgeVersionService**    | Publish GalaxyEvent for `createVersion()` and `restoreVersion()`; write audit log               |
 
 #### Governance OS Module (4 violations)
 
-| Feature | Required Fixes |
-|---|---|
-| **PolicyService** | Publish GalaxyEvent for `createPolicy`, `updatePolicy`, `deletePolicy`, `createPolicyRule`; write audit log |
-| **ComplianceCheckService** | Publish GalaxyEvent on `runChecks()` completion; dispatch notifications on violation detection; write audit log |
-| **ComplianceReportService** | Publish GalaxyEvent and write audit log for `generateReport()` and `exportAuditTrail()` |
-| **DataRetentionService** | Fix SQL injection in `enforceRetentionPolicies()` (use `make_interval`); publish GalaxyEvent; write audit log |
+| Feature                     | Required Fixes                                                                                                  |
+| --------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| **PolicyService**           | Publish GalaxyEvent for `createPolicy`, `updatePolicy`, `deletePolicy`, `createPolicyRule`; write audit log     |
+| **ComplianceCheckService**  | Publish GalaxyEvent on `runChecks()` completion; dispatch notifications on violation detection; write audit log |
+| **ComplianceReportService** | Publish GalaxyEvent and write audit log for `generateReport()` and `exportAuditTrail()`                         |
+| **DataRetentionService**    | Fix SQL injection in `enforceRetentionPolicies()` (use `make_interval`); publish GalaxyEvent; write audit log   |
 
 #### Analytics OS Module (3 violations)
 
-| Feature | Required Fixes |
-|---|---|
-| **KPIService** | Publish GalaxyEvent on `evaluateKPI()` status transitions; dispatch notification on `off_track` / `at_risk`; signal Mission Control |
-| **DashboardService** | Publish GalaxyEvent and write audit log for `createWidget()` |
-| **ReportingService** | Publish GalaxyEvent and write audit log for `generateReport()` |
+| Feature              | Required Fixes                                                                                                                      |
+| -------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| **KPIService**       | Publish GalaxyEvent on `evaluateKPI()` status transitions; dispatch notification on `off_track` / `at_risk`; signal Mission Control |
+| **DashboardService** | Publish GalaxyEvent and write audit log for `createWidget()`                                                                        |
+| **ReportingService** | Publish GalaxyEvent and write audit log for `generateReport()`                                                                      |
 
 #### Loop OS Module (5 violations)
 
-| Feature | Required Fixes |
-|---|---|
-| **LoopInstanceService** | Add `set_config` call before all queries; publish GalaxyEvent on all status transitions; dispatch notifications on `escalate()`; write audit log |
-| **LoopVerificationService** | Add `set_config` on dedicated transaction client; publish GalaxyEvent; write audit log |
-| **LoopFeedbackService** | Add `set_config` on transaction client; publish GalaxyEvent; write audit log |
-| **LoopLearningService** | Publish GalaxyEvent after `generateInsights()`; write audit log |
-| **LoopOptimizationService** | Fix SQL injection in `listRecommendations()` (replace template literal with static parameterized form); publish GalaxyEvent; write audit log |
+| Feature                     | Required Fixes                                                                                                                                   |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **LoopInstanceService**     | Add `set_config` call before all queries; publish GalaxyEvent on all status transitions; dispatch notifications on `escalate()`; write audit log |
+| **LoopVerificationService** | Add `set_config` on dedicated transaction client; publish GalaxyEvent; write audit log                                                           |
+| **LoopFeedbackService**     | Add `set_config` on transaction client; publish GalaxyEvent; write audit log                                                                     |
+| **LoopLearningService**     | Publish GalaxyEvent after `generateInsights()`; write audit log                                                                                  |
+| **LoopOptimizationService** | Fix SQL injection in `listRecommendations()` (replace template literal with static parameterized form); publish GalaxyEvent; write audit log     |
 
 ### 7.2 PARTIAL Features — Required Fixes to Achieve Certification
 
-| Feature | Missing Stages |
-|---|---|
-| **AbacPlugin** | Add `audit_logs` INSERT for access control decisions (allow and deny) |
-| **abacGuard** | Add GovernanceEngine call; publish GalaxyEvent on access decisions; write audit log |
-| **audit-sync processor** | Publish GalaxyEvent on index completion and failure |
-| **intent-detection processor** | Publish GalaxyEvent; dispatch notification when `requiresHumanReview = true`; write audit log; trigger Loop OS |
-| **knowledge-ingestion processor** | Publish GalaxyEvent on ingestion completion; dispatch notification to document owner; write audit log; trigger Loop OS |
-| **AgentContextEngine** | Integrate `KnowledgeService`/pgvector for semantic context retrieval; publish GalaxyEvent; write audit log |
-| **AgentRuntime** | Publish GalaxyEvent after execution completes; write audit log |
-| **GxGovernanceEngine** | Publish GalaxyEvent from `logDecision()` |
-| **GxLearningEngine** | Publish GalaxyEvent and write audit log for `recordOutcome()` and `updateMemoryFromLearning()` |
-| **GxMemoryEngine** | Fix SQL injection in `read()`; publish GalaxyEvent and write audit log for all write operations |
-| **GxOptimizationEngine** | Publish GalaxyEvent and write audit log for `improveRouting()` |
-| **GxPlanningEngine** | Publish GalaxyEvent and write audit log for `createPlan()` (or mandate at call sites) |
-| **GxVerificationEngine** | Publish GalaxyEvent; write audit log for verification outcomes |
-| **MessageDispatcher** | Publish GalaxyEvent on dispatch; write audit log |
-| **ChannelService** | Publish GalaxyEvent and write audit log for `delete()` and `removeMember()` |
-| **MembershipService** | Write audit log for all membership mutations; make `EventPublisher` required |
-| **RoleService** | Write audit log for `createRole()` and `provisionDefaultRoles()`; make `EventPublisher` required |
-| **PermissionService** | Add `EventPublisher` dependency; add `correlationId` and `actorId` to input types; publish GalaxyEvent and write audit log for permission mutations |
-| **AuthService** | Publish GalaxyEvent for authentication events; write audit log for success and failure |
-| **EmailPasswordProvider** | Write audit log for failed authentication attempts |
-| **KnowledgeSearchService** | Publish GalaxyEvent; make `logSearchAudit()` automatic (not opt-in) |
-| **KnowledgePublishingService** | Publish GalaxyEvent and write audit log |
-| **KnowledgeVersionService** | Publish GalaxyEvent and write audit log |
-| **PolicyService** | Publish GalaxyEvent and write audit log for all mutations |
-| **MemberService** | Write audit log for `update()` and `updateStatus()` |
-| **PeopleService** | Write audit log for `createDepartmentWithTeam()` |
-| **LoopLearningService** | Publish GalaxyEvent and write audit log |
-| **LoopOptimizationService** | Fix SQL injection; publish GalaxyEvent and write audit log |
-| **WhatsApp Webhook routes** | Resolve `phone_number_id` to `organizationId`; call `set_config`; publish GalaxyEvent |
-| **Knowledge routes** | Apply auth and `TenantContextMiddleware`; add ABAC; apply `set_config` on all handlers (not just two); publish GalaxyEvent; write audit log |
-| **Loop routes** | Apply auth; apply `set_config` consistently across all handlers; add ABAC; publish GalaxyEvent; write audit log |
+| Feature                           | Missing Stages                                                                                                                                      |
+| --------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **AbacPlugin**                    | Add `audit_logs` INSERT for access control decisions (allow and deny)                                                                               |
+| **abacGuard**                     | Add GovernanceEngine call; publish GalaxyEvent on access decisions; write audit log                                                                 |
+| **audit-sync processor**          | Publish GalaxyEvent on index completion and failure                                                                                                 |
+| **intent-detection processor**    | Publish GalaxyEvent; dispatch notification when `requiresHumanReview = true`; write audit log; trigger Loop OS                                      |
+| **knowledge-ingestion processor** | Publish GalaxyEvent on ingestion completion; dispatch notification to document owner; write audit log; trigger Loop OS                              |
+| **AgentContextEngine**            | Integrate `KnowledgeService`/pgvector for semantic context retrieval; publish GalaxyEvent; write audit log                                          |
+| **AgentRuntime**                  | Publish GalaxyEvent after execution completes; write audit log                                                                                      |
+| **GxGovernanceEngine**            | Publish GalaxyEvent from `logDecision()`                                                                                                            |
+| **GxLearningEngine**              | Publish GalaxyEvent and write audit log for `recordOutcome()` and `updateMemoryFromLearning()`                                                      |
+| **GxMemoryEngine**                | Fix SQL injection in `read()`; publish GalaxyEvent and write audit log for all write operations                                                     |
+| **GxOptimizationEngine**          | Publish GalaxyEvent and write audit log for `improveRouting()`                                                                                      |
+| **GxPlanningEngine**              | Publish GalaxyEvent and write audit log for `createPlan()` (or mandate at call sites)                                                               |
+| **GxVerificationEngine**          | Publish GalaxyEvent; write audit log for verification outcomes                                                                                      |
+| **MessageDispatcher**             | Publish GalaxyEvent on dispatch; write audit log                                                                                                    |
+| **ChannelService**                | Publish GalaxyEvent and write audit log for `delete()` and `removeMember()`                                                                         |
+| **MembershipService**             | Write audit log for all membership mutations; make `EventPublisher` required                                                                        |
+| **RoleService**                   | Write audit log for `createRole()` and `provisionDefaultRoles()`; make `EventPublisher` required                                                    |
+| **PermissionService**             | Add `EventPublisher` dependency; add `correlationId` and `actorId` to input types; publish GalaxyEvent and write audit log for permission mutations |
+| **AuthService**                   | Publish GalaxyEvent for authentication events; write audit log for success and failure                                                              |
+| **EmailPasswordProvider**         | Write audit log for failed authentication attempts                                                                                                  |
+| **KnowledgeSearchService**        | Publish GalaxyEvent; make `logSearchAudit()` automatic (not opt-in)                                                                                 |
+| **KnowledgePublishingService**    | Publish GalaxyEvent and write audit log                                                                                                             |
+| **KnowledgeVersionService**       | Publish GalaxyEvent and write audit log                                                                                                             |
+| **PolicyService**                 | Publish GalaxyEvent and write audit log for all mutations                                                                                           |
+| **MemberService**                 | Write audit log for `update()` and `updateStatus()`                                                                                                 |
+| **PeopleService**                 | Write audit log for `createDepartmentWithTeam()`                                                                                                    |
+| **LoopLearningService**           | Publish GalaxyEvent and write audit log                                                                                                             |
+| **LoopOptimizationService**       | Fix SQL injection; publish GalaxyEvent and write audit log                                                                                          |
+| **WhatsApp Webhook routes**       | Resolve `phone_number_id` to `organizationId`; call `set_config`; publish GalaxyEvent                                                               |
+| **Knowledge routes**              | Apply auth and `TenantContextMiddleware`; add ABAC; apply `set_config` on all handlers (not just two); publish GalaxyEvent; write audit log         |
+| **Loop routes**                   | Apply auth; apply `set_config` consistently across all handlers; add ABAC; publish GalaxyEvent; write audit log                                     |
 
 ---
 
@@ -480,4 +482,4 @@ To prevent future regressions, the following structural changes are recommended:
 
 ---
 
-*This document was generated by the Galaxy Runtime Engine Certification Framework on 2026-07-12. It is intended for the Galaxy engineering team and authorized reviewers only. All findings should be treated as confidential technical debt until remediated.*
+_This document was generated by the Galaxy Runtime Engine Certification Framework on 2026-07-12. It is intended for the Galaxy engineering team and authorized reviewers only. All findings should be treated as confidential technical debt until remediated._
