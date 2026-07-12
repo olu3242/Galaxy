@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Syne, DM_Sans } from 'next/font/google';
 import './globals.css';
+import { ProductAssistant } from '../components/assistant/ProductAssistant';
 
 const syne = Syne({
   subsets: ['latin'],
@@ -30,7 +31,10 @@ export default function RootLayout({
 }): React.ReactElement {
   return (
     <html lang="en" className={`${syne.variable} ${dmSans.variable}`}>
-      <body>{children}</body>
+      <body>
+        {children}
+        <ProductAssistant />
+      </body>
     </html>
   );
 }

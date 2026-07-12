@@ -24,3 +24,5 @@ export type { AIInsight, InsightType } from './AIInsightCard';
 
 export { OrganizationTree } from './OrganizationTree';
 export type { OrgNode } from './OrganizationTree';
+
+export { LiveMetricCard } from './LiveMetricCard';

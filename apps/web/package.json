@@ -15,12 +15,14 @@
     "clean": "rm -rf .next out"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.111.0",
     "@galaxy/types": "workspace:*",
     "@galaxy/utils": "workspace:*",
     "framer-motion": "^12.40.0",
     "next": "14.2.0",
     "react": "^18.3.0",
     "react-dom": "^18.3.0",
+    "swr": "^2.4.2",
     "zod": "^3.23.0"
   },
   "devDependencies": {
