@@ -1,146 +1,179 @@
-import type { Kysely } from 'kysely';
+import type { Pool } from 'pg';
 
-export async function up(db: Kysely<unknown>): Promise<void> {
-  await db.schema
-    .createTable('org_hierarchy_nodes')
-    .ifNotExists()
-    .addColumn('id', 'uuid', (c) => c.primaryKey().defaultTo(db.fn.sql('gen_random_uuid()')))
-    .addColumn('organization_id', 'uuid', (c) =>
-      c.notNull().references('organizations.id').onDelete('cascade'),
+export async function up(pool: Pool): Promise<void> {
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS org_hierarchy_nodes (
+      id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      organization_id UUID NOT NULL,
+      parent_id       UUID REFERENCES org_hierarchy_nodes(id) ON DELETE SET NULL,
+      level           VARCHAR(32) NOT NULL,
+      name            VARCHAR(255) NOT NULL,
+      code            VARCHAR(64),
+      metadata        JSONB NOT NULL DEFAULT '{}',
+      is_active       BOOLEAN NOT NULL DEFAULT true,
+      created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )
-    .addColumn('parent_id', 'uuid', (c) =>
-      c.references('org_hierarchy_nodes.id').onDelete('set null'),
+  `);
+
+  await pool.query(`CREATE INDEX IF NOT EXISTS idx_org_hierarchy_nodes_org
+    ON org_hierarchy_nodes (organization_id, level, is_active)`);
+
+  await pool.query(`ALTER TABLE org_hierarchy_nodes ENABLE ROW LEVEL SECURITY`);
+  await pool.query(`
+    DO $$ BEGIN
+      IF NOT EXISTS (
+        SELECT 1 FROM pg_policies
+        WHERE tablename = 'org_hierarchy_nodes' AND policyname = 'org_hierarchy_nodes_tenant_isolation'
+      ) THEN
+        CREATE POLICY org_hierarchy_nodes_tenant_isolation ON org_hierarchy_nodes
+          USING (organization_id::text = current_setting('app.current_tenant', true));
+      END IF;
+    END $$
+  `);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS abac_policies (
+      id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      organization_id UUID NOT NULL,
+      name            VARCHAR(255) NOT NULL,
+      description     TEXT,
+      resource        VARCHAR(128) NOT NULL,
+      action          VARCHAR(128) NOT NULL,
+      conditions      JSONB NOT NULL DEFAULT '[]',
+      effect          VARCHAR(8) NOT NULL,
+      priority        INTEGER NOT NULL DEFAULT 0,
+      is_active       BOOLEAN NOT NULL DEFAULT true,
+      created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )
-    .addColumn('level', 'varchar(32)', (c) => c.notNull())
-    .addColumn('name', 'varchar(255)', (c) => c.notNull())
-    .addColumn('code', 'varchar(64)')
-    .addColumn('metadata', 'jsonb', (c) => c.notNull().defaultTo('{}'))
-    .addColumn('is_active', 'boolean', (c) => c.notNull().defaultTo(true))
-    .addColumn('created_at', 'timestamptz', (c) => c.notNull().defaultTo(db.fn.sql('NOW()')))
-    .addColumn('updated_at', 'timestamptz', (c) => c.notNull().defaultTo(db.fn.sql('NOW()')))
-    .execute();
+  `);
 
-  await db.schema
-    .createIndex('idx_org_hierarchy_nodes_org')
-    .ifNotExists()
-    .on('org_hierarchy_nodes')
-    .columns(['organization_id', 'level', 'is_active'])
-    .execute();
+  await pool.query(`CREATE INDEX IF NOT EXISTS idx_abac_policies_lookup
+    ON abac_policies (organization_id, resource, action, is_active)`);
 
-  await db.schema
-    .createTable('abac_policies')
-    .ifNotExists()
-    .addColumn('id', 'uuid', (c) => c.primaryKey().defaultTo(db.fn.sql('gen_random_uuid()')))
-    .addColumn('organization_id', 'uuid', (c) =>
-      c.notNull().references('organizations.id').onDelete('cascade'),
+  await pool.query(`ALTER TABLE abac_policies ENABLE ROW LEVEL SECURITY`);
+  await pool.query(`
+    DO $$ BEGIN
+      IF NOT EXISTS (
+        SELECT 1 FROM pg_policies
+        WHERE tablename = 'abac_policies' AND policyname = 'abac_policies_tenant_isolation'
+      ) THEN
+        CREATE POLICY abac_policies_tenant_isolation ON abac_policies
+          USING (organization_id::text = current_setting('app.current_tenant', true));
+      END IF;
+    END $$
+  `);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS delegations (
+      id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      organization_id UUID NOT NULL,
+      delegator_id    UUID NOT NULL,
+      delegatee_id    UUID NOT NULL,
+      role_id         UUID,
+      permissions     TEXT[] NOT NULL DEFAULT '{}',
+      reason          VARCHAR(64) NOT NULL,
+      start_at        TIMESTAMPTZ NOT NULL,
+      end_at          TIMESTAMPTZ NOT NULL,
+      is_active       BOOLEAN NOT NULL DEFAULT true,
+      approved_by     UUID,
+      created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )
-    .addColumn('name', 'varchar(255)', (c) => c.notNull())
-    .addColumn('description', 'text')
-    .addColumn('resource', 'varchar(128)', (c) => c.notNull())
-    .addColumn('action', 'varchar(128)', (c) => c.notNull())
-    .addColumn('conditions', 'jsonb', (c) => c.notNull().defaultTo('[]'))
-    .addColumn('effect', 'varchar(8)', (c) => c.notNull())
-    .addColumn('priority', 'integer', (c) => c.notNull().defaultTo(0))
-    .addColumn('is_active', 'boolean', (c) => c.notNull().defaultTo(true))
-    .addColumn('created_at', 'timestamptz', (c) => c.notNull().defaultTo(db.fn.sql('NOW()')))
-    .addColumn('updated_at', 'timestamptz', (c) => c.notNull().defaultTo(db.fn.sql('NOW()')))
-    .execute();
+  `);
 
-  await db.schema
-    .createIndex('idx_abac_policies_lookup')
-    .ifNotExists()
-    .on('abac_policies')
-    .columns(['organization_id', 'resource', 'action', 'is_active'])
-    .execute();
+  await pool.query(`CREATE INDEX IF NOT EXISTS idx_delegations_delegatee
+    ON delegations (organization_id, delegatee_id, is_active)`);
 
-  await db.schema
-    .createTable('delegations')
-    .ifNotExists()
-    .addColumn('id', 'uuid', (c) => c.primaryKey().defaultTo(db.fn.sql('gen_random_uuid()')))
-    .addColumn('organization_id', 'uuid', (c) =>
-      c.notNull().references('organizations.id').onDelete('cascade'),
+  await pool.query(`ALTER TABLE delegations ENABLE ROW LEVEL SECURITY`);
+  await pool.query(`
+    DO $$ BEGIN
+      IF NOT EXISTS (
+        SELECT 1 FROM pg_policies
+        WHERE tablename = 'delegations' AND policyname = 'delegations_tenant_isolation'
+      ) THEN
+        CREATE POLICY delegations_tenant_isolation ON delegations
+          USING (organization_id::text = current_setting('app.current_tenant', true));
+      END IF;
+    END $$
+  `);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS approval_rules (
+      id                          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      organization_id             UUID NOT NULL,
+      workflow_type               VARCHAR(128),
+      department_id               UUID,
+      min_amount                  NUMERIC,
+      max_amount                  NUMERIC,
+      min_risk_score              NUMERIC,
+      max_risk_score              NUMERIC,
+      required_role               VARCHAR(128) NOT NULL,
+      tier                        SMALLINT NOT NULL,
+      requires_multiple_approvers BOOLEAN NOT NULL DEFAULT false,
+      approver_count              INTEGER NOT NULL DEFAULT 1,
+      escalation_after_hours      INTEGER NOT NULL DEFAULT 24,
+      is_active                   BOOLEAN NOT NULL DEFAULT true,
+      created_at                  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at                  TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )
-    .addColumn('delegator_id', 'uuid', (c) => c.notNull())
-    .addColumn('delegatee_id', 'uuid', (c) => c.notNull())
-    .addColumn('role_id', 'uuid')
-    .addColumn('permissions', 'text[]', (c) => c.notNull().defaultTo('{}'))
-    .addColumn('reason', 'varchar(64)', (c) => c.notNull())
-    .addColumn('start_at', 'timestamptz', (c) => c.notNull())
-    .addColumn('end_at', 'timestamptz', (c) => c.notNull())
-    .addColumn('is_active', 'boolean', (c) => c.notNull().defaultTo(true))
-    .addColumn('approved_by', 'uuid')
-    .addColumn('created_at', 'timestamptz', (c) => c.notNull().defaultTo(db.fn.sql('NOW()')))
-    .addColumn('updated_at', 'timestamptz', (c) => c.notNull().defaultTo(db.fn.sql('NOW()')))
-    .execute();
+  `);
 
-  await db.schema
-    .createIndex('idx_delegations_delegatee')
-    .ifNotExists()
-    .on('delegations')
-    .columns(['organization_id', 'delegatee_id', 'is_active'])
-    .execute();
+  await pool.query(`CREATE INDEX IF NOT EXISTS idx_approval_rules_lookup
+    ON approval_rules (organization_id, workflow_type, tier)`);
 
-  await db.schema
-    .createTable('approval_rules')
-    .ifNotExists()
-    .addColumn('id', 'uuid', (c) => c.primaryKey().defaultTo(db.fn.sql('gen_random_uuid()')))
-    .addColumn('organization_id', 'uuid', (c) =>
-      c.notNull().references('organizations.id').onDelete('cascade'),
+  await pool.query(`ALTER TABLE approval_rules ENABLE ROW LEVEL SECURITY`);
+  await pool.query(`
+    DO $$ BEGIN
+      IF NOT EXISTS (
+        SELECT 1 FROM pg_policies
+        WHERE tablename = 'approval_rules' AND policyname = 'approval_rules_tenant_isolation'
+      ) THEN
+        CREATE POLICY approval_rules_tenant_isolation ON approval_rules
+          USING (organization_id::text = current_setting('app.current_tenant', true));
+      END IF;
+    END $$
+  `);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS agent_permission_profiles (
+      id                           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      organization_id              UUID NOT NULL,
+      agent_type                   VARCHAR(64) NOT NULL,
+      agent_name                   VARCHAR(255) NOT NULL,
+      allowed_tools                TEXT[] NOT NULL DEFAULT '{}',
+      accessible_knowledge_sources TEXT[] NOT NULL DEFAULT '{}',
+      writable_resources           TEXT[] NOT NULL DEFAULT '{}',
+      approval_limits              JSONB NOT NULL DEFAULT '{}',
+      escalation_rules             JSONB NOT NULL DEFAULT '[]',
+      is_active                    BOOLEAN NOT NULL DEFAULT true,
+      created_at                   TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at                   TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )
-    .addColumn('workflow_type', 'varchar(128)')
-    .addColumn('department_id', 'uuid')
-    .addColumn('min_amount', 'numeric')
-    .addColumn('max_amount', 'numeric')
-    .addColumn('min_risk_score', 'numeric')
-    .addColumn('max_risk_score', 'numeric')
-    .addColumn('required_role', 'varchar(128)', (c) => c.notNull())
-    .addColumn('tier', 'smallint', (c) => c.notNull())
-    .addColumn('requires_multiple_approvers', 'boolean', (c) => c.notNull().defaultTo(false))
-    .addColumn('approver_count', 'integer', (c) => c.notNull().defaultTo(1))
-    .addColumn('escalation_after_hours', 'integer', (c) => c.notNull().defaultTo(24))
-    .addColumn('is_active', 'boolean', (c) => c.notNull().defaultTo(true))
-    .addColumn('created_at', 'timestamptz', (c) => c.notNull().defaultTo(db.fn.sql('NOW()')))
-    .addColumn('updated_at', 'timestamptz', (c) => c.notNull().defaultTo(db.fn.sql('NOW()')))
-    .execute();
+  `);
 
-  await db.schema
-    .createIndex('idx_approval_rules_lookup')
-    .ifNotExists()
-    .on('approval_rules')
-    .columns(['organization_id', 'workflow_type', 'tier'])
-    .execute();
+  await pool.query(`CREATE INDEX IF NOT EXISTS idx_agent_permission_profiles_type
+    ON agent_permission_profiles (organization_id, agent_type, is_active)`);
 
-  await db.schema
-    .createTable('agent_permission_profiles')
-    .ifNotExists()
-    .addColumn('id', 'uuid', (c) => c.primaryKey().defaultTo(db.fn.sql('gen_random_uuid()')))
-    .addColumn('organization_id', 'uuid', (c) =>
-      c.notNull().references('organizations.id').onDelete('cascade'),
-    )
-    .addColumn('agent_type', 'varchar(64)', (c) => c.notNull())
-    .addColumn('agent_name', 'varchar(255)', (c) => c.notNull())
-    .addColumn('allowed_tools', 'text[]', (c) => c.notNull().defaultTo('{}'))
-    .addColumn('accessible_knowledge_sources', 'text[]', (c) => c.notNull().defaultTo('{}'))
-    .addColumn('writable_resources', 'text[]', (c) => c.notNull().defaultTo('{}'))
-    .addColumn('approval_limits', 'jsonb', (c) => c.notNull().defaultTo('{}'))
-    .addColumn('escalation_rules', 'jsonb', (c) => c.notNull().defaultTo('[]'))
-    .addColumn('is_active', 'boolean', (c) => c.notNull().defaultTo(true))
-    .addColumn('created_at', 'timestamptz', (c) => c.notNull().defaultTo(db.fn.sql('NOW()')))
-    .addColumn('updated_at', 'timestamptz', (c) => c.notNull().defaultTo(db.fn.sql('NOW()')))
-    .execute();
-
-  await db.schema
-    .createIndex('idx_agent_permission_profiles_type')
-    .ifNotExists()
-    .on('agent_permission_profiles')
-    .columns(['organization_id', 'agent_type', 'is_active'])
-    .execute();
+  await pool.query(`ALTER TABLE agent_permission_profiles ENABLE ROW LEVEL SECURITY`);
+  await pool.query(`
+    DO $$ BEGIN
+      IF NOT EXISTS (
+        SELECT 1 FROM pg_policies
+        WHERE tablename = 'agent_permission_profiles' AND policyname = 'agent_permission_profiles_tenant_isolation'
+      ) THEN
+        CREATE POLICY agent_permission_profiles_tenant_isolation ON agent_permission_profiles
+          USING (organization_id::text = current_setting('app.current_tenant', true));
+      END IF;
+    END $$
+  `);
 }
 
-export async function down(db: Kysely<unknown>): Promise<void> {
-  await db.schema.dropTable('agent_permission_profiles').ifExists().execute();
-  await db.schema.dropTable('approval_rules').ifExists().execute();
-  await db.schema.dropTable('delegations').ifExists().execute();
-  await db.schema.dropTable('abac_policies').ifExists().execute();
-  await db.schema.dropTable('org_hierarchy_nodes').ifExists().execute();
+export async function down(pool: Pool): Promise<void> {
+  await pool.query(`DROP TABLE IF EXISTS agent_permission_profiles`);
+  await pool.query(`DROP TABLE IF EXISTS approval_rules`);
+  await pool.query(`DROP TABLE IF EXISTS delegations`);
+  await pool.query(`DROP TABLE IF EXISTS abac_policies`);
+  await pool.query(`DROP TABLE IF EXISTS org_hierarchy_nodes`);
 }
