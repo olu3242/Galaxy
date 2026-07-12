@@ -35,12 +35,14 @@ function TreeNode({ node, depth = 0 }: { node: OrgNode; depth?: number }) {
           alignItems: 'center',
           gap: '6px',
           padding: '5px 8px',
-          marginLeft: `${depth * 20}px`,
+          marginLeft: `${String(depth * 20)}px`,
           borderRadius: '6px',
           cursor: hasChildren ? 'pointer' : 'default',
           fontSize: '13px',
         }}
-        onClick={() => hasChildren && setExpanded((e) => !e)}
+        onClick={() => {
+          if (hasChildren) setExpanded((e) => !e);
+        }}
       >
         <span
           style={{ width: '16px', textAlign: 'center', color: 'var(--muted)', fontSize: '10px' }}

@@ -157,7 +157,7 @@ export default function OrgAdminDashboard() {
         <div className="mc-grid-2" style={{ marginBottom: '24px' }}>
           <OrganizationTree root={ORG_TREE} />
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <AIInsightCard insight={INSIGHTS[0]!} />
+            {INSIGHTS[0] && <AIInsightCard insight={INSIGHTS[0]} />}
             <LiveActivityFeed items={ACTIVITY} title="Org Activity" />
           </div>
         </div>

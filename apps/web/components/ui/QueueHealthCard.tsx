@@ -54,7 +54,7 @@ export function QueueHealthCard({ queue }: { queue: QueueStats }) {
         <div
           style={{
             height: '100%',
-            width: `${health}%`,
+            width: `${String(health)}%`,
             background: healthColor,
             borderRadius: '2px',
             transition: 'width 0.5s ease',

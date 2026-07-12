@@ -74,7 +74,7 @@ export function LiveActivityFeed({
               alignItems: 'flex-start',
               padding: '6px 8px',
               borderRadius: '6px',
-              borderLeft: `3px solid ${SEVERITY_COLOR[item.severity ?? 'info']}`,
+              borderLeft: `3px solid ${SEVERITY_COLOR[item.severity ?? 'info'] ?? '#6366f1'}`,
               background: 'var(--card-border)',
               fontSize: '13px',
             }}

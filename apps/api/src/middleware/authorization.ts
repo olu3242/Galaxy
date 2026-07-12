@@ -112,11 +112,9 @@ export function authorizationGuard(
       return;
     }
 
-    interface RequestWithCorrelationId extends FastifyRequest {
-      correlationId?: string;
-    }
     const correlationId =
-      (request as RequestWithCorrelationId).correlationId ?? crypto.randomUUID();
+      (request as unknown as { correlationId: string | undefined }).correlationId ??
+      crypto.randomUUID();
 
     const result = await request.server.authorize({
       organizationId,
