@@ -16,7 +16,12 @@ declare module '@fastify/jwt' {
   }
 }
 
-const PUBLIC_PATHS = new Set(['/health', '/api/v1/webhooks/whatsapp']);
+const PUBLIC_PATHS = new Set([
+  '/health',
+  '/api/v1/webhooks/whatsapp',
+  '/api/v1/auth/login',
+  '/api/v1/auth/refresh',
+]);
 
 function extractBearerToken(request: FastifyRequest): string | null {
   const auth = request.headers.authorization;

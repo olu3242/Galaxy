@@ -5,10 +5,27 @@ export type { ApiProviderProps } from './context';
 export {
   useApiQuery,
   useOrgQuery,
-  useDashboardMetrics,
+  useDashboard,
+  useOrgHealth,
+  useKPIs,
   useMembers,
   useWorkflows,
-  useAuditEvents,
   usePendingApprovals,
+  useAuditEvents,
+  useAgentOverview,
+  useAIInsights,
+  useAIRecommendations,
+  useRiskSignals,
+  useSystemHealth,
+  useAlerts,
 } from './hooks';
-export type { DashboardMetrics, Member, Workflow, AuditEvent, ApprovalItem } from './hooks';
+export type {
+  Member,
+  Workflow,
+  ApprovalItem,
+  AuditEvent,
+  AgentOverview,
+  AIInsightData,
+  ServiceHealth,
+  DashboardData,
+} from './hooks';

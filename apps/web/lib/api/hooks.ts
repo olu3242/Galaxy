@@ -6,13 +6,10 @@ import type { ApiError } from './client';
 
 /**
  * SWR-backed hook for GET requests via the Galaxy API client.
- *
- * @example
- *   const { data, error, isLoading } = useApiQuery<MemberListResponse>('/members');
+ * Path is relative to the API base URL.
  */
 export function useApiQuery<T>(path: string | null, config?: SWRConfiguration<T, ApiError>) {
   const client = useApiClient();
-
   return useSWR<T, ApiError>(path, (p: string) => client.get<T>(p), {
     revalidateOnFocus: false,
     ...config,
@@ -20,59 +17,61 @@ export function useApiQuery<T>(path: string | null, config?: SWRConfiguration<T,
 }
 
 /**
- * SWR-backed hook scoped to the active organization.
- * Prepends /organizations/:orgId to the path.
- *
- * @example
- *   const { data } = useOrgQuery<WorkflowListResponse>('/workflows');
- *   // → GET /organizations/:orgId/workflows
+ * Org-scoped query — appends ?organizationId=<orgId> to the path.
+ * Suspends (returns null key) when orgId is not yet available.
  */
-export function useOrgQuery<T>(subPath: string | null, config?: SWRConfiguration<T, ApiError>) {
+export function useOrgQuery<T>(path: string | null, config?: SWRConfiguration<T, ApiError>) {
   const orgId = useOrganizationId();
-  const path = subPath !== null && orgId ? `/organizations/${orgId}${subPath}` : null;
-  return useApiQuery<T>(path, config);
+  const sep = path?.includes('?') ? '&' : '?';
+  const fullPath = path !== null && orgId ? `${path}${sep}organizationId=${orgId}` : null;
+  return useApiQuery<T>(fullPath, config);
 }
 
-/**
- * Dashboard metrics — aggregates from the analytics endpoint.
- */
-export interface DashboardMetrics {
-  totalMembers: number;
-  activeWorkflows: number;
-  pendingApprovals: number;
-  aiActionsToday: number;
-  orgHealth: number;
-  memberGrowthMoM: number;
-  workflowGrowthWoW: number;
+// ─── Dashboard ───────────────────────────────────────────────────────────────
+
+export interface DashboardData {
+  metrics?: Record<string, number | string>;
+  kpis?: Array<{ name: string; value: number | string; delta?: number }>;
+  health?: number;
 }
 
-export function useDashboardMetrics() {
-  return useOrgQuery<{ data: DashboardMetrics }>('/analytics/dashboard');
+export function useDashboard(category: string) {
+  return useOrgQuery<{ data: DashboardData }>(`/api/v1/analytics/dashboards/${category}`);
 }
 
-/**
- * Organization members list.
- */
+export function useOrgHealth() {
+  return useOrgQuery<{ data: { score: number; status: string; details: Record<string, number> } }>(
+    '/api/v1/analytics/org-health',
+  );
+}
+
+export function useKPIs() {
+  return useOrgQuery<{ data: Array<{ name: string; value: number | string; period: string }> }>(
+    '/api/v1/analytics/kpis',
+  );
+}
+
+// ─── Members ─────────────────────────────────────────────────────────────────
+
 export interface Member {
   id: string;
   name: string;
-  email?: string;
-  phone?: string;
+  email?: string | undefined;
+  phone?: string | undefined;
   role: string;
-  departmentId?: string;
+  departmentId?: string | undefined;
   isActive: boolean;
   joinedAt: string;
 }
 
 export function useMembers(page = 1, limit = 20) {
   return useOrgQuery<{ data: Member[]; meta: { total: number; page: number; limit: number } }>(
-    `/members?page=${String(page)}&limit=${String(limit)}`,
+    `/api/v1/members?page=${String(page)}&limit=${String(limit)}`,
   );
 }
 
-/**
- * Workflow list.
- */
+// ─── Workflows ───────────────────────────────────────────────────────────────
+
 export interface Workflow {
   id: string;
   name: string;
@@ -84,13 +83,29 @@ export interface Workflow {
 }
 
 export function useWorkflows(status?: Workflow['status']) {
-  const query = status ? `?status=${status}` : '';
-  return useOrgQuery<{ data: Workflow[] }>(`/workflows${query}`);
+  const query = status ? `&status=${status}` : '';
+  return useOrgQuery<{ data: Workflow[] }>(`/api/v1/workflow-os/definitions${query}`);
 }
 
-/**
- * Recent audit events.
- */
+export function usePendingApprovals() {
+  return useOrgQuery<{ data: ApprovalItem[] }>('/api/v1/workflow-os/approvals');
+}
+
+// ─── Approvals ───────────────────────────────────────────────────────────────
+
+export interface ApprovalItem {
+  id: string;
+  workflowId: string;
+  workflowName?: string | undefined;
+  requestedBy: string;
+  requestedAt: string;
+  dueAt?: string | undefined;
+  priority?: 'low' | 'medium' | 'high' | 'critical' | undefined;
+  status: 'pending' | 'approved' | 'rejected' | 'escalated';
+}
+
+// ─── Audit ────────────────────────────────────────────────────────────────────
+
 export interface AuditEvent {
   id: string;
   action: string;
@@ -102,27 +117,75 @@ export interface AuditEvent {
   correlationId: string;
   timestamp: string;
   severity: 'info' | 'warn' | 'error';
-  metadata?: Record<string, unknown>;
+  metadata?: Record<string, unknown> | undefined;
 }
 
 export function useAuditEvents(limit = 20) {
-  return useOrgQuery<{ data: AuditEvent[] }>(`/audit?limit=${String(limit)}`);
+  return useOrgQuery<{ data: AuditEvent[] }>(`/api/v1/audit/logs?limit=${String(limit)}`);
 }
 
-/**
- * Pending approval queue.
- */
-export interface ApprovalItem {
+// ─── Agents ───────────────────────────────────────────────────────────────────
+
+export interface AgentOverview {
+  totalAgents: number;
+  activeAgents: number;
+  executionsToday: number;
+  pendingApprovals: number;
+  agents: Array<{
+    id: string;
+    name: string;
+    type: string;
+    status: string;
+    lastExecutedAt?: string | undefined;
+  }>;
+}
+
+export function useAgentOverview() {
+  return useOrgQuery<{ data: AgentOverview }>('/api/v1/agents/overview');
+}
+
+// ─── Intelligence ─────────────────────────────────────────────────────────────
+
+export interface AIInsightData {
   id: string;
-  workflowId: string;
-  workflowName: string;
-  requestedBy: string;
-  requestedAt: string;
-  dueAt?: string;
-  priority: 'low' | 'medium' | 'high' | 'critical';
-  status: 'pending' | 'approved' | 'rejected' | 'escalated';
+  type: string;
+  title: string;
+  summary: string;
+  confidence: number;
+  impactLevel: number;
 }
 
-export function usePendingApprovals() {
-  return useOrgQuery<{ data: ApprovalItem[] }>('/approvals?status=pending');
+export function useAIInsights() {
+  return useOrgQuery<{ data: AIInsightData[] }>('/api/v1/intelligence/insights');
+}
+
+export function useAIRecommendations() {
+  return useOrgQuery<{ data: AIInsightData[] }>('/api/v1/intelligence/recommendations');
+}
+
+export function useRiskSignals() {
+  return useOrgQuery<{
+    data: Array<{ id: string; type: string; severity: string; description: string }>;
+  }>('/api/v1/intelligence/risks');
+}
+
+// ─── Observability ────────────────────────────────────────────────────────────
+
+export interface ServiceHealth {
+  name: string;
+  status: 'operational' | 'degraded' | 'down';
+  latencyMs?: number | undefined;
+  uptimePct?: number | undefined;
+}
+
+export function useSystemHealth() {
+  return useApiQuery<{ data: { services: ServiceHealth[]; overall: string } }>(
+    '/api/v1/observability/health',
+  );
+}
+
+export function useAlerts(limit = 10) {
+  return useOrgQuery<{
+    data: Array<{ id: string; name: string; severity: string; firedAt: string }>;
+  }>(`/api/v1/observability/alerts?limit=${String(limit)}`);
 }
