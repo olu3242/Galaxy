@@ -4,22 +4,43 @@ export interface AuditEntry {
   id: string;
   action: string;
   actor: string;
-  actorType: 'member' | 'agent' | 'system';
+  actorType?: 'member' | 'agent' | 'system';
   resource: string;
   resourceId?: string;
-  status: 'success' | 'denied' | 'error';
+  status?: 'success' | 'denied' | 'error';
+  severity?: 'info' | 'warn' | 'error' | 'success';
   timestamp: string;
-  correlationId: string;
+  correlationId?: string;
+  detail?: string;
 }
 
-const STATUS_COLOR = { success: '#22c55e', denied: '#ef4444', error: '#f97316' };
-const ACTOR_ICON = { member: '👤', agent: '🤖', system: '⚙️' };
+const STATUS_COLOR: Record<string, string> = {
+  success: '#22c55e',
+  denied: '#ef4444',
+  error: '#f97316',
+  warn: '#f59e0b',
+  info: '#6366f1',
+};
 
-export function AuditTimeline({ entries }: { entries: AuditEntry[] }) {
+const ACTOR_ICON: Record<string, string> = { member: '👤', agent: '🤖', system: '⚙️' };
+
+function entryColor(e: AuditEntry): string {
+  if (e.status) return STATUS_COLOR[e.status] ?? '#94a3b8';
+  if (e.severity) return STATUS_COLOR[e.severity] ?? '#94a3b8';
+  return '#94a3b8';
+}
+
+export function AuditTimeline({
+  entries,
+  title = 'Audit Timeline',
+}: {
+  entries: AuditEntry[];
+  title?: string;
+}) {
   return (
     <div className="mc-card">
       <span className="mc-label" style={{ display: 'block', marginBottom: '12px' }}>
-        Audit Timeline
+        {title}
       </span>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
         {entries.length === 0 && (
@@ -50,7 +71,7 @@ export function AuditTimeline({ entries }: { entries: AuditEntry[] }) {
                   width: '8px',
                   height: '8px',
                   borderRadius: '50%',
-                  background: STATUS_COLOR[e.status],
+                  background: entryColor(e),
                   marginTop: '4px',
                 }}
               />
@@ -67,9 +88,9 @@ export function AuditTimeline({ entries }: { entries: AuditEntry[] }) {
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontSize: '13px', color: 'var(--fg)', fontWeight: 500 }}>
-                {ACTOR_ICON[e.actorType]} {e.actor}{' '}
+                {e.actorType ? `${ACTOR_ICON[e.actorType] ?? '👤'} ` : ''}{e.actor}{' '}
                 <span style={{ color: 'var(--muted)', fontWeight: 400 }}>→</span>{' '}
-                <span style={{ color: STATUS_COLOR[e.status] }}>{e.action}</span>{' '}
+                <span style={{ color: entryColor(e) }}>{e.action}</span>{' '}
                 <span style={{ color: 'var(--muted)' }}>{e.resource}</span>
                 {e.resourceId && (
                   <span style={{ color: 'var(--muted)', fontSize: '11px' }}>
@@ -78,8 +99,14 @@ export function AuditTimeline({ entries }: { entries: AuditEntry[] }) {
                   </span>
                 )}
               </div>
+              {e.detail && (
+                <div style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '2px' }}>
+                  {e.detail}
+                </div>
+              )}
               <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '2px' }}>
-                {new Date(e.timestamp).toLocaleString()} · {e.correlationId.slice(0, 8)}
+                {new Date(e.timestamp).toLocaleString()}
+                {e.correlationId ? ` · ${e.correlationId.slice(0, 8)}` : ''}
               </div>
             </div>
           </div>
