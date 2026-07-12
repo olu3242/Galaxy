@@ -1,7 +1,18 @@
 import { Pool } from 'pg';
 import { Worker } from 'bullmq';
 import pino from 'pino';
-import { connection } from './queues.js';
+import {
+  connection,
+  workflowQueue,
+  approvalQueue,
+  taskQueue,
+  slaQueue,
+  intentQueue,
+  notificationQueue,
+  agentQueue,
+  analyticsRollupQueue,
+  healthCheckQueue,
+} from './queues.js';
 import { createWorkflowProcessor } from './processors/workflow-execution.js';
 import { createSlaProcessor } from './processors/sla-monitoring.js';
 import { createIntentProcessor } from './processors/intent-detection.js';
@@ -10,6 +21,7 @@ import { createNotificationDispatchProcessor } from './processors/notification-d
 import { createKnowledgeIngestionProcessor } from './processors/knowledge-ingestion.js';
 import { createLoopLearningProcessor } from './processors/loop-learning.js';
 import { createAuditSyncProcessor } from './processors/audit-sync.js';
+import { registerScheduledJobs } from './lib/scheduler.js';
 
 const logger = pino({ level: process.env.LOG_LEVEL ?? 'info' });
 
@@ -114,6 +126,36 @@ agentWorker.on('failed', (job, err) => {
   logger.error({ jobId: job?.id, err }, 'agent job failed');
 });
 
+// Health-check worker — logs platform health
+const healthCheckWorker = new Worker(
+  'health-check',
+  () => {
+    logger.info('health-check tick');
+    return Promise.resolve();
+  },
+  { connection },
+);
+healthCheckWorker.on('failed', (job, err) => {
+  logger.error({ jobId: job?.id, err }, 'health-check job failed');
+});
+
+// Register all scheduled/cron jobs
+const schedulerQueues = new Map([
+  ['workflow-execution', workflowQueue],
+  ['approval-processing', approvalQueue],
+  ['task-processing', taskQueue],
+  ['sla-monitoring', slaQueue],
+  ['intent-detection', intentQueue],
+  ['notification-dispatch', notificationQueue],
+  ['agent-execution', agentQueue],
+  ['analytics-rollup', analyticsRollupQueue],
+  ['health-check', healthCheckQueue],
+]);
+
+registerScheduledJobs(schedulerQueues).catch((err: unknown) => {
+  logger.error(err, 'Failed to register scheduled jobs');
+});
+
 // Graceful shutdown
 async function shutdown(): Promise<void> {
   logger.info('Shutting down Galaxy Worker...');
@@ -125,6 +167,7 @@ async function shutdown(): Promise<void> {
   await notificationWorker.close();
   await auditSyncWorker.close();
   await agentWorker.close();
+  await healthCheckWorker.close();
   await pool.end();
   await connection.quit();
   logger.info('Galaxy Worker shut down cleanly');

@@ -2,7 +2,9 @@ import crypto from 'crypto';
 import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { Queue } from 'bullmq';
 import { Redis } from 'ioredis';
+import { Pool } from 'pg';
 import { InboundMessageProcessor, type InboundWebhookPayload } from '@galaxy/communication';
+import { EventPublisher } from '@galaxy/events';
 
 const VERIFY_TOKEN = process.env.WHATSAPP_VERIFY_TOKEN ?? '';
 const APP_SECRET = process.env.WHATSAPP_APP_SECRET ?? '';
@@ -56,6 +58,8 @@ export async function whatsappWebhookRoutes(fastify: FastifyInstance): Promise<v
   });
   const intentQueue = new Queue('intent-detection', { connection: redis });
   const processor = new InboundMessageProcessor();
+  const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+  const eventPublisher = new EventPublisher(pool);
 
   // Hub challenge verification
   fastify.get(
@@ -91,6 +95,8 @@ export async function whatsappWebhookRoutes(fastify: FastifyInstance): Promise<v
         return reply.status(401).send({ error: 'Invalid signature' });
       }
 
+      const correlationId = crypto.randomUUID();
+
       const body = request.body;
       if (body.object !== 'whatsapp_business_account') {
         return reply.status(200).send({ ok: true });
@@ -119,6 +125,7 @@ export async function whatsappWebhookRoutes(fastify: FastifyInstance): Promise<v
                 phoneNumberId,
                 normalized,
                 rawMessageId: msg.id,
+                correlationId,
               }),
             );
           }
@@ -126,6 +133,30 @@ export async function whatsappWebhookRoutes(fastify: FastifyInstance): Promise<v
       }
 
       await Promise.all(jobs);
+
+      // Emit webhook.received event (best-effort, non-fatal)
+      const eventId = crypto.randomUUID();
+      eventPublisher
+        .publish({
+          id: eventId,
+          version: '1.0',
+          type: 'webhook.received',
+          tenantId: 'system',
+          correlationId,
+          causationId: correlationId,
+          timestamp: new Date().toISOString(),
+          actor: { type: 'system', id: 'whatsapp-webhook' },
+          payload: { source: 'whatsapp' },
+          metadata: {
+            idempotencyKey: eventId,
+            schemaVersion: '1.0',
+            source: 'galaxy.api.webhooks',
+          },
+        })
+        .catch(() => {
+          // Non-fatal — do not block the response
+        });
+
       return reply.status(200).send({ ok: true });
     },
   );
@@ -133,5 +164,6 @@ export async function whatsappWebhookRoutes(fastify: FastifyInstance): Promise<v
   fastify.addHook('onClose', async () => {
     await intentQueue.close();
     await redis.quit();
+    await pool.end();
   });
 }
