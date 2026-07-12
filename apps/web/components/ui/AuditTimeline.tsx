@@ -88,8 +88,8 @@ export function AuditTimeline({
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontSize: '13px', color: 'var(--fg)', fontWeight: 500 }}>
-                {e.actorType ? `${ACTOR_ICON[e.actorType] ?? '👤'} ` : ''}{e.actor}{' '}
-                <span style={{ color: 'var(--muted)', fontWeight: 400 }}>→</span>{' '}
+                {e.actorType ? `${ACTOR_ICON[e.actorType] ?? '👤'} ` : ''}
+                {e.actor} <span style={{ color: 'var(--muted)', fontWeight: 400 }}>→</span>{' '}
                 <span style={{ color: entryColor(e) }}>{e.action}</span>{' '}
                 <span style={{ color: 'var(--muted)' }}>{e.resource}</span>
                 {e.resourceId && (

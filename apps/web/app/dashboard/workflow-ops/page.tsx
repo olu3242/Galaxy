@@ -148,17 +148,8 @@ export default function WorkflowOpsDashboard() {
             delta={{ value: 8.4, label: 'WoW' }}
             accent="#6366f1"
           />
-          <MetricCard
-            label="Pending Approvals"
-            value="12"
-            subtext="4 overdue"
-            accent="#ef4444"
-          />
-          <MetricCard
-            label="Completed Today"
-            value="284"
-            delta={{ value: 12.1, label: 'DoD' }}
-          />
+          <MetricCard label="Pending Approvals" value="12" subtext="4 overdue" accent="#ef4444" />
+          <MetricCard label="Completed Today" value="284" delta={{ value: 12.1, label: 'DoD' }} />
           <MetricCard
             label="Avg Approval Time"
             value="6.2h"
