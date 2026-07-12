@@ -153,6 +153,9 @@ importers:
       '@galaxy/org-memory':
         specifier: workspace:*
         version: link:../../packages/modules/org-memory
+      '@galaxy/organization':
+        specifier: workspace:*
+        version: link:../../packages/modules/organization
       '@galaxy/partner':
         specifier: workspace:*
         version: link:../../packages/modules/partner

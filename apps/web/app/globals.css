@@ -1969,3 +1969,126 @@ footer {
     min-width: 140px;
   }
 }
+
+/* ─── Mission Control Design System ──────────────────────────────────────── */
+
+:root {
+  --mc-bg: #0f1117;
+  --mc-surface: #161b27;
+  --card-bg: #1e2535;
+  --card-border: #2a3347;
+  --fg: #e2e8f0;
+  --muted: #64748b;
+  --accent: #6366f1;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --mc-bg: #f8fafc;
+    --mc-surface: #ffffff;
+    --card-bg: #ffffff;
+    --card-border: #e2e8f0;
+    --fg: #0f172a;
+    --muted: #94a3b8;
+    --accent: #6366f1;
+  }
+}
+
+:root[data-theme='dark'] {
+  --mc-bg: #0f1117;
+  --mc-surface: #161b27;
+  --card-bg: #1e2535;
+  --card-border: #2a3347;
+  --fg: #e2e8f0;
+  --muted: #64748b;
+}
+
+:root[data-theme='light'] {
+  --mc-bg: #f8fafc;
+  --mc-surface: #ffffff;
+  --card-bg: #ffffff;
+  --card-border: #e2e8f0;
+  --fg: #0f172a;
+  --muted: #94a3b8;
+}
+
+.mc-card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.mc-label {
+  font-size: 13px;
+  color: var(--muted);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.mc-value {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--accent);
+  line-height: 1.1;
+  margin-top: 4px;
+}
+
+.mc-subtext {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.mc-skeleton {
+  background: var(--card-border);
+  border-radius: 6px;
+  animation: mc-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes mc-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+
+.mc-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.mc-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.mc-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.mc-section-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--fg);
+  margin: 0 0 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--card-border);
+}
+
+@media (max-width: 768px) {
+  .mc-grid-2,
+  .mc-grid-3 {
+    grid-template-columns: 1fr;
+  }
+}

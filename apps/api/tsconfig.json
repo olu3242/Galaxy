@@ -62,6 +62,9 @@
       "path": "../../packages/modules/observability"
     },
     {
+      "path": "../../packages/modules/organization"
+    },
+    {
       "path": "../../packages/modules/governance"
     },
     {

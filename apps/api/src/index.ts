@@ -3,6 +3,7 @@ import { Pool } from 'pg';
 import { registerAuth } from './middleware/auth.js';
 import { registerTenantContext } from './middleware/tenant.js';
 import { registerAbacPlugin } from './middleware/abac.js';
+import { registerAuthorizationPlugin } from './middleware/authorization.js';
 import { registerRuntimePipeline } from './plugins/runtime-pipeline.js';
 import { whatsappWebhookRoutes } from './routes/webhooks-whatsapp.js';
 import { organizationRoutes } from './routes/organizations.js';
@@ -93,8 +94,11 @@ async function buildApp(): Promise<FastifyInstance> {
   // Tenant context — injects organizationId into DB session (skips public paths)
   registerTenantContext(fastify, pool);
 
-  // ABAC — attribute-based access control decorators (checkAbac, assertAbac)
+  // ABAC — legacy attribute-based access control decorators (checkAbac, assertAbac)
   registerAbacPlugin(fastify);
+
+  // Authorization Pipeline — unified RBAC+ABAC engine via Organization OS (authorize, assertAuthorized)
+  registerAuthorizationPlugin(fastify);
 
   // Runtime Pipeline — threads correlationId; emits GalaxyEvent + audit log on mutating requests
   registerRuntimePipeline(fastify, pool);

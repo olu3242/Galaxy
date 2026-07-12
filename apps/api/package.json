@@ -55,6 +55,7 @@
     "@galaxy/marketplace": "workspace:*",
     "@galaxy/mission-control": "workspace:*",
     "@galaxy/observability": "workspace:*",
+    "@galaxy/organization": "workspace:*",
     "@galaxy/org-dna": "workspace:*",
     "@galaxy/org-health": "workspace:*",
     "@galaxy/org-memory": "workspace:*",
