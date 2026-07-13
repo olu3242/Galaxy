@@ -19,11 +19,11 @@ async function loginViaApi(request: APIRequestContext): Promise<LoginResult> {
     throw new Error(`Login failed: ${String(res.status())} ${await res.text()}`);
   }
   const body = (await res.json()) as {
-    data: { accessToken: string; user: { organizationId: string } };
+    data: { accessToken: string; member: { organizationId: string } };
   };
   return {
     accessToken: body.data.accessToken,
-    organizationId: body.data.user.organizationId,
+    organizationId: body.data.member.organizationId,
   };
 }
 
