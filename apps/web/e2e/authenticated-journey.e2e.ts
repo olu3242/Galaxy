@@ -20,7 +20,7 @@ test.describe('Authenticated: Login flow', () => {
     await page.waitForLoadState('networkidle');
 
     await expect(page.locator('aside')).toBeVisible({ timeout: 8_000 });
-    await expect(page.locator('aside').getByText('Mission Control')).toBeVisible();
+    await expect(page.locator('aside').getByText('Mission Control').first()).toBeVisible();
   });
 
   test('user email appears in sidebar footer', async ({ authenticatedPage: page }) => {
@@ -64,9 +64,9 @@ test.describe('Authenticated: Members page', () => {
     await page.waitForLoadState('networkidle');
 
     // Wait for either a table row or the empty state
-    await expect(page.locator('table, [data-testid="empty-members"], text=No members')).toBeVisible(
-      { timeout: 10_000 },
-    );
+    await expect(
+      page.locator('table').or(page.locator('[data-testid="empty-members"]')).or(page.getByText('No members')),
+    ).toBeVisible({ timeout: 10_000 });
   });
 });
 
@@ -75,7 +75,7 @@ test.describe('Authenticated: Profile page', () => {
     await page.goto('/dashboard/profile');
     await page.waitForLoadState('networkidle');
 
-    await expect(page.getByText(TEST_EMAIL)).toBeVisible({ timeout: 8_000 });
+    await expect(page.getByText(TEST_EMAIL).first()).toBeVisible({ timeout: 8_000 });
   });
 });
 

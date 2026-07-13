@@ -1,4 +1,5 @@
 import Fastify, { type FastifyInstance } from 'fastify';
+import cors from '@fastify/cors';
 import { Pool } from 'pg';
 import { registerAuth } from './middleware/auth.js';
 import { registerTenantContext } from './middleware/tenant.js';
@@ -66,6 +67,14 @@ async function buildApp(): Promise<FastifyInstance> {
       level: process.env.LOG_LEVEL ?? 'info',
       redact: ['req.headers.authorization', 'body.password', 'body.token', 'body.secret'],
     },
+  });
+
+  // CORS — allow cross-origin requests from the web app (dev/test)
+  await fastify.register(cors, {
+    origin: (origin, cb) => {
+      cb(null, true);
+    },
+    credentials: true,
   });
 
   // Enable raw body capture for HMAC signature verification on webhook routes
