@@ -1,5 +1,14 @@
+import { scrypt, randomBytes } from 'node:crypto';
+import { promisify } from 'node:util';
 import { Pool } from 'pg';
-import { hashPassword } from '@galaxy/identity';
+
+const scryptAsync = promisify(scrypt);
+
+async function hashPassword(password: string): Promise<string> {
+  const salt = randomBytes(32).toString('hex');
+  const key = (await scryptAsync(password, salt, 64)) as Buffer;
+  return `${salt}:${key.toString('hex')}`;
+}
 
 const DATABASE_URL = process.env.DATABASE_URL;
 if (!DATABASE_URL) {
