@@ -69,9 +69,7 @@ export function Sidebar() {
               ✦
             </div>
             <div>
-              <div
-                style={{ fontSize: '14px', fontWeight: 800, color: '#e2e8f0', lineHeight: 1 }}
-              >
+              <div style={{ fontSize: '14px', fontWeight: 800, color: '#e2e8f0', lineHeight: 1 }}>
                 Galaxy
               </div>
               <div style={{ fontSize: '10px', color: '#475569', marginTop: '2px' }}>
@@ -118,8 +116,7 @@ export function Sidebar() {
                     (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.04)';
                 }}
                 onMouseLeave={(e) => {
-                  if (!active)
-                    (e.currentTarget as HTMLElement).style.background = 'transparent';
+                  if (!active) (e.currentTarget as HTMLElement).style.background = 'transparent';
                 }}
               >
                 <span style={{ fontSize: '14px', flexShrink: 0 }}>{item.icon}</span>
