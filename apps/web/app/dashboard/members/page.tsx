@@ -3,23 +3,11 @@
 import { useState } from 'react';
 import { useMembers } from '../../../lib/api';
 
-const ROLE_COLOR: Record<string, string> = {
-  super_admin: '#ef4444',
-  org_admin: '#f97316',
-  manager: '#f59e0b',
-  staff: '#6366f1',
-  viewer: '#64748b',
-};
-
 const STATUS_COLOR: Record<string, string> = {
   active: '#22c55e',
-  inactive: '#64748b',
   suspended: '#ef4444',
+  archived: '#64748b',
 };
-
-function roleLabel(role: string) {
-  return role.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
-}
 
 export default function MembersPage() {
   const [page, setPage] = useState(1);
@@ -28,15 +16,14 @@ export default function MembersPage() {
 
   const { data, isLoading, error } = useMembers(page, limit);
   const members = data?.data ?? [];
-  const total = data?.meta.total ?? 0;
+  const total = data?.meta.total ?? members.length;
   const totalPages = Math.ceil(total / limit);
 
   const filtered = search
     ? members.filter(
         (m) =>
-          m.name.toLowerCase().includes(search.toLowerCase()) ||
-          (m.email ?? '').toLowerCase().includes(search.toLowerCase()) ||
-          m.role.toLowerCase().includes(search.toLowerCase()),
+          m.displayName.toLowerCase().includes(search.toLowerCase()) ||
+          (m.email ?? '').toLowerCase().includes(search.toLowerCase()),
       )
     : members;
 
@@ -192,21 +179,21 @@ export default function MembersPage() {
                             width: '32px',
                             height: '32px',
                             borderRadius: '50%',
-                            background: `${ROLE_COLOR[m.role] ?? '#6366f1'}22`,
-                            border: `1px solid ${ROLE_COLOR[m.role] ?? '#6366f1'}44`,
+                            background: '#6366f122',
+                            border: '1px solid #6366f144',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
                             fontSize: '13px',
                             fontWeight: 700,
-                            color: ROLE_COLOR[m.role] ?? '#6366f1',
+                            color: '#6366f1',
                             flexShrink: 0,
                           }}
                         >
-                          {m.name.charAt(0).toUpperCase()}
+                          {m.displayName.charAt(0).toUpperCase()}
                         </div>
                         <span style={{ color: 'var(--fg)', fontSize: '14px', fontWeight: 500 }}>
-                          {m.name}
+                          {m.displayName}
                         </span>
                       </div>
                     </td>
@@ -227,11 +214,11 @@ export default function MembersPage() {
                           borderRadius: '4px',
                           fontSize: '12px',
                           fontWeight: 600,
-                          background: `${ROLE_COLOR[m.role] ?? '#6366f1'}18`,
-                          color: ROLE_COLOR[m.role] ?? '#6366f1',
+                          background: '#6366f118',
+                          color: '#6366f1',
                         }}
                       >
-                        {roleLabel(m.role)}
+                        Member
                       </span>
                     </td>
                     <td style={{ padding: '14px 16px' }}>
@@ -241,7 +228,7 @@ export default function MembersPage() {
                           alignItems: 'center',
                           gap: '5px',
                           fontSize: '13px',
-                          color: STATUS_COLOR[m.isActive ? 'active' : 'inactive'] ?? '#64748b',
+                          color: STATUS_COLOR[m.status] ?? '#64748b',
                         }}
                       >
                         <span
@@ -249,11 +236,10 @@ export default function MembersPage() {
                             width: '6px',
                             height: '6px',
                             borderRadius: '50%',
-                            background:
-                              STATUS_COLOR[m.isActive ? 'active' : 'inactive'] ?? '#64748b',
+                            background: STATUS_COLOR[m.status] ?? '#64748b',
                           }}
                         />
-                        {m.isActive ? 'Active' : 'Inactive'}
+                        {m.status.charAt(0).toUpperCase() + m.status.slice(1)}
                       </span>
                     </td>
                     <td
@@ -263,7 +249,7 @@ export default function MembersPage() {
                         fontSize: '13px',
                       }}
                     >
-                      {new Date(m.joinedAt).toLocaleDateString()}
+                      {new Date(m.createdAt).toLocaleDateString()}
                     </td>
                   </tr>
                 ))

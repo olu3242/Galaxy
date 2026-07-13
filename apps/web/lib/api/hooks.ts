@@ -55,18 +55,18 @@ export function useKPIs() {
 
 export interface Member {
   id: string;
-  name: string;
-  email?: string | undefined;
-  phone?: string | undefined;
-  role: string;
-  departmentId?: string | undefined;
-  isActive: boolean;
-  joinedAt: string;
+  displayName: string;
+  email: string | null;
+  whatsappPhone?: string | null | undefined;
+  status: 'active' | 'suspended' | 'archived';
+  roleId: string | null;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export function useMembers(page = 1, limit = 20) {
-  return useOrgQuery<{ data: Member[]; meta: { total: number; page: number; limit: number } }>(
-    `/api/v1/members?page=${String(page)}&limit=${String(limit)}`,
+  return useOrgQuery<{ data: Member[]; meta: { total?: number; page?: number; limit?: number } }>(
+    `/api/v1/members?limit=${String(limit)}&offset=${String((page - 1) * limit)}`,
   );
 }
 
