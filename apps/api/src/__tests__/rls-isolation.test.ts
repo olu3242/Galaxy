@@ -29,7 +29,7 @@ function skipIfNoDb(): boolean {
 }
 
 describe('Cross-tenant RLS isolation', () => {
-  let pool: Pool;
+  let pool: Pool | undefined;
   let orgAId: string;
   let orgBId: string;
 
