@@ -72,7 +72,7 @@ export async function intelligenceNetworkRoutes(fastify: FastifyInstance): Promi
   );
 
   fastify.get(
-    '/intelligence/recommendations',
+    '/intelligence-network/recommendations',
     async (
       request: FastifyRequest<{
         Querystring: { orgId: string; industry: string; sizeBucket: string };
