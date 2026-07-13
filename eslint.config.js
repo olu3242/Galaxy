@@ -67,4 +67,12 @@ export default [
       '@typescript-eslint/unbound-method': 'off',
     },
   },
+  {
+    // Fastify route plugins are async for avvio v8 compatibility but
+    // don't always contain top-level await expressions.
+    files: ['apps/api/src/routes/**/*.ts'],
+    rules: {
+      '@typescript-eslint/require-await': 'off',
+    },
+  },
 ];
