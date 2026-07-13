@@ -55,6 +55,30 @@ const DASHBOARDS = [
     icon: '⚡',
     roles: ['branch_manager', 'department_manager', 'team_lead'],
   },
+  {
+    href: '/dashboard/approvals',
+    label: 'Approvals',
+    description: 'Review and decide on pending approval requests',
+    accent: '#f59e0b',
+    icon: '✅',
+    roles: ['approver', 'manager', 'executive'],
+  },
+  {
+    href: '/dashboard/members',
+    label: 'Members',
+    description: 'Browse and manage organization members',
+    accent: '#38bdf8',
+    icon: '👥',
+    roles: ['org_admin', 'manager'],
+  },
+  {
+    href: '/dashboard/profile',
+    label: 'My Profile',
+    description: 'Account details, role, and session management',
+    accent: '#a78bfa',
+    icon: '👤',
+    roles: ['all'],
+  },
 ];
 
 export default function MissionControlHub() {
