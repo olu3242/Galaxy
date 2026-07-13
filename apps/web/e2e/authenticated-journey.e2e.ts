@@ -65,7 +65,10 @@ test.describe('Authenticated: Members page', () => {
 
     // Wait for either a table row or the empty state
     await expect(
-      page.locator('table').or(page.locator('[data-testid="empty-members"]')).or(page.getByText('No members')),
+      page
+        .locator('table')
+        .or(page.locator('[data-testid="empty-members"]'))
+        .or(page.getByText('No members')),
     ).toBeVisible({ timeout: 10_000 });
   });
 });

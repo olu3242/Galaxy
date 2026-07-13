@@ -50,7 +50,6 @@ interface WhatsAppWebhookBody {
   }[];
 }
 
-// eslint-disable-next-line @typescript-eslint/require-await
 export async function whatsappWebhookRoutes(fastify: FastifyInstance): Promise<void> {
   const redis = new Redis(process.env.REDIS_URL ?? 'redis://localhost:6379', {
     maxRetriesPerRequest: null,
