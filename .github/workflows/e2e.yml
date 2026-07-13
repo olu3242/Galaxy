@@ -77,7 +77,7 @@ jobs:
           NODE_ENV: test
 
       - name: Start API server
-        run: pnpm --filter @galaxy/api dev > /tmp/api.log 2>&1 &
+        run: pnpm --filter @galaxy/api start > /tmp/api.log 2>&1 &
         env:
           DATABASE_URL: ${{ env.DATABASE_URL }}
           REDIS_URL: ${{ env.REDIS_URL }}
