@@ -6,6 +6,9 @@ import { Pool } from 'pg';
 import { InboundMessageProcessor, type InboundWebhookPayload } from '@galaxy/communication';
 import { EventPublisher } from '@galaxy/events';
 
+// Manager approval button reply ID format: "approve:<runId>" or "reject:<runId>"
+const APPROVAL_REPLY_RE = /^(approve|reject):([0-9a-f-]{36})$/i;
+
 const VERIFY_TOKEN = process.env.WHATSAPP_VERIFY_TOKEN ?? '';
 const APP_SECRET = process.env.WHATSAPP_APP_SECRET ?? '';
 
@@ -43,6 +46,11 @@ interface WhatsAppWebhookBody {
           image?: { id: string; mime_type: string; sha256: string };
           audio?: { id: string; mime_type: string };
           document?: { id: string; mime_type: string; filename: string };
+          interactive?: {
+            type: string;
+            button_reply?: { id: string; title: string };
+            list_reply?: { id: string; title: string };
+          };
         }[];
       };
       field: string;
@@ -56,6 +64,7 @@ export async function whatsappWebhookRoutes(fastify: FastifyInstance): Promise<v
     lazyConnect: true,
   });
   const intentQueue = new Queue('intent-detection', { connection: redis });
+  const approvalQueue = new Queue('approval-processing', { connection: redis });
   const processor = new InboundMessageProcessor();
   const pool = new Pool({ connectionString: process.env.DATABASE_URL });
   const eventPublisher = new EventPublisher(pool);
@@ -108,6 +117,32 @@ export async function whatsappWebhookRoutes(fastify: FastifyInstance): Promise<v
           if (change.field !== 'messages') continue;
           for (const msg of change.value.messages ?? []) {
             const phoneNumberId = change.value.metadata.phone_number_id;
+
+            // Handle manager approve/reject button replies
+            if (msg.type === 'interactive' && msg.interactive?.type === 'button_reply') {
+              const buttonId = msg.interactive.button_reply?.id ?? '';
+              const match = APPROVAL_REPLY_RE.exec(buttonId);
+              if (match) {
+                const decision = match[1] === 'approve' ? 'approved' : 'rejected';
+                const workflowRunId = match[2];
+                jobs.push(
+                  approvalQueue.add('handle-approval', {
+                    jobName:
+                      decision === 'approved' ? 'post-approval-advance' : 'post-rejection-notify',
+                    approvalId: msg.id,
+                    workflowRunId,
+                    approverId: msg.from,
+                    decision,
+                    correlationId,
+                    // organizationId resolved by worker from workflowRunId (global lookup)
+                    organizationId: '',
+                    _resolveOrgFromRun: true,
+                  }),
+                );
+                continue;
+              }
+            }
+
             const payload: InboundWebhookPayload = {
               from: msg.from,
               messageId: msg.id,
@@ -162,6 +197,7 @@ export async function whatsappWebhookRoutes(fastify: FastifyInstance): Promise<v
 
   fastify.addHook('onClose', async () => {
     await intentQueue.close();
+    await approvalQueue.close();
     await redis.quit();
     await pool.end();
   });

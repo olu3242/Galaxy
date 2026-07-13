@@ -1,6 +1,9 @@
+import crypto from 'crypto';
 import Anthropic from '@anthropic-ai/sdk';
 import type { Pool } from 'pg';
 import type { Job } from 'bullmq';
+import { Queue } from 'bullmq';
+import { Redis } from 'ioredis';
 import { withEngineLifecycle } from '../lib/withEngineLifecycle.js';
 
 type DetectedIntent =
@@ -56,6 +59,7 @@ interface WebhookIntentJobData {
   phoneNumberId: string;
   normalized: NormalizedMessage;
   rawMessageId: string;
+  correlationId?: string;
 }
 
 type IntentJobData = DirectIntentJobData | WebhookIntentJobData;
@@ -156,11 +160,20 @@ function parseClassification(raw: string): ClassificationResult {
   return { detectedIntent, automationDomain, flowType, confidence };
 }
 
+function makeWorkflowQueue(): Queue {
+  const redis = new Redis(process.env.REDIS_URL ?? 'redis://localhost:6379', {
+    maxRetriesPerRequest: null,
+    lazyConnect: true,
+  });
+  return new Queue('workflow-execution', { connection: redis });
+}
+
 export function createIntentProcessor(
   pool: Pool,
   anthropicApiKey: string,
 ): (job: Job) => Promise<void> {
   const anthropic = new Anthropic({ apiKey: anthropicApiKey });
+  const workflowQueue = makeWorkflowQueue();
 
   return async (job: Job): Promise<void> =>
     withEngineLifecycle(job, pool, async () => {
@@ -175,7 +188,7 @@ export function createIntentProcessor(
         // Resolve organizationId from phoneNumberId WITHOUT RLS context — we don't have the
         // tenant yet, so this must be a plain lookup before set_config is called.
         const orgResult = await pool.query<{ id: string }>(
-          'SELECT id FROM organizations WHERE whatsapp_phone_number_id = $1 LIMIT 1',
+          'SELECT id FROM organizations WHERE waba_phone_number_id = $1 LIMIT 1',
           [jobData.phoneNumberId],
         );
 
@@ -245,5 +258,53 @@ Respond with exactly this JSON structure:
           requiresHumanReview,
         ],
       );
+
+      // Wire leave_request → workflow start (WhatsApp webhook path only, high confidence)
+      if (
+        classification.detectedIntent === 'leave_request' &&
+        !requiresHumanReview &&
+        isWebhookPayload(jobData)
+      ) {
+        const workflowRow = await pool.query<{ id: string }>(
+          `SELECT id FROM workflows WHERE organization_id = $1 AND name = 'Leave Request' AND is_active = true LIMIT 1`,
+          [organizationId],
+        );
+        const workflow = workflowRow.rows[0];
+        if (workflow) {
+          const runResult = await pool.query<{ id: string }>(
+            `INSERT INTO workflow_runs
+               (organization_id, workflow_id, status, triggered_by, trigger_data, correlation_id)
+             VALUES ($1, $2, 'pending', 'whatsapp', $3, $4)
+             RETURNING id`,
+            [
+              organizationId,
+              workflow.id,
+              JSON.stringify({
+                senderPhone: jobData.normalized.senderPhone,
+                rawInput,
+                rawMessageId: jobData.rawMessageId,
+              }),
+              jobData.correlationId ?? crypto.randomUUID(),
+            ],
+          );
+          const run = runResult.rows[0];
+          if (run) {
+            await workflowQueue.add('start-workflow', {
+              jobName: 'start-workflow',
+              organizationId,
+              runId: run.id,
+              data: { senderPhone: jobData.normalized.senderPhone },
+            });
+          }
+        } else {
+          console.warn(
+            JSON.stringify({
+              level: 'warn',
+              event: 'intent.leave_request.no_workflow',
+              organizationId,
+            }),
+          );
+        }
+      }
     });
 }

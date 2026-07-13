@@ -102,6 +102,9 @@ export class WhatsAppProvider implements MessagingProvider {
           },
         };
 
+      case 'interactive':
+        return { ...base, type: 'interactive', interactive: content.interactive ?? {} };
+
       default:
         return { ...base, type: 'text', text: { body: '' } };
     }
