@@ -69,7 +69,8 @@ export default function SecurityOpsDashboard() {
   for (const role of roles) {
     const row: Record<string, boolean> = {};
     for (const resource of resources) {
-      row[resource] = role.permissions?.some((p) => p.includes(resource) || p.includes('*')) ?? false;
+      row[resource] =
+        role.permissions?.some((p) => p.includes(resource) || p.includes('*')) ?? false;
     }
     matrix[role.name] = row;
   }
