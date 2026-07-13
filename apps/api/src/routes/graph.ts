@@ -2,7 +2,7 @@ import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { OrgGraphService } from '@galaxy/graph';
 import type { TraverseDirection } from '@galaxy/graph';
 
-export function graphRoutes(fastify: FastifyInstance): void {
+export async function graphRoutes(fastify: FastifyInstance): Promise<void> {
   fastify.get(
     '/graph/nodes',
     async (

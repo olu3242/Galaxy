@@ -23,7 +23,7 @@ function responseEnvelope<T>(data: T, requestId: string) {
   return { data, meta: { requestId, timestamp: new Date().toISOString() } };
 }
 
-export function authRoutes(fastify: FastifyInstance): void {
+export async function authRoutes(fastify: FastifyInstance): Promise<void> {
   const authService = new AuthService();
   authService.registerProvider(new EmailPasswordProvider(fastify.pg));
 

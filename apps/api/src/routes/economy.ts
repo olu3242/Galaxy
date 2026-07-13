@@ -9,7 +9,7 @@ import {
 } from '@galaxy/economy';
 import type { EconomyAccountType } from '@galaxy/economy';
 
-export function economyRoutes(fastify: FastifyInstance): void {
+export async function economyRoutes(fastify: FastifyInstance): Promise<void> {
   fastify.get(
     '/economy/accounts',
     async (request: FastifyRequest<{ Querystring: { orgId: string } }>, reply: FastifyReply) => {

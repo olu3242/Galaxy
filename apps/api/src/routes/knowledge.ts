@@ -14,7 +14,7 @@ function responseEnvelope<T>(data: T, requestId: string) {
   };
 }
 
-export function knowledgeRoutes(fastify: FastifyInstance): void {
+export async function knowledgeRoutes(fastify: FastifyInstance): Promise<void> {
   const knowledgeService = new KnowledgeService(fastify.pg);
   const searchService = new KnowledgeSearchService(fastify.pg);
 

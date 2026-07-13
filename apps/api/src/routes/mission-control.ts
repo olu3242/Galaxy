@@ -1,7 +1,7 @@
 import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { MissionControlService } from '@galaxy/mission-control';
 
-export function missionControlRoutes(fastify: FastifyInstance): void {
+export async function missionControlRoutes(fastify: FastifyInstance): Promise<void> {
   fastify.get(
     '/mission-control/dashboard',
     async (request: FastifyRequest, reply: FastifyReply) => {

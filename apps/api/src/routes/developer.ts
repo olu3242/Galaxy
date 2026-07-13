@@ -6,7 +6,7 @@ import type {
   RegisterOAuthAppInput,
 } from '@galaxy/developer';
 
-export function developerRoutes(fastify: FastifyInstance): void {
+export async function developerRoutes(fastify: FastifyInstance): Promise<void> {
   // ── API Keys ──────────────────────────────────────────────────────────────
 
   fastify.get(

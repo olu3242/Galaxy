@@ -14,7 +14,7 @@ function responseEnvelope<T>(data: T, requestId: string) {
   };
 }
 
-export function auditRoutes(fastify: FastifyInstance): void {
+export async function auditRoutes(fastify: FastifyInstance): Promise<void> {
   const searchService = new AuditSearchService(fastify.pg);
 
   // GET /audit/logs — basic PostgreSQL list with filters (retained for backward compat)

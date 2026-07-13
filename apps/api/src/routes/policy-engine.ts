@@ -7,7 +7,7 @@ import {
   type PolicyRuleOperator,
 } from '@galaxy/policy-engine';
 
-export function policyEngineRoutes(fastify: FastifyInstance): void {
+export async function policyEngineRoutes(fastify: FastifyInstance): Promise<void> {
   // POST /policies
   fastify.post(
     '/policies',

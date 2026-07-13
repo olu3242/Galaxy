@@ -6,7 +6,7 @@ import {
 } from '@galaxy/autonomous-intelligence';
 import type { AgentStatus, AgentType } from '@galaxy/autonomous-intelligence';
 
-export function autonomousIntelligenceRoutes(fastify: FastifyInstance): void {
+export async function autonomousIntelligenceRoutes(fastify: FastifyInstance): Promise<void> {
   fastify.get(
     '/autonomous-intelligence/agents',
     async (request: FastifyRequest<{ Querystring: { orgId: string } }>, reply: FastifyReply) => {

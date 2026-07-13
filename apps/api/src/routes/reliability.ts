@@ -29,7 +29,7 @@ function getOrgId(request: FastifyRequest): string {
   return (request as unknown as { organizationId: string }).organizationId;
 }
 
-export function reliabilityRoutes(fastify: FastifyInstance): void {
+export async function reliabilityRoutes(fastify: FastifyInstance): Promise<void> {
   // ── Reliability Score ────────────────────────────────────────────────────
 
   fastify.get('/reliability/score', async (request: FastifyRequest, reply: FastifyReply) => {

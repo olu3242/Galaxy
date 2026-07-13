@@ -6,7 +6,7 @@ import {
 } from '@galaxy/self-healing';
 import type { HealingLevel, HealingStatus } from '@galaxy/self-healing';
 
-export function selfHealingRoutes(fastify: FastifyInstance): void {
+export async function selfHealingRoutes(fastify: FastifyInstance): Promise<void> {
   fastify.post(
     '/self-healing/incidents',
     async (

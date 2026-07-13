@@ -5,7 +5,7 @@ import {
   ChurnRiskService,
 } from '@galaxy/predictive';
 
-export function predictiveRoutes(fastify: FastifyInstance): void {
+export async function predictiveRoutes(fastify: FastifyInstance): Promise<void> {
   fastify.get(
     '/predictive/sla-breaches',
     async (request: FastifyRequest<{ Querystring: { orgId: string } }>, reply: FastifyReply) => {

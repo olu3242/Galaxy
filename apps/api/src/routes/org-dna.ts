@@ -1,7 +1,7 @@
 import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { OrgDNAService, OrgLanguageService, IndustryBlueprintService } from '@galaxy/org-dna';
 
-export function orgDnaRoutes(fastify: FastifyInstance): void {
+export async function orgDnaRoutes(fastify: FastifyInstance): Promise<void> {
   // POST /org-dna
   fastify.post(
     '/org-dna',

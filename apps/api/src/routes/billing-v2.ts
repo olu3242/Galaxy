@@ -28,7 +28,7 @@ function requireAdmin(request: FastifyRequest, reply: FastifyReply): boolean {
   return true;
 }
 
-export function billingV2Routes(fastify: FastifyInstance): void {
+export async function billingV2Routes(fastify: FastifyInstance): Promise<void> {
   // ── Billing Accounts (Workstream H) ──────────────────────────────────────
 
   fastify.post(

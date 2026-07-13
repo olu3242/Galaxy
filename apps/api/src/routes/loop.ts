@@ -13,7 +13,7 @@ function envelope<T>(data: T, requestId: string) {
   return { data, meta: { requestId, timestamp: new Date().toISOString() } };
 }
 
-export function loopRoutes(fastify: FastifyInstance): void {
+export async function loopRoutes(fastify: FastifyInstance): Promise<void> {
   const instanceSvc = new LoopInstanceService(fastify.pg);
   const verifySvc = new LoopVerificationService(fastify.pg);
   const feedbackSvc = new LoopFeedbackService(fastify.pg);

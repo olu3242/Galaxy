@@ -11,7 +11,7 @@ import type {
   RateLimitTier,
 } from '@galaxy/api-gateway';
 
-export function apiGatewayRoutes(fastify: FastifyInstance): void {
+export async function apiGatewayRoutes(fastify: FastifyInstance): Promise<void> {
   // GET /api/v1/gateway/routes — list registered routes
   fastify.get(
     '/gateway/routes',

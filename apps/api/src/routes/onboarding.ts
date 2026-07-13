@@ -9,7 +9,7 @@ function envelope<T>(data: T, requestId: string) {
   return { data, meta: { requestId, timestamp: new Date().toISOString() } };
 }
 
-export function onboardingRoutes(fastify: FastifyInstance): void {
+export async function onboardingRoutes(fastify: FastifyInstance): Promise<void> {
   const eventPublisher = new EventPublisher(fastify.pg);
   const orgService = new OrganizationService(fastify.pg, eventPublisher);
   const membershipService = new MembershipService(fastify.pg, eventPublisher);

@@ -16,7 +16,7 @@ function responseEnvelope<T>(data: T, requestId: string) {
   return { data, meta: { requestId, timestamp: new Date().toISOString() } };
 }
 
-export function governanceRoutes(fastify: FastifyInstance): void {
+export async function governanceRoutes(fastify: FastifyInstance): Promise<void> {
   const policyService = new PolicyService(fastify.pg);
   const complianceService = new ComplianceCheckService(fastify.pg);
   const reportService = new ComplianceReportService(fastify.pg);

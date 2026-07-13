@@ -9,7 +9,7 @@ function getOrgId(request: FastifyRequest): string {
   return orgId;
 }
 
-export function integrationRoutes(fastify: FastifyInstance): void {
+export async function integrationRoutes(fastify: FastifyInstance): Promise<void> {
   // GET /integrations — list org's connectors
   fastify.get('/integrations', async (request: FastifyRequest, reply: FastifyReply) => {
     const orgId = getOrgId(request);

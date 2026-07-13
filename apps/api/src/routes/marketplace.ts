@@ -18,7 +18,7 @@ function getOrgId(request: FastifyRequest): string {
   return orgId;
 }
 
-export function marketplaceRoutes(fastify: FastifyInstance): void {
+export async function marketplaceRoutes(fastify: FastifyInstance): Promise<void> {
   // ---- Items ----
   fastify.get('/marketplace/items', async (request: FastifyRequest, reply: FastifyReply) => {
     const orgId = getOrgId(request);

@@ -142,7 +142,7 @@ function responseEnvelope<T>(data: T, requestId: string) {
   return { data, meta: { requestId, timestamp: new Date().toISOString() } };
 }
 
-export function workflowOsRoutes(fastify: FastifyInstance): void {
+export async function workflowOsRoutes(fastify: FastifyInstance): Promise<void> {
   // ─── Workflow Definitions ────────────────────────────────────────────────
 
   fastify.get(

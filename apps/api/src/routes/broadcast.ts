@@ -9,7 +9,7 @@ function envelope<T>(data: T, requestId: string) {
   return { data, meta: { requestId, timestamp: new Date().toISOString() } };
 }
 
-export function broadcastRoutes(fastify: FastifyInstance): void {
+export async function broadcastRoutes(fastify: FastifyInstance): Promise<void> {
   const eventPublisher = new EventPublisher(fastify.pg);
   const auditRepo = new AuditRepository(fastify.pg);
   const auditService = new AuditService(auditRepo);

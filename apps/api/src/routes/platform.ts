@@ -18,7 +18,7 @@ import {
 } from '@galaxy/platform';
 import type { TenantStatus, SubscriptionStatus, InvoiceStatus } from '@galaxy/platform';
 
-export function platformRoutes(fastify: FastifyInstance): void {
+export async function platformRoutes(fastify: FastifyInstance): Promise<void> {
   // ── Admin Metrics ────────────────────────────────────────────────────────────
 
   fastify.post(

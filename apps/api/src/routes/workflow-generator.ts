@@ -1,7 +1,7 @@
 import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { WorkflowGeneratorService, WorkflowTemplateService } from '@galaxy/workflow-generator';
 
-export function workflowGeneratorRoutes(fastify: FastifyInstance): void {
+export async function workflowGeneratorRoutes(fastify: FastifyInstance): Promise<void> {
   fastify.post(
     '/workflow-generator/requests',
     async (

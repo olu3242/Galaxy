@@ -7,7 +7,7 @@ import {
   type MessageDirection,
 } from '@galaxy/conversation';
 
-export function conversationRoutes(fastify: FastifyInstance): void {
+export async function conversationRoutes(fastify: FastifyInstance): Promise<void> {
   // POST /conversation/sessions
   fastify.post(
     '/conversation/sessions',

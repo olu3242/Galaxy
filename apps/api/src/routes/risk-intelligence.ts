@@ -2,7 +2,7 @@ import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { RiskIntelligenceService, RiskAlertService } from '@galaxy/risk-intelligence';
 import type { RiskDomain } from '@galaxy/risk-intelligence';
 
-export function riskIntelligenceRoutes(fastify: FastifyInstance): void {
+export async function riskIntelligenceRoutes(fastify: FastifyInstance): Promise<void> {
   fastify.get(
     '/risk/profile',
     async (request: FastifyRequest<{ Querystring: { orgId: string } }>, reply: FastifyReply) => {

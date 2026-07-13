@@ -2,7 +2,7 @@ import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { SolutionPackService, SolutionPackTemplateService } from '@galaxy/solution-packs';
 import type { Industry } from '@galaxy/solution-packs';
 
-export function solutionPackRoutes(fastify: FastifyInstance): void {
+export async function solutionPackRoutes(fastify: FastifyInstance): Promise<void> {
   fastify.get(
     '/solution-packs',
     async (

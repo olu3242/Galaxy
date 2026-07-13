@@ -7,7 +7,7 @@ import {
 } from '@galaxy/billing';
 import type { CreateSubscriptionInput, RecordUsageInput } from '@galaxy/billing';
 
-export function billingRoutes(fastify: FastifyInstance): void {
+export async function billingRoutes(fastify: FastifyInstance): Promise<void> {
   // List available plans
   fastify.get('/billing/plans', async (_request: FastifyRequest, reply: FastifyReply) => {
     const service = new SubscriptionService(fastify.pg);

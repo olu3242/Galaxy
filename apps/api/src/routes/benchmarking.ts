@@ -1,7 +1,7 @@
 import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { IndustryBenchmarkService, PeerComparisonService } from '@galaxy/benchmarking';
 
-export function benchmarkingRoutes(fastify: FastifyInstance): void {
+export async function benchmarkingRoutes(fastify: FastifyInstance): Promise<void> {
   fastify.get(
     '/benchmarks/percentile',
     async (

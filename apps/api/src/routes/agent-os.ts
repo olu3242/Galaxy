@@ -85,7 +85,7 @@ function responseEnvelope<T>(data: T, requestId: string) {
   return { data, meta: { requestId, timestamp: new Date().toISOString() } };
 }
 
-export function agentOsRoutes(fastify: FastifyInstance): void {
+export async function agentOsRoutes(fastify: FastifyInstance): Promise<void> {
   const registry = new AgentRegistryService(fastify.pg);
   const runtime = new AgentRuntime(fastify.pg);
   const decisionEngine = new DecisionEngine(fastify.pg);

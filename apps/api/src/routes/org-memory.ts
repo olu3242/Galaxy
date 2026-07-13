@@ -2,7 +2,7 @@ import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { OrgMemoryService } from '@galaxy/org-memory';
 import type { MemoryType, StoreMemoryInput, RecallQuery } from '@galaxy/org-memory';
 
-export function orgMemoryRoutes(fastify: FastifyInstance): void {
+export async function orgMemoryRoutes(fastify: FastifyInstance): Promise<void> {
   fastify.post(
     '/memory',
     async (

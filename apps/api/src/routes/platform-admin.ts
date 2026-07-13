@@ -18,7 +18,7 @@ function requireAdminSecret(request: FastifyRequest, reply: FastifyReply): boole
   return true;
 }
 
-export function platformAdminRoutes(fastify: FastifyInstance): void {
+export async function platformAdminRoutes(fastify: FastifyInstance): Promise<void> {
   // ── Tenants ──────────────────────────────────────────────────────────────────
 
   fastify.get(

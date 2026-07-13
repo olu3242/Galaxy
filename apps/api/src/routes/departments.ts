@@ -21,7 +21,7 @@ const CreateDeptSchema = z.object({
   metadata: z.record(z.unknown()).optional(),
 });
 
-export function departmentRoutes(fastify: FastifyInstance): void {
+export async function departmentRoutes(fastify: FastifyInstance): Promise<void> {
   const deptService = new DepartmentService(fastify.pg);
 
   fastify.get(

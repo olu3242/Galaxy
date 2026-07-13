@@ -30,7 +30,7 @@ function requireAdmin(request: FastifyRequest, reply: FastifyReply): boolean {
   return true;
 }
 
-export function platformAdminV2Routes(fastify: FastifyInstance): void {
+export async function platformAdminV2Routes(fastify: FastifyInstance): Promise<void> {
   // ── Platform Dashboard (Workstream A) ──────────────────────────────────────
 
   fastify.get('/admin/v2/dashboard', async (request: FastifyRequest, reply: FastifyReply) => {

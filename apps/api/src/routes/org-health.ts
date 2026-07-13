@@ -2,7 +2,7 @@ import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { HealthScoringService, HealthMonitorService } from '@galaxy/org-health';
 import type { HealthDimension } from '@galaxy/org-health';
 
-export function orgHealthRoutes(fastify: FastifyInstance): void {
+export async function orgHealthRoutes(fastify: FastifyInstance): Promise<void> {
   fastify.get('/org-health/scores', async (request: FastifyRequest, reply: FastifyReply) => {
     const orgId = (request as unknown as { organizationId: string }).organizationId;
     const svc = new HealthScoringService(fastify.pg);

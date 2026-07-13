@@ -1,7 +1,7 @@
 import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { DigitalCOOService } from '@galaxy/coo';
 
-export function cooRoutes(fastify: FastifyInstance): void {
+export async function cooRoutes(fastify: FastifyInstance): Promise<void> {
   fastify.post(
     '/coo/briefing',
     async (

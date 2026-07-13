@@ -25,7 +25,7 @@ function responseEnvelope<T>(data: T, requestId: string) {
   };
 }
 
-export function organizationRoutes(fastify: FastifyInstance): void {
+export async function organizationRoutes(fastify: FastifyInstance): Promise<void> {
   const orgService = new OrganizationService(fastify.pg);
 
   fastify.post('/organizations', async (request: FastifyRequest, reply: FastifyReply) => {

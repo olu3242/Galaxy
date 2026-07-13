@@ -2,7 +2,7 @@ import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { PartnerService, PartnerDealService } from '@galaxy/partner';
 import type { PartnerType, PartnerTier, RegisterDealInput } from '@galaxy/partner';
 
-export function partnerRoutes(fastify: FastifyInstance): void {
+export async function partnerRoutes(fastify: FastifyInstance): Promise<void> {
   fastify.get(
     '/partners',
     async (

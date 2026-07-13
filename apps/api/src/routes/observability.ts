@@ -17,7 +17,7 @@ function getOrgId(request: FastifyRequest): string {
   return orgId;
 }
 
-export function observabilityRoutes(fastify: FastifyInstance): void {
+export async function observabilityRoutes(fastify: FastifyInstance): Promise<void> {
   // ---- Health ----
   fastify.get('/observability/health', async (request: FastifyRequest, reply: FastifyReply) => {
     const orgId = getOrgId(request);

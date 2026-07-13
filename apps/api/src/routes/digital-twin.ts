@@ -7,7 +7,7 @@ import {
   type TwinRelationshipType,
 } from '@galaxy/digital-twin';
 
-export function digitalTwinRoutes(fastify: FastifyInstance): void {
+export async function digitalTwinRoutes(fastify: FastifyInstance): Promise<void> {
   // POST /digital-twin/nodes
   fastify.post(
     '/digital-twin/nodes',

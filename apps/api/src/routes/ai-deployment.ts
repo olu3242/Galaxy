@@ -1,7 +1,7 @@
 import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { DeploymentPlanService, OrgDiscoveryService } from '@galaxy/ai-deployment';
 
-export function aiDeploymentRoutes(fastify: FastifyInstance): void {
+export async function aiDeploymentRoutes(fastify: FastifyInstance): Promise<void> {
   fastify.post(
     '/ai-deployment/plans',
     async (

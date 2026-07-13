@@ -5,7 +5,7 @@ import {
   PeerMatchingService,
 } from '@galaxy/intelligence-network';
 
-export function intelligenceNetworkRoutes(fastify: FastifyInstance): void {
+export async function intelligenceNetworkRoutes(fastify: FastifyInstance): Promise<void> {
   fastify.post(
     '/intelligence/opt-in',
     async (

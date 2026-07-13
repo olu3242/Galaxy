@@ -15,7 +15,7 @@ function responseEnvelope<T>(data: T, requestId: string) {
   };
 }
 
-export function analyticsRoutes(fastify: FastifyInstance): void {
+export async function analyticsRoutes(fastify: FastifyInstance): Promise<void> {
   const metricsService = new MetricsService(fastify.pg);
   const kpiService = new KPIService(fastify.pg);
   const dashboardService = new DashboardService(fastify.pg);
