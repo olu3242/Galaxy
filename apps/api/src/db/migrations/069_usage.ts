@@ -15,6 +15,7 @@ export async function up(pool: Pool): Promise<void> {
     DROP POLICY IF EXISTS usage_events_tenant ON usage_events;
     CREATE POLICY usage_events_tenant ON usage_events
       USING (organization_id::text = current_setting('app.current_tenant', true));
+    ALTER TABLE usage_events ADD COLUMN IF NOT EXISTS resource_type TEXT NOT NULL DEFAULT '';
     CREATE INDEX IF NOT EXISTS idx_usage_events_org ON usage_events (organization_id, resource_type, recorded_at DESC);
 
     -- Usage records (org-scoped aggregate)
