@@ -12,7 +12,9 @@
     "lint:fix": "eslint app/ components/ --fix",
     "test": "vitest run",
     "test:watch": "vitest",
-    "clean": "rm -rf .next out"
+    "clean": "rm -rf .next out",
+    "test:e2e": "playwright test",
+    "test:e2e:api": "playwright test --grep \"API Endpoint\""
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.111.0",
@@ -26,6 +28,7 @@
     "zod": "^3.23.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.61.1",
     "@types/node": "^20.0.0",
     "@types/react": "^18.3.0",
     "@types/react-dom": "^18.3.0",

@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import { AuthProvider, useAuth } from '../../lib/auth/context';
 import { ApiProvider } from '../../lib/api/context';
+import { Sidebar } from '../../components/dashboard/Sidebar';
 
 function DashboardGuard({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading, user, token } = useAuth();
@@ -43,7 +44,10 @@ function DashboardGuard({ children }: { children: React.ReactNode }) {
         window.location.href = '/login';
       }}
     >
-      {children}
+      <div style={{ display: 'flex', minHeight: '100vh' }}>
+        <Sidebar />
+        <div style={{ flex: 1, minWidth: 0, overflowX: 'hidden' }}>{children}</div>
+      </div>
     </ApiProvider>
   );
 }
