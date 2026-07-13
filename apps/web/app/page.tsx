@@ -5,6 +5,7 @@ import TrustSection from '../components/landing/TrustSection';
 import ChallengesSection from '../components/landing/ChallengesSection';
 import HowItWorks from '../components/landing/HowItWorks';
 import ExecutionFlowSection from '../components/landing/ExecutionFlowSection';
+import DynamicDashboardSection from '../components/landing/DynamicDashboardSection';
 import OrganizationGallery from '../components/landing/OrganizationGallery';
 import PlaybooksSection from '../components/landing/PlaybooksSection';
 import OutcomesSection from '../components/landing/OutcomesSection';
@@ -25,6 +26,7 @@ export default function Home(): React.ReactElement {
         <ChallengesSection />
         <HowItWorks />
         <ExecutionFlowSection />
+        <DynamicDashboardSection />
         <OrganizationGallery />
         <PlaybooksSection />
         <OutcomesSection />

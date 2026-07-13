@@ -60,4 +60,32 @@ body {
       0 0 40px rgba(34, 199, 169, 0.3),
       0 0 80px rgba(34, 199, 169, 0.1);
   }
+
+  .whatsapp-chat-bg {
+    background-color: #0b141a;
+    background-image:
+      linear-gradient(rgba(11, 20, 26, 0.92), rgba(11, 20, 26, 0.92)),
+      radial-gradient(circle at 20% 30%, rgba(134, 150, 160, 0.14) 0 1px, transparent 1.5px),
+      radial-gradient(circle at 70% 60%, rgba(134, 150, 160, 0.1) 0 1px, transparent 1.5px);
+    background-size: auto, 32px 32px, 38px 38px;
+  }
+
+  .hero-carousel-progress {
+    animation: hero-carousel-progress 6.5s linear forwards;
+  }
+}
+
+@keyframes hero-carousel-progress {
+  from {
+    transform: translateY(-50%) scaleX(0);
+  }
+  to {
+    transform: translateY(-50%) scaleX(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-carousel-progress {
+    animation: none;
+  }
 }

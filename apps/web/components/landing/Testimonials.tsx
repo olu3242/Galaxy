@@ -1,6 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import Image from 'next/image';
 
 const testimonials = [
   {
@@ -58,6 +59,28 @@ export default function Testimonials(): React.ReactElement {
           <h2 className="text-3xl sm:text-4xl font-bold text-galaxy-white mb-4">
             Clarity changes everything
           </h2>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+          className="relative overflow-hidden rounded-3xl border border-white/10 mb-8 min-h-[320px] sm:min-h-[390px]"
+        >
+          <Image
+            src="/images/galaxy-community-leaders.png"
+            alt="Representative community and organizational leaders"
+            fill
+            sizes="(max-width: 768px) 100vw, 1280px"
+            className="object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-galaxy-black/95 via-galaxy-black/45 to-transparent" />
+          <div className="relative z-10 p-8 sm:p-12 max-w-lg flex flex-col justify-end min-h-[320px] sm:min-h-[390px]">
+            <div className="w-max rounded-full bg-white/10 border border-white/15 backdrop-blur-md px-3 py-1.5 text-xs text-white mb-5">Trusted across roles, missions, and generations</div>
+            <h3 className="text-3xl sm:text-4xl font-bold text-white leading-tight">Built around the people who keep organizations moving.</h3>
+            <p className="mt-4 text-sm sm:text-base text-galaxy-slate leading-relaxed">Representative community imagery. Customer stories below reflect the operational outcomes Galaxy is designed to support.</p>
+          </div>
         </motion.div>
 
         <div className="grid lg:grid-cols-3 gap-6">

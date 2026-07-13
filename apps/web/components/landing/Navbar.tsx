@@ -19,6 +19,7 @@ export default function Navbar(): React.ReactElement {
 
   const links = [
     { label: 'How it works', href: '#how-it-works' },
+    { label: 'Dashboard', href: '#dynamic-dashboard' },
     { label: 'Organizations', href: '#organizations' },
     { label: 'Outcomes', href: '#outcomes' },
     { label: 'FAQ', href: '#faq' },
