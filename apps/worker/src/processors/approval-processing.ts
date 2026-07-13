@@ -87,7 +87,7 @@ export function createApprovalProcessor(pool: Pool): (job: Job) => Promise<void>
             ],
           );
 
-          const senderPhone = run.trigger_data?.senderPhone;
+          const senderPhone = run.trigger_data.senderPhone;
           if (senderPhone) {
             await whatsapp
               .send(senderPhone, {
@@ -125,7 +125,7 @@ export function createApprovalProcessor(pool: Pool): (job: Job) => Promise<void>
           );
 
           const rejRun = rejResult.rows[0];
-          const rejSenderPhone = rejRun?.trigger_data?.senderPhone;
+          const rejSenderPhone = rejRun?.trigger_data.senderPhone;
           if (rejSenderPhone) {
             await whatsapp
               .send(rejSenderPhone, {

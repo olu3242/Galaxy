@@ -56,8 +56,8 @@ export function createWorkflowProcessor(pool: Pool): (job: Job) => Promise<void>
             [runId, organizationId],
           );
           const run = runRow.rows[0];
-          const senderPhone = run?.trigger_data?.senderPhone;
-          const rawInput = run?.trigger_data?.rawInput ?? '(no message)';
+          const senderPhone = run?.trigger_data.senderPhone;
+          const rawInput = run?.trigger_data.rawInput ?? '(no message)';
 
           const managerRow = await pool.query<ManagerRow>(
             `SELECT u.whatsapp_phone
@@ -94,7 +94,7 @@ export function createWorkflowProcessor(pool: Pool): (job: Job) => Promise<void>
                       },
                     ],
                   },
-                } as Record<string, unknown>,
+                },
               })
               .catch(() => {
                 // Non-fatal — manager notification failure does not fail the job
