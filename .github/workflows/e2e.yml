@@ -61,8 +61,8 @@ jobs:
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
 
-      - name: Build shared packages
-        run: pnpm build --filter=@galaxy/types --filter=@galaxy/config --filter=@galaxy/utils
+      - name: Build all packages
+        run: pnpm build
 
       - name: Run database migrations
         run: pnpm --filter @galaxy/api db:migrate
@@ -88,11 +88,15 @@ jobs:
 
       - name: Wait for API to be ready
         run: |
-          for i in $(seq 1 30); do
-            curl -sf http://localhost:3001/health && break
-            echo "Waiting for API... ($i/30)"
-            sleep 2
+          for i in $(seq 1 45); do
+            if curl -sf http://localhost:3001/health; then
+              echo "API is up after $i attempts"
+              exit 0
+            fi
+            echo "Waiting for API... ($i/45)"
+            sleep 3
           done
+          echo "API did not start in time" && exit 1
 
       - name: Install Playwright browsers
         run: pnpm --filter @galaxy/web exec playwright install chromium --with-deps
