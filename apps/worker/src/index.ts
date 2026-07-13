@@ -21,6 +21,7 @@ import { createNotificationDispatchProcessor } from './processors/notification-d
 import { createKnowledgeIngestionProcessor } from './processors/knowledge-ingestion.js';
 import { createLoopLearningProcessor } from './processors/loop-learning.js';
 import { createAuditSyncProcessor } from './processors/audit-sync.js';
+import { createApprovalProcessor } from './processors/approval-processing.js';
 import { registerScheduledJobs } from './lib/scheduler.js';
 
 const logger = pino({ level: process.env.LOG_LEVEL ?? 'info' });
@@ -117,6 +118,17 @@ auditSyncWorker.on('failed', (job, err) => {
   logger.error({ jobId: job?.id, err }, 'audit sync job failed');
 });
 
+// Approval processing worker — advances workflow runs after approval decisions
+const approvalWorker = new Worker('approval-processing', createApprovalProcessor(pool), {
+  connection,
+});
+approvalWorker.on('completed', (job) => {
+  logger.info({ jobId: job.id }, 'approval job completed');
+});
+approvalWorker.on('failed', (job, err) => {
+  logger.error({ jobId: job?.id, err }, 'approval job failed');
+});
+
 // Agent execution worker
 const agentWorker = new Worker('agent-execution', processAgentJob, { connection });
 agentWorker.on('completed', (job) => {
@@ -165,6 +177,7 @@ async function shutdown(): Promise<void> {
   await loopLearningWorker.close();
   await knowledgeWorker.close();
   await notificationWorker.close();
+  await approvalWorker.close();
   await auditSyncWorker.close();
   await agentWorker.close();
   await healthCheckWorker.close();

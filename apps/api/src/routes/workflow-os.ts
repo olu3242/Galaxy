@@ -1,4 +1,7 @@
+import crypto from 'node:crypto';
 import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
+import { Queue } from 'bullmq';
+import { Redis } from 'ioredis';
 
 interface WorkflowRow {
   id: string;
@@ -604,6 +607,18 @@ export function workflowOsRoutes(fastify: FastifyInstance): void {
         ],
       );
 
+      const approvalMeta = await fastify.pg.query<{ workflow_run_id: string | null }>(
+        `SELECT workflow_run_id FROM approvals WHERE organization_id = $1 AND id = $2`,
+        [organizationId, request.params.id],
+      );
+      const workflowRunId = approvalMeta.rows[0]?.workflow_run_id ?? undefined;
+
+      const correlationId = crypto.randomUUID();
+      const redis = new Redis(process.env.REDIS_URL ?? 'redis://localhost:6379', {
+        maxRetriesPerRequest: null,
+      });
+      const approvalQueue = new Queue('approval-processing', { connection: redis });
+
       if (request.body.decision === 'rejected') {
         const result = await fastify.pg.query<ApprovalRow>(
           `UPDATE approvals SET status = 'rejected', completed_at = NOW(), updated_at = NOW()
@@ -611,12 +626,27 @@ export function workflowOsRoutes(fastify: FastifyInstance): void {
           [organizationId, request.params.id],
         );
         const row = result.rows[0];
-        if (!row) return reply.status(404).send({ error: 'Approval not found' });
+        if (!row) {
+          await approvalQueue.close();
+          await redis.quit();
+          return reply.status(404).send({ error: 'Approval not found' });
+        }
         await fastify.pg.query(
           `INSERT INTO approval_history (organization_id, approval_id, from_status, to_status, actor_type, actor_id)
            VALUES ($1, $2, 'pending', 'rejected', 'member', $3)`,
           [organizationId, request.params.id, approverId],
         );
+        await approvalQueue.add('post-rejection-notify', {
+          jobName: 'post-rejection-notify',
+          organizationId,
+          approvalId: request.params.id,
+          workflowRunId,
+          approverId,
+          decision: 'rejected',
+          correlationId,
+        });
+        await approvalQueue.close();
+        await redis.quit();
         return reply.send(responseEnvelope(row, request.id));
       }
 
@@ -635,7 +665,11 @@ export function workflowOsRoutes(fastify: FastifyInstance): void {
         [organizationId, request.params.id, newStatus],
       );
       const row = result.rows[0];
-      if (!row) return reply.status(404).send({ error: 'Approval not found' });
+      if (!row) {
+        await approvalQueue.close();
+        await redis.quit();
+        return reply.status(404).send({ error: 'Approval not found' });
+      }
 
       await fastify.pg.query(
         `INSERT INTO approval_history (organization_id, approval_id, from_status, to_status, actor_type, actor_id)
@@ -643,6 +677,20 @@ export function workflowOsRoutes(fastify: FastifyInstance): void {
         [organizationId, request.params.id, newStatus, approverId],
       );
 
+      if (newStatus === 'approved' && workflowRunId) {
+        await approvalQueue.add('post-approval-advance', {
+          jobName: 'post-approval-advance',
+          organizationId,
+          approvalId: request.params.id,
+          workflowRunId,
+          approverId,
+          decision: 'approved',
+          correlationId,
+        });
+      }
+
+      await approvalQueue.close();
+      await redis.quit();
       return reply.send(responseEnvelope(row, request.id));
     },
   );
