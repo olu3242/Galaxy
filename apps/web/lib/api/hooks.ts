@@ -209,7 +209,7 @@ export function useDepartments() {
 export interface RoleDefinition {
   id: string;
   name: string;
-  permissions: string[];
+  permissions?: string[];
   memberCount?: number | undefined;
 }
 
