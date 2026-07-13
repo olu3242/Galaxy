@@ -47,7 +47,8 @@ test.describe('Authenticated: Dashboard pages load', () => {
   for (const { path, label } of dashboardPages) {
     test(`${label} page renders without crash`, async ({ authenticatedPage: page }) => {
       await page.goto(path);
-      await page.waitForLoadState('networkidle');
+      // Wait for the sidebar — confirms auth guard resolved and dashboard rendered
+      await expect(page.locator('aside')).toBeVisible({ timeout: 15_000 });
 
       // Should not redirect to /login
       expect(page.url()).not.toContain('/login');
@@ -61,7 +62,7 @@ test.describe('Authenticated: Dashboard pages load', () => {
 test.describe('Authenticated: Members page', () => {
   test('displays member table', async ({ authenticatedPage: page }) => {
     await page.goto('/dashboard/members');
-    await page.waitForLoadState('networkidle');
+    await expect(page.locator('aside')).toBeVisible({ timeout: 15_000 });
 
     // Wait for either a table row or the empty state
     await expect(
