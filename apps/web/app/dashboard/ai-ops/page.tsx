@@ -1,108 +1,54 @@
-import type { Metadata } from 'next';
+'use client';
+
 import { AgentCard, MetricCard, LiveActivityFeed, QueueHealthCard } from '../../../components/ui';
-import type { AgentCardProps, ActivityItem, QueueStats } from '../../../components/ui';
+import type { AgentState, ActivityItem, QueueStats } from '../../../components/ui';
+import { useAgentOverview, useQueueStats, useAuditEvents } from '../../../lib/api';
 
-export const metadata: Metadata = {
-  title: 'AI Operations Center — Galaxy',
-  description: 'Real-time agent fleet operations and monitoring',
-};
-
-const AGENTS: Omit<AgentCardProps, 'id'>[] = [
-  {
-    name: 'ALICE',
-    fullName: 'Automated Lifecycle Intelligence & Coordination Engine',
-    state: 'EXECUTING',
-    currentTask: 'Processing workflow wf-4821 approval chain',
-    completedToday: 142,
-    successRate: 99,
-    impactTier: 3,
-  },
-  {
-    name: 'MAX',
-    fullName: 'Multi-Agent eXecution Coordinator',
-    state: 'THINKING',
-    currentTask: 'Routing 3 parallel approval requests',
-    completedToday: 87,
-    successRate: 97,
-    impactTier: 3,
-  },
-  {
-    name: 'GUARDIAN',
-    fullName: 'Governance, Compliance & Security Agent',
-    state: 'VERIFYING',
-    currentTask: 'Auditing permission matrix for org galaxy-fintech',
-    completedToday: 56,
-    successRate: 100,
-    impactTier: 5,
-  },
-  {
-    name: 'ALICE',
-    fullName: 'Analytics & Learning Intelligence Engine',
-    state: 'IDLE',
-    completedToday: 23,
-    successRate: 95,
-    impactTier: 2,
-  },
-  {
-    name: 'NOVA',
-    fullName: 'Notification & Outreach Automation Agent',
-    state: 'EXECUTING',
-    currentTask: 'Dispatching 14 WhatsApp notifications',
-    completedToday: 1204,
-    successRate: 99,
-    impactTier: 1,
-  },
-  {
-    name: 'SAGE',
-    fullName: 'Strategic Analysis & Guidance Engine',
-    state: 'COMPLETED',
-    completedToday: 18,
-    successRate: 94,
-    impactTier: 4,
-  },
-];
-
-const QUEUES: QueueStats[] = [
-  { name: 'agent-execution', waiting: 1, active: 5, completed: 1204, failed: 2, delayed: 0 },
-  { name: 'workflow-execution', waiting: 3, active: 12, completed: 4821, failed: 7, delayed: 0 },
-];
-
-const ACTIVITY: ActivityItem[] = [
-  {
-    id: '1',
-    type: 'agent',
-    message: 'GUARDIAN blocked privilege escalation attempt',
-    actor: 'GUARDIAN',
-    severity: 'warn',
-    timestamp: new Date(Date.now() - 60_000).toISOString(),
-  },
-  {
-    id: '2',
-    type: 'agent',
-    message: 'ALICE completed approval routing for 12 workflows',
-    actor: 'ALICE',
-    severity: 'success',
-    timestamp: new Date(Date.now() - 300_000).toISOString(),
-  },
-  {
-    id: '3',
-    type: 'agent',
-    message: 'MAX orchestrated 3-agent parallel task',
-    actor: 'MAX',
-    severity: 'info',
-    timestamp: new Date(Date.now() - 600_000).toISOString(),
-  },
-  {
-    id: '4',
-    type: 'agent',
-    message: 'NOVA sent 500th notification of the day',
-    actor: 'NOVA',
-    severity: 'success',
-    timestamp: new Date(Date.now() - 900_000).toISOString(),
-  },
-];
+function toAgentState(status: string): AgentState {
+  const s = status.toUpperCase();
+  if (s === 'IDLE') return 'IDLE';
+  if (s === 'THINKING') return 'THINKING';
+  if (s === 'EXECUTING' || s === 'RUNNING' || s === 'ACTIVE') return 'EXECUTING';
+  if (s === 'VERIFYING') return 'VERIFYING';
+  if (s === 'COMPLETED') return 'COMPLETED';
+  if (s === 'FAILED' || s === 'ERROR') return 'FAILED';
+  if (s === 'ESCALATED') return 'ESCALATED';
+  return 'OBSERVING';
+}
 
 export default function AIOpsDashboard() {
+  const { data: overviewData, isLoading } = useAgentOverview();
+  const { data: queuesData } = useQueueStats();
+  const { data: auditData } = useAuditEvents(6);
+
+  const overview = overviewData?.data;
+  const agents = overview?.agents ?? [];
+
+  const queueCards: QueueStats[] = (queuesData?.data ?? [])
+    .filter((q) => q.name.includes('agent') || q.name.includes('workflow'))
+    .map((q) => ({
+      name: q.name,
+      waiting: q.pending,
+      active: q.active,
+      completed: q.completed,
+      failed: q.failed,
+      delayed: q.delayed ?? 0,
+    }));
+
+  const activity: ActivityItem[] = (auditData?.data ?? [])
+    .filter((e) => e.actorType === 'agent')
+    .map((e) => ({
+      id: e.id,
+      type: 'agent' as const,
+      message: `${e.action} on ${e.resourceType}`,
+      actor: e.actorId,
+      severity:
+        e.severity === 'warn' ? 'warn' : e.severity === 'error' ? 'error' : ('info' as const),
+      timestamp: e.timestamp,
+    }));
+
+  const mv = (n: number | undefined) => (isLoading ? '…' : n != null ? String(n) : '—');
+
   return (
     <main
       style={{
@@ -123,45 +69,69 @@ export default function AIOpsDashboard() {
         </div>
 
         <div className="mc-grid" style={{ marginBottom: '24px' }}>
-          <MetricCard label="Agents Active" value="4 / 15" subtext="11 idle" accent="#22c55e" />
           <MetricCard
-            label="Tasks Completed (24h)"
-            value="1,530"
-            delta={{ value: 5.3, label: 'vs yesterday' }}
+            label="Agents Active"
+            value={
+              overview ? `${String(overview.activeAgents)} / ${String(overview.totalAgents)}` : '…'
+            }
+            {...(overview
+              ? { subtext: `${String(overview.totalAgents - overview.activeAgents)} idle` }
+              : {})}
+            accent="#22c55e"
           />
-          <MetricCard label="Avg Success Rate" value="97.3%" accent="#22c55e" />
+          <MetricCard label="Tasks Completed (24h)" value={mv(overview?.executionsToday)} />
           <MetricCard
-            label="Governance Blocks"
-            value="3"
-            subtext="all GUARDIAN-caught"
-            accent="#f97316"
+            label="Pending Approvals"
+            value={mv(overview?.pendingApprovals)}
+            accent="#f59e0b"
           />
-          <MetricCard label="Avg Task Duration" value="2.4s" accent="#38bdf8" />
+          <MetricCard label="Total Agents" value={mv(overview?.totalAgents)} accent="#38bdf8" />
+          <MetricCard label="Active Agents" value={mv(overview?.activeAgents)} accent="#22c55e" />
           <MetricCard
-            label="Memory Ops (24h)"
-            value="8,421"
-            subtext="episodic + semantic"
+            label="Executions Today"
+            value={mv(overview?.executionsToday)}
+            subtext="tasks processed"
             accent="#a78bfa"
           />
         </div>
 
-        <h2 className="mc-section-title">Agent Fleet</h2>
-        <div className="mc-grid-2" style={{ marginBottom: '24px' }}>
-          {AGENTS.map((agent, i) => (
-            <AgentCard key={i} id={String(i)} {...agent} />
-          ))}
-        </div>
+        {agents.length > 0 && (
+          <>
+            <h2 className="mc-section-title">Agent Fleet</h2>
+            <div className="mc-grid-2" style={{ marginBottom: '24px' }}>
+              {agents.map((agent) => (
+                <AgentCard
+                  key={agent.id}
+                  id={agent.id}
+                  name={agent.name}
+                  fullName={agent.type}
+                  state={toAgentState(agent.status)}
+                  {...(agent.lastExecutedAt != null
+                    ? {
+                        currentTask: `Last ran ${new Date(agent.lastExecutedAt).toLocaleTimeString()}`,
+                      }
+                    : {})}
+                  completedToday={0}
+                  successRate={100}
+                  impactTier={3}
+                />
+              ))}
+            </div>
+          </>
+        )}
 
         <div className="mc-grid-2">
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <h2 className="mc-section-title" style={{ margin: 0 }}>
-              Queue Health
-            </h2>
-            {QUEUES.map((q) => (
-              <QueueHealthCard key={q.name} queue={q} />
-            ))}
-          </div>
-          <LiveActivityFeed items={ACTIVITY} title="Agent Activity" />
+          {queueCards.length > 0 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <h2 className="mc-section-title" style={{ margin: 0 }}>
+                Queue Health
+              </h2>
+              {queueCards.map((q) => (
+                <QueueHealthCard key={q.name} queue={q} />
+              ))}
+            </div>
+          )}
+          <LiveActivityFeed items={activity} title="Agent Activity" />
         </div>
       </div>
     </main>

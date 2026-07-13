@@ -1,6 +1,7 @@
 'use client';
 
 import useSWR from 'swr';
+import { useApiClient } from '../../lib/api/context';
 import { MetricCard } from './MetricCard';
 import type { MetricCardProps } from './MetricCard';
 
@@ -11,28 +12,17 @@ interface LiveMetricCardProps extends Omit<MetricCardProps, 'value'> {
   fallback: string;
 }
 
-async function fetchMetric(url: string): Promise<{ data: { value: string | number } }> {
-  const token =
-    typeof document !== 'undefined'
-      ? (/(?:^|; )gx-token=([^;]*)/.exec(document.cookie) ?? [])[1]
-      : undefined;
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL ?? ''}${url}`, {
-    headers: token ? { Authorization: `Bearer ${token}` } : {},
-    credentials: 'include',
-  });
-  if (!res.ok) throw new Error('fetch failed');
-  return res.json() as Promise<{ data: { value: string | number } }>;
-}
-
 export function LiveMetricCard({
   apiPath,
   fallback,
   ...cardProps
 }: LiveMetricCardProps): React.ReactElement {
-  const { data, isLoading } = useSWR<{ data: { value: string | number } }>(apiPath, fetchMetric, {
-    revalidateOnFocus: false,
-    refreshInterval: 30_000,
-  });
+  const client = useApiClient();
+  const { data, isLoading } = useSWR<{ data: { value: string | number } }>(
+    apiPath,
+    (p: string) => client.get<{ data: { value: string | number } }>(p),
+    { revalidateOnFocus: false, refreshInterval: 30_000 },
+  );
 
   const value = isLoading ? '…' : data?.data.value != null ? String(data.data.value) : fallback;
 

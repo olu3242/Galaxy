@@ -189,3 +189,90 @@ export function useAlerts(limit = 10) {
     data: Array<{ id: string; name: string; severity: string; firedAt: string }>;
   }>(`/api/v1/observability/alerts?limit=${String(limit)}`);
 }
+
+// ─── Departments ──────────────────────────────────────────────────────────────
+
+export interface Department {
+  id: string;
+  name: string;
+  parentDepartmentId?: string | undefined;
+  headMemberId?: string | undefined;
+  memberCount?: number | undefined;
+}
+
+export function useDepartments() {
+  return useOrgQuery<{ data: Department[] }>('/api/v1/departments');
+}
+
+// ─── Roles ────────────────────────────────────────────────────────────────────
+
+export interface RoleDefinition {
+  id: string;
+  name: string;
+  permissions: string[];
+  memberCount?: number | undefined;
+}
+
+export function useRoles() {
+  return useOrgQuery<{ data: RoleDefinition[] }>('/api/v1/roles');
+}
+
+// ─── Queue Stats ──────────────────────────────────────────────────────────────
+
+export interface QueueStat {
+  name: string;
+  pending: number;
+  active: number;
+  completed: number;
+  failed: number;
+  delayed?: number | undefined;
+}
+
+export function useQueueStats() {
+  return useOrgQuery<{ data: QueueStat[] }>('/api/v1/observability/queues');
+}
+
+// ─── Platform Metrics (super-admin, no org scope) ─────────────────────────────
+
+export function usePlatformMetrics() {
+  return useApiQuery<{
+    data: {
+      totalOrganizations: number;
+      totalWorkflows: number;
+      activeWorkers: number;
+      avgLatencyMs: number;
+      failedJobs: number;
+      totalEvents: number;
+    };
+  }>('/api/v1/platform/metrics');
+}
+
+// ─── Workflow Stats ───────────────────────────────────────────────────────────
+
+export interface WorkflowStats {
+  active: number;
+  pending: number;
+  completed: number;
+  avgDurationHours: number;
+  autoApprovalRate: number;
+  slaBreaches: number;
+}
+
+export function useWorkflowStats() {
+  return useOrgQuery<{ data: WorkflowStats }>('/api/v1/analytics/workflow-stats');
+}
+
+// ─── Security Metrics ─────────────────────────────────────────────────────────
+
+export function useSecurityMetrics() {
+  return useOrgQuery<{
+    data: {
+      accessDenials: number;
+      activePolicies: number;
+      activeDelegations: number;
+      dormantAccounts: number;
+      complianceScore: number;
+      rlsViolations: number;
+    };
+  }>('/api/v1/governance/security-metrics');
+}

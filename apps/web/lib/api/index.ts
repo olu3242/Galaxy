@@ -18,6 +18,12 @@ export {
   useRiskSignals,
   useSystemHealth,
   useAlerts,
+  useDepartments,
+  useRoles,
+  useQueueStats,
+  usePlatformMetrics,
+  useWorkflowStats,
+  useSecurityMetrics,
 } from './hooks';
 export type {
   Member,
@@ -28,4 +34,8 @@ export type {
   AIInsightData,
   ServiceHealth,
   DashboardData,
+  Department,
+  RoleDefinition,
+  QueueStat,
+  WorkflowStats,
 } from './hooks';

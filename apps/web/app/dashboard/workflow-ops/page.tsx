@@ -1,4 +1,5 @@
-import type { Metadata } from 'next';
+'use client';
+
 import {
   MetricCard,
   QueueHealthCard,
@@ -7,121 +8,84 @@ import {
   AuditTimeline,
 } from '../../../components/ui';
 import type { QueueStats, ActivityItem, AIInsight, AuditEntry } from '../../../components/ui';
+import {
+  useWorkflowStats,
+  useQueueStats,
+  useAIInsights,
+  useAuditEvents,
+  usePendingApprovals,
+} from '../../../lib/api';
 
-export const metadata: Metadata = {
-  title: 'Workflow Ops — Galaxy',
-  description: 'Workflow engine monitoring, queue health, and automation governance',
-};
+type AuditSev = 'info' | 'warn' | 'error' | 'success';
+type ActSev = 'info' | 'warn' | 'error' | 'success';
 
-const QUEUES: QueueStats[] = [
-  { name: 'Approval Queue', waiting: 12, active: 4, completed: 1847, failed: 3, delayed: 2 },
-  { name: 'Notification Queue', waiting: 0, active: 1, completed: 9421, failed: 0, delayed: 0 },
-  { name: 'Report Queue', waiting: 3, active: 2, completed: 412, failed: 1, delayed: 5 },
-  { name: 'Escalation Queue', waiting: 1, active: 0, completed: 298, failed: 2, delayed: 0 },
-];
+function auditSev(s: string): AuditSev {
+  if (s === 'warn') return 'warn';
+  if (s === 'error') return 'error';
+  return 'info';
+}
 
-const INSIGHTS: AIInsight[] = [
-  {
-    id: '1',
-    type: 'optimization',
-    title: 'Approval bottleneck in Finance division',
-    summary:
-      '68% of Finance approvals stall at the Treasury head node. Parallel routing to 2 approvers could reduce median approval time from 14h to 4h.',
-    confidence: 91,
-    impactTier: 3,
-    actions: [{ label: 'Auto-route' }, { label: 'View Rules' }],
-  },
-  {
-    id: '2',
-    type: 'anomaly',
-    title: 'Spike in failed workflow submissions',
-    summary:
-      '17 failed submissions in the last 2 hours — 14× baseline. All failures originate from the WhatsApp webhook handler for Lagos Branch.',
-    confidence: 97,
-    impactTier: 2,
-    actions: [{ label: 'Investigate' }],
-  },
-];
-
-const ACTIVITY: ActivityItem[] = [
-  {
-    id: '1',
-    type: 'approval',
-    message: 'Purchase order #4821 approved by CFO (₦2.4M)',
-    actor: 'CFO Copilot',
-    severity: 'success',
-    timestamp: new Date(Date.now() - 120_000).toISOString(),
-  },
-  {
-    id: '2',
-    type: 'alert',
-    message: 'Workflow #WF-0042 escalated — SLA breach in 30 min',
-    severity: 'warn',
-    timestamp: new Date(Date.now() - 480_000).toISOString(),
-  },
-  {
-    id: '3',
-    type: 'workflow',
-    message: 'Monthly payroll workflow triggered for 312 members',
-    actor: 'Scheduler',
-    severity: 'info',
-    timestamp: new Date(Date.now() - 1_800_000).toISOString(),
-  },
-  {
-    id: '4',
-    type: 'system',
-    message: 'Loop Engine completed 3 workflow optimizations',
-    severity: 'success',
-    timestamp: new Date(Date.now() - 3_600_000).toISOString(),
-  },
-  {
-    id: '5',
-    type: 'alert',
-    message: '14 webhook submissions failed from Lagos Branch',
-    severity: 'error',
-    timestamp: new Date(Date.now() - 7_200_000).toISOString(),
-  },
-];
-
-const AUDIT: AuditEntry[] = [
-  {
-    id: '1',
-    action: 'workflow.rule_modified',
-    actor: 'admin@acme.com',
-    resource: 'ApprovalRule #88',
-    timestamp: new Date(Date.now() - 900_000).toISOString(),
-    severity: 'warn',
-    detail: 'Escalation threshold changed from 24h to 12h',
-  },
-  {
-    id: '2',
-    action: 'workflow.submitted',
-    actor: 'WhatsApp / Lagos',
-    resource: 'PO #4821',
-    timestamp: new Date(Date.now() - 1_200_000).toISOString(),
-    severity: 'info',
-  },
-  {
-    id: '3',
-    action: 'workflow.auto_approved',
-    actor: 'Loop Engine',
-    resource: 'Leave Request #LR-339',
-    timestamp: new Date(Date.now() - 2_400_000).toISOString(),
-    severity: 'info',
-    detail: 'Confidence 97% — within auto-approve threshold',
-  },
-  {
-    id: '4',
-    action: 'workflow.escalated',
-    actor: 'Escalation Engine',
-    resource: 'WF-0042',
-    timestamp: new Date(Date.now() - 4_800_000).toISOString(),
-    severity: 'error',
-    detail: 'No approver response after 8h',
-  },
-];
+function actSev(s: string): ActSev {
+  if (s === 'warn') return 'warn';
+  if (s === 'error') return 'error';
+  return 'info';
+}
 
 export default function WorkflowOpsDashboard() {
+  const { data: statsData, isLoading } = useWorkflowStats();
+  const { data: queuesData } = useQueueStats();
+  const { data: insightsData } = useAIInsights();
+  const { data: auditData } = useAuditEvents(6);
+  const { data: approvalsData } = usePendingApprovals();
+
+  const s = statsData?.data;
+  const mv = (val: string | number | undefined) =>
+    isLoading ? '…' : val != null ? String(val) : '—';
+
+  const pendingCount = approvalsData?.data.length ?? 0;
+  const overdue =
+    approvalsData?.data.filter((a) => a.dueAt != null && new Date(a.dueAt) < new Date()).length ??
+    0;
+
+  const queueCards: QueueStats[] = (queuesData?.data ?? []).map((q) => ({
+    name: q.name,
+    waiting: q.pending,
+    active: q.active,
+    completed: q.completed,
+    failed: q.failed,
+    delayed: q.delayed ?? 0,
+  }));
+
+  const insights: AIInsight[] = (insightsData?.data ?? []).slice(0, 3).map((i) => ({
+    id: i.id,
+    type: i.type as AIInsight['type'],
+    title: i.title,
+    summary: i.summary,
+    confidence: i.confidence,
+    impactTier: Math.min(5, Math.max(1, Math.round(i.impactLevel))) as 1 | 2 | 3 | 4 | 5,
+  }));
+
+  const activity: ActivityItem[] = (auditData?.data ?? []).map((e) => ({
+    id: e.id,
+    type: e.actorType === 'agent' ? ('agent' as const) : ('workflow' as const),
+    message: `${e.action} on ${e.resourceType}`,
+    actor: e.actorId,
+    severity: actSev(e.severity),
+    timestamp: e.timestamp,
+  }));
+
+  const auditEntries: AuditEntry[] = (auditData?.data ?? []).slice(0, 4).map((e) => ({
+    id: e.id,
+    action: e.action,
+    actor: e.actorId,
+    actorType: e.actorType,
+    resource: e.resourceType,
+    resourceId: e.resourceId,
+    severity: auditSev(e.severity),
+    timestamp: e.timestamp,
+    correlationId: e.correlationId,
+  }));
+
   return (
     <main
       style={{
@@ -142,50 +106,54 @@ export default function WorkflowOpsDashboard() {
         </div>
 
         <div className="mc-grid" style={{ marginBottom: '24px' }}>
+          <MetricCard label="Active Workflows" value={mv(s?.active)} accent="#6366f1" />
           <MetricCard
-            label="Active Workflows"
-            value="156"
-            delta={{ value: 8.4, label: 'WoW' }}
-            accent="#6366f1"
+            label="Pending Approvals"
+            value={String(pendingCount)}
+            {...(overdue > 0 ? { subtext: `${String(overdue)} overdue` } : {})}
+            accent="#ef4444"
           />
-          <MetricCard label="Pending Approvals" value="12" subtext="4 overdue" accent="#ef4444" />
-          <MetricCard label="Completed Today" value="284" delta={{ value: 12.1, label: 'DoD' }} />
+          <MetricCard label="Completed Today" value={mv(s?.completed)} />
           <MetricCard
             label="Avg Approval Time"
-            value="6.2h"
+            value={s ? `${s.avgDurationHours.toFixed(1)}h` : mv(undefined)}
             subtext="target: 4h"
             accent="#f59e0b"
           />
           <MetricCard
             label="Auto-approved"
-            value="71%"
-            delta={{ value: 5.3, label: 'WoW' }}
+            value={s ? `${(s.autoApprovalRate * 100).toFixed(0)}%` : mv(undefined)}
             accent="#10b981"
           />
-          <MetricCard label="SLA Breaches" value="3" subtext="this week" accent="#ef4444" />
+          <MetricCard
+            label="SLA Breaches"
+            value={mv(s?.slaBreaches)}
+            subtext="this period"
+            accent="#ef4444"
+          />
         </div>
 
-        <div style={{ marginBottom: '24px' }}>
-          <p className="mc-section-title">Queue Health</p>
-          <div className="mc-grid-2">
-            {QUEUES.map((q) => (
-              <QueueHealthCard key={q.name} queue={q} />
-            ))}
+        {queueCards.length > 0 && (
+          <div style={{ marginBottom: '24px' }}>
+            <p className="mc-section-title">Queue Health</p>
+            <div className="mc-grid-2">
+              {queueCards.map((q) => (
+                <QueueHealthCard key={q.name} queue={q} />
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         <div className="mc-grid-2" style={{ marginBottom: '24px' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            {INSIGHTS.map((i) => (
+            {insights.map((i) => (
               <AIInsightCard key={i.id} insight={i} />
             ))}
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <LiveActivityFeed items={ACTIVITY} title="Workflow Activity" />
-          </div>
+          <LiveActivityFeed items={activity} title="Workflow Activity" />
         </div>
 
-        <AuditTimeline entries={AUDIT} title="Workflow Audit Trail" />
+        <AuditTimeline entries={auditEntries} title="Workflow Audit Trail" />
       </div>
     </main>
   );

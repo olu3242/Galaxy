@@ -1,4 +1,5 @@
-import type { Metadata } from 'next';
+'use client';
+
 import {
   MetricCard,
   SystemHealthPanel,
@@ -6,60 +7,57 @@ import {
   QueueHealthCard,
 } from '../../../components/ui';
 import type { SystemService, ActivityItem, QueueStats } from '../../../components/ui';
+import { usePlatformMetrics, useSystemHealth, useQueueStats, useAlerts } from '../../../lib/api';
 
-export const metadata: Metadata = {
-  title: 'Super Admin Mission Control — Galaxy',
-  description: 'Platform-level operations and tenant management',
-};
+function statusNormalize(s: string): SystemService['status'] {
+  if (s === 'down') return 'outage';
+  if (s === 'operational' || s === 'degraded' || s === 'maintenance') return s;
+  return 'maintenance';
+}
 
-const SERVICES: SystemService[] = [
-  { name: 'API Gateway', status: 'operational', latencyMs: 24, uptimePct: 99.98 },
-  { name: 'Worker Fleet', status: 'operational', latencyMs: 12, uptimePct: 99.95 },
-  { name: 'PostgreSQL', status: 'operational', latencyMs: 8, uptimePct: 99.99 },
-  { name: 'Redis', status: 'operational', latencyMs: 2, uptimePct: 99.99 },
-  { name: 'Event Bus', status: 'operational', latencyMs: 15, uptimePct: 99.97 },
-  { name: 'WhatsApp Gateway', status: 'operational', latencyMs: 142, uptimePct: 99.9 },
-];
+type ActSev = 'info' | 'warn' | 'error' | 'success';
 
-const QUEUES: QueueStats[] = [
-  { name: 'workflow-execution', waiting: 3, active: 12, completed: 4821, failed: 7, delayed: 0 },
-  { name: 'agent-execution', waiting: 1, active: 5, completed: 1204, failed: 2, delayed: 0 },
-  { name: 'notification-dispatch', waiting: 8, active: 3, completed: 9423, failed: 1, delayed: 2 },
-  { name: 'loop-learning', waiting: 0, active: 1, completed: 312, failed: 0, delayed: 0 },
-];
-
-const ACTIVITY: ActivityItem[] = [
-  {
-    id: '1',
-    type: 'system',
-    message: 'Migration 075 applied to prod',
-    severity: 'success',
-    timestamp: new Date(Date.now() - 300_000).toISOString(),
-  },
-  {
-    id: '2',
-    type: 'alert',
-    message: 'Tenant galaxy-fintech approaching queue limit',
-    severity: 'warn',
-    timestamp: new Date(Date.now() - 600_000).toISOString(),
-  },
-  {
-    id: '3',
-    type: 'agent',
-    message: 'GUARDIAN blocked unauthorized delegation request',
-    severity: 'warn',
-    timestamp: new Date(Date.now() - 900_000).toISOString(),
-  },
-  {
-    id: '4',
-    type: 'workflow',
-    message: '5000th workflow completed today',
-    severity: 'success',
-    timestamp: new Date(Date.now() - 1_200_000).toISOString(),
-  },
-];
+function toSeverity(s: string): ActSev {
+  if (s === 'critical' || s === 'error') return 'error';
+  if (s === 'warning' || s === 'warn') return 'warn';
+  if (s === 'success') return 'success';
+  return 'info';
+}
 
 export default function SuperAdminDashboard() {
+  const { data: platform, isLoading: platLoading } = usePlatformMetrics();
+  const { data: health } = useSystemHealth();
+  const { data: queues } = useQueueStats();
+  const { data: alerts } = useAlerts(8);
+
+  const p = platform?.data;
+  const v = (n: number | undefined, fmt?: (n: number) => string) =>
+    platLoading ? '…' : n != null ? (fmt ? fmt(n) : String(n)) : '—';
+
+  const services: SystemService[] = (health?.data.services ?? []).map((s) => ({
+    name: s.name,
+    status: statusNormalize(s.status),
+    ...(s.latencyMs != null ? { latencyMs: s.latencyMs } : {}),
+    ...(s.uptimePct != null ? { uptimePct: s.uptimePct } : {}),
+  }));
+
+  const queueCards: QueueStats[] = (queues?.data ?? []).map((q) => ({
+    name: q.name,
+    waiting: q.pending,
+    active: q.active,
+    completed: q.completed,
+    failed: q.failed,
+    delayed: q.delayed ?? 0,
+  }));
+
+  const activity: ActivityItem[] = (alerts?.data ?? []).map((a, i) => ({
+    id: String(i),
+    type: 'alert' as const,
+    message: a.name,
+    severity: toSeverity(a.severity),
+    timestamp: a.firedAt,
+  }));
+
   return (
     <main
       style={{
@@ -79,52 +77,58 @@ export default function SuperAdminDashboard() {
           </p>
         </div>
 
-        {/* Platform KPIs */}
         <div className="mc-grid" style={{ marginBottom: '24px' }}>
           <MetricCard
             label="Active Tenants"
-            value="127"
-            subtext="+3 this week"
-            delta={{ value: 2.4, label: 'WoW' }}
+            value={v(p?.totalOrganizations)}
+            subtext="organizations"
           />
           <MetricCard
             label="Total Workflows Today"
-            value="5,213"
+            value={v(p?.totalWorkflows, (n) => n.toLocaleString())}
             subtext="across all orgs"
-            delta={{ value: 8.1, label: 'vs yesterday' }}
           />
-          <MetricCard label="Active Workers" value="24" subtext="8 queues" accent="#22c55e" />
+          <MetricCard
+            label="Active Workers"
+            value={v(p?.activeWorkers)}
+            subtext="processing queues"
+            accent="#22c55e"
+          />
           <MetricCard
             label="Avg Latency"
-            value="24ms"
+            value={v(p?.avgLatencyMs, (n) => `${String(n)}ms`)}
             subtext="p50 API response"
             accent="#38bdf8"
           />
           <MetricCard
             label="Failed Jobs (24h)"
-            value="10"
-            subtext="0.19% error rate"
+            value={v(p?.failedJobs)}
+            subtext="job error count"
             accent="#f59e0b"
           />
           <MetricCard
             label="Events Emitted (24h)"
-            value="98,421"
+            value={v(p?.totalEvents, (n) => n.toLocaleString())}
             subtext="all event types"
             accent="#a78bfa"
           />
         </div>
 
         <div className="mc-grid-2" style={{ marginBottom: '24px' }}>
-          <SystemHealthPanel services={SERVICES} />
-          <LiveActivityFeed items={ACTIVITY} title="Platform Activity" />
+          <SystemHealthPanel services={services} />
+          <LiveActivityFeed items={activity} title="Platform Activity" />
         </div>
 
-        <h2 className="mc-section-title">Worker Queue Health</h2>
-        <div className="mc-grid-2">
-          {QUEUES.map((q) => (
-            <QueueHealthCard key={q.name} queue={q} />
-          ))}
-        </div>
+        {queueCards.length > 0 && (
+          <>
+            <h2 className="mc-section-title">Worker Queue Health</h2>
+            <div className="mc-grid-2">
+              {queueCards.map((q) => (
+                <QueueHealthCard key={q.name} queue={q} />
+              ))}
+            </div>
+          </>
+        )}
       </div>
     </main>
   );

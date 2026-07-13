@@ -1,4 +1,5 @@
-import type { Metadata } from 'next';
+'use client';
+
 import {
   MetricCard,
   AuditTimeline,
@@ -6,152 +7,76 @@ import {
   LiveActivityFeed,
 } from '../../../components/ui';
 import type { AuditEntry, ActivityItem } from '../../../components/ui';
+import { useSecurityMetrics, useAuditEvents, useAlerts, useRoles } from '../../../lib/api';
 
-export const metadata: Metadata = {
-  title: 'Security Operations — Galaxy',
-  description: 'Authorization, audit, and compliance operations center',
-};
+type AuditSev = 'info' | 'warn' | 'error' | 'success';
+type ActSev = 'info' | 'warn' | 'error' | 'success';
 
-const AUDIT_ENTRIES: AuditEntry[] = [
-  {
-    id: '1',
-    action: 'authorization.denied',
-    actor: 'j.doe@acme.com',
-    actorType: 'member',
-    resource: 'workflow',
-    resourceId: 'wf-9932',
-    status: 'denied',
-    timestamp: new Date(Date.now() - 120_000).toISOString(),
-    correlationId: 'c1234567-0000-0000-0000-000000000001',
-  },
-  {
-    id: '2',
-    action: 'delegation.created',
-    actor: 'VP Ops',
-    actorType: 'member',
-    resource: 'delegation',
-    status: 'success',
-    timestamp: new Date(Date.now() - 600_000).toISOString(),
-    correlationId: 'c2345678-0000-0000-0000-000000000002',
-  },
-  {
-    id: '3',
-    action: 'agent.permission.denied',
-    actor: 'ATLAS',
-    actorType: 'agent',
-    resource: 'billing',
-    status: 'denied',
-    timestamp: new Date(Date.now() - 1_200_000).toISOString(),
-    correlationId: 'c3456789-0000-0000-0000-000000000003',
-  },
-  {
-    id: '4',
-    action: 'user.authentication.failed',
-    actor: 'unknown@external.com',
-    actorType: 'member',
-    resource: 'organization',
-    status: 'error',
-    timestamp: new Date(Date.now() - 1_800_000).toISOString(),
-    correlationId: 'c4567890-0000-0000-0000-000000000004',
-  },
-];
+function auditSeverity(s: string): AuditSev {
+  if (s === 'warn') return 'warn';
+  if (s === 'error') return 'error';
+  if (s === 'success') return 'success';
+  return 'info';
+}
 
-const ACTIVITY: ActivityItem[] = [
-  {
-    id: '1',
-    type: 'alert',
-    message: 'Dormant account login attempt detected',
-    severity: 'error',
-    timestamp: new Date(Date.now() - 90_000).toISOString(),
-  },
-  {
-    id: '2',
-    type: 'agent',
-    message: 'GUARDIAN ran permission analytics report',
-    severity: 'info',
-    timestamp: new Date(Date.now() - 300_000).toISOString(),
-  },
-  {
-    id: '3',
-    type: 'approval',
-    message: 'ABAC policy updated: restrict billing write to CFO role',
-    severity: 'warn',
-    timestamp: new Date(Date.now() - 900_000).toISOString(),
-  },
-  {
-    id: '4',
-    type: 'system',
-    message: 'Cross-tenant isolation check passed',
-    severity: 'success',
-    timestamp: new Date(Date.now() - 1_800_000).toISOString(),
-  },
-];
-
-const ROLES = ['Super Admin', 'Org Admin', 'Manager', 'Staff', 'AI Agent'];
-const RESOURCES = [
-  'workflow',
-  'member',
-  'audit',
-  'billing',
-  'analytics',
-  'knowledge',
-  'delegation',
-  'policy',
-];
-const MATRIX: Record<string, Record<string, boolean>> = {
-  'Super Admin': {
-    workflow: true,
-    member: true,
-    audit: true,
-    billing: true,
-    analytics: true,
-    knowledge: true,
-    delegation: true,
-    policy: true,
-  },
-  'Org Admin': {
-    workflow: true,
-    member: true,
-    audit: true,
-    billing: false,
-    analytics: true,
-    knowledge: true,
-    delegation: true,
-    policy: true,
-  },
-  Manager: {
-    workflow: true,
-    member: true,
-    audit: false,
-    billing: false,
-    analytics: true,
-    knowledge: true,
-    delegation: false,
-    policy: false,
-  },
-  Staff: {
-    workflow: true,
-    member: false,
-    audit: false,
-    billing: false,
-    analytics: false,
-    knowledge: true,
-    delegation: false,
-    policy: false,
-  },
-  'AI Agent': {
-    workflow: true,
-    member: false,
-    audit: false,
-    billing: false,
-    analytics: true,
-    knowledge: true,
-    delegation: false,
-    policy: false,
-  },
-};
+function alertSeverity(s: string): ActSev {
+  if (s === 'critical' || s === 'error') return 'error';
+  if (s === 'warning' || s === 'warn') return 'warn';
+  return 'info';
+}
 
 export default function SecurityOpsDashboard() {
+  const { data: metricsData, isLoading } = useSecurityMetrics();
+  const { data: auditData } = useAuditEvents(10);
+  const { data: alertsData } = useAlerts(6);
+  const { data: rolesData } = useRoles();
+
+  const m = metricsData?.data;
+  const mv = (n: number | undefined) => (isLoading ? '…' : n != null ? String(n) : '—');
+
+  const auditEntries: AuditEntry[] = (auditData?.data ?? []).map((e) => ({
+    id: e.id,
+    action: e.action,
+    actor: e.actorId,
+    actorType: e.actorType,
+    resource: e.resourceType,
+    resourceId: e.resourceId,
+    severity: auditSeverity(e.severity),
+    timestamp: e.timestamp,
+    correlationId: e.correlationId,
+  }));
+
+  const activity: ActivityItem[] = (alertsData?.data ?? []).map((a, i) => ({
+    id: String(i),
+    type: 'alert' as const,
+    message: a.name,
+    severity: alertSeverity(a.severity),
+    timestamp: a.firedAt,
+  }));
+
+  const roles = rolesData?.data ?? [];
+  const resources = [
+    'workflow',
+    'member',
+    'audit',
+    'billing',
+    'analytics',
+    'knowledge',
+    'delegation',
+    'policy',
+  ];
+  const matrix: Record<string, Record<string, boolean>> = {};
+  for (const role of roles) {
+    const row: Record<string, boolean> = {};
+    for (const resource of resources) {
+      row[resource] = role.permissions.some((p) => p.includes(resource) || p.includes('*'));
+    }
+    matrix[role.name] = row;
+  }
+
+  const roleNames =
+    roles.length > 0 ? roles.map((r) => r.name) : ['Super Admin', 'Org Admin', 'Manager', 'Staff'];
+
   return (
     <main
       style={{
@@ -172,45 +97,40 @@ export default function SecurityOpsDashboard() {
         </div>
 
         <div className="mc-grid" style={{ marginBottom: '24px' }}>
-          <MetricCard
-            label="Auth Denials (24h)"
-            value="7"
-            subtext="3 agent, 4 member"
-            accent="#ef4444"
-          />
-          <MetricCard label="Active ABAC Policies" value="23" subtext="2 deny, 21 allow" />
+          <MetricCard label="Auth Denials (24h)" value={mv(m?.accessDenials)} accent="#ef4444" />
+          <MetricCard label="Active ABAC Policies" value={mv(m?.activePolicies)} />
           <MetricCard
             label="Active Delegations"
-            value="6"
-            subtext="1 expiring today"
+            value={mv(m?.activeDelegations)}
             accent="#f59e0b"
           />
           <MetricCard
             label="Dormant Accounts"
-            value="2"
+            value={mv(m?.dormantAccounts)}
             subtext="45+ days inactive"
             accent="#f97316"
           />
           <MetricCard
             label="Compliance Score"
-            value="94%"
-            delta={{ value: 2.1, label: 'vs last audit' }}
+            value={m ? `${String(m.complianceScore)}%` : mv(undefined)}
             accent="#22c55e"
           />
           <MetricCard
             label="RLS Violations"
-            value="0"
-            subtext="cross-tenant checks pass"
+            value={mv(m?.rlsViolations)}
+            subtext="cross-tenant checks"
             accent="#22c55e"
           />
         </div>
 
         <div className="mc-grid-2" style={{ marginBottom: '24px' }}>
-          <AuditTimeline entries={AUDIT_ENTRIES} />
-          <LiveActivityFeed items={ACTIVITY} title="Security Events" />
+          <AuditTimeline entries={auditEntries} />
+          <LiveActivityFeed items={activity} title="Security Events" />
         </div>
 
-        <PermissionMatrix roles={ROLES} resources={RESOURCES} matrix={MATRIX} />
+        {roles.length > 0 && (
+          <PermissionMatrix roles={roleNames} resources={resources} matrix={matrix} />
+        )}
       </div>
     </main>
   );
