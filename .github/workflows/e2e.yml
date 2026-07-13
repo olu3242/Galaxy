@@ -77,12 +77,13 @@ jobs:
           NODE_ENV: test
 
       - name: Start API server
-        run: pnpm --filter @galaxy/api dev &
+        run: pnpm --filter @galaxy/api dev > /tmp/api.log 2>&1 &
         env:
           DATABASE_URL: ${{ env.DATABASE_URL }}
           REDIS_URL: ${{ env.REDIS_URL }}
           JWT_SECRET: ${{ env.JWT_SECRET }}
           WHATSAPP_APP_SECRET: ${{ env.WHATSAPP_APP_SECRET }}
+          ANTHROPIC_API_KEY: placeholder-not-needed-for-e2e
           PORT: 3001
           NODE_ENV: test
 
@@ -96,6 +97,8 @@ jobs:
             echo "Waiting for API... ($i/45)"
             sleep 3
           done
+          echo "=== API STARTUP LOG ==="
+          cat /tmp/api.log
           echo "API did not start in time" && exit 1
 
       - name: Install Playwright browsers
