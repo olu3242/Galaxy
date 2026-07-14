@@ -444,14 +444,7 @@ export async function frontendCompatRoutes(fastify: FastifyInstance): Promise<vo
       }>,
       reply: FastifyReply,
     ) => {
-      const {
-        organizationId,
-        name,
-        category,
-        language = 'en',
-        body,
-        buttons = [],
-      } = request.body;
+      const { organizationId, name, category, language = 'en', body, buttons = [] } = request.body;
       if (!organizationId || !name || !category || !body) {
         return reply.status(400).send({ error: 'organizationId, name, category, body required' });
       }
@@ -511,9 +504,7 @@ export async function frontendCompatRoutes(fastify: FastifyInstance): Promise<vo
       const offset = (page - 1) * limit;
       const { search } = request.query;
 
-      const searchFilter = search
-        ? `AND (o.name ILIKE $3 OR o.slug ILIKE $3)`
-        : '';
+      const searchFilter = search ? `AND (o.name ILIKE $3 OR o.slug ILIKE $3)` : '';
       const params: unknown[] = [limit, offset];
       if (search) params.push(`%${search}%`);
 
@@ -574,10 +565,7 @@ export async function frontendCompatRoutes(fastify: FastifyInstance): Promise<vo
 
   fastify.put(
     '/admin/tenants/:id/suspend',
-    async (
-      request: FastifyRequest<{ Params: { id: string } }>,
-      reply: FastifyReply,
-    ) => {
+    async (request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) => {
       const { id } = request.params;
       await fastify.pg.query(`UPDATE organizations SET status = 'suspended' WHERE id = $1`, [id]);
       return reply.send(envelope({ id, status: 'suspended' }, request.id));
@@ -586,10 +574,7 @@ export async function frontendCompatRoutes(fastify: FastifyInstance): Promise<vo
 
   fastify.put(
     '/admin/tenants/:id/activate',
-    async (
-      request: FastifyRequest<{ Params: { id: string } }>,
-      reply: FastifyReply,
-    ) => {
+    async (request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) => {
       const { id } = request.params;
       await fastify.pg.query(`UPDATE organizations SET status = 'active' WHERE id = $1`, [id]);
       return reply.send(envelope({ id, status: 'active' }, request.id));
