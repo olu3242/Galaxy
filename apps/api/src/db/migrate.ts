@@ -78,6 +78,7 @@ import * as migration076 from './migrations/076_memberships_role_column.js';
 import * as migration077 from './migrations/077_attendance_records.js';
 import * as migration078 from './migrations/078_wa_templates.js';
 import * as migration079 from './migrations/079_feature_flags_name_column.js';
+import * as migration080 from './migrations/080_loop_instances_phase.js';
 
 interface Migration {
   up: (pool: Pool) => Promise<void>;
@@ -164,6 +165,7 @@ const migrations: { name: string; migration: Migration }[] = [
   { name: '077_attendance_records', migration: migration077 },
   { name: '078_wa_templates', migration: migration078 },
   { name: '079_feature_flags_name_column', migration: migration079 },
+  { name: '080_loop_instances_phase', migration: migration080 },
 ];
 
 async function ensureMigrationsTable(pool: Pool): Promise<void> {
