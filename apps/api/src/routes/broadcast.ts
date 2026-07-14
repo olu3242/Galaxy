@@ -4,12 +4,23 @@ import { EventPublisher } from '@galaxy/events';
 import { AuditService } from '@galaxy/identity';
 import { AuditRepository } from '@galaxy/identity';
 import { randomUUID } from 'crypto';
+import { Queue } from 'bullmq';
+import { Redis } from 'ioredis';
 
 function envelope<T>(data: T, requestId: string) {
   return { data, meta: { requestId, timestamp: new Date().toISOString() } };
 }
 
+// WABA tier limits (messages/second): free tier = 1, business = 20
+const WABA_TIER_LIMIT = parseInt(process.env.WABA_RATE_LIMIT ?? '20', 10);
+
 export async function broadcastRoutes(fastify: FastifyInstance): Promise<void> {
+  const redis = new Redis(process.env.REDIS_URL ?? 'redis://localhost:6379', {
+    maxRetriesPerRequest: null,
+    lazyConnect: true,
+  });
+  const notificationQueue = new Queue('notification-dispatch', { connection: redis });
+
   const eventPublisher = new EventPublisher(fastify.pg);
   const auditRepo = new AuditRepository(fastify.pg);
   const auditService = new AuditService(auditRepo);
@@ -95,8 +106,46 @@ export async function broadcastRoutes(fastify: FastifyInstance): Promise<void> {
       if (!organizationId || !actorId) {
         return reply.status(400).send({ error: 'organizationId and actorId required' });
       }
-      const broadcast = await broadcastService.send(organizationId, id, actorId, randomUUID());
+      const correlationId = randomUUID();
+      const broadcast = await broadcastService.send(organizationId, id, actorId, correlationId);
+
+      // Fan-out: enqueue one notification job per whatsapp member, rate-limited by tier
+      const membersResult = await fastify.pg.query<{ whatsapp_phone: string; user_id: string }>(
+        `SELECT u.whatsapp_phone, m.user_id
+         FROM memberships m
+         JOIN users u ON u.id = m.user_id
+         WHERE m.organization_id = $1
+           AND m.status = 'active'
+           AND u.whatsapp_phone IS NOT NULL`,
+        [organizationId],
+      );
+
+      const jobs = membersResult.rows.map((row, idx) => ({
+        name: 'send-broadcast-message',
+        data: {
+          organizationId,
+          broadcastId: id,
+          recipientPhone: row.whatsapp_phone,
+          recipientId: row.user_id,
+          content: broadcast.content,
+          correlationId,
+        },
+        opts: {
+          // Stagger jobs to respect WABA rate limit
+          delay: Math.floor(idx / WABA_TIER_LIMIT) * 1000,
+        },
+      }));
+
+      if (jobs.length > 0) {
+        await notificationQueue.addBulk(jobs);
+      }
+
       return reply.send(envelope(broadcast, request.id));
     },
   );
+
+  fastify.addHook('onClose', async () => {
+    await notificationQueue.close();
+    await redis.quit();
+  });
 }

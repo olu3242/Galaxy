@@ -24,8 +24,11 @@ export {
   usePlatformMetrics,
   useWorkflowStats,
   useSecurityMetrics,
+  useBroadcasts,
 } from './hooks';
 export type {
+  OrgHealth,
+  BroadcastItem,
   Member,
   Workflow,
   ApprovalItem,

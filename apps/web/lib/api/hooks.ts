@@ -39,9 +39,45 @@ export function useDashboard(category: string) {
   return useOrgQuery<{ data: DashboardData }>(`/api/v1/analytics/dashboards/${category}`);
 }
 
+export interface OrgHealth {
+  overall: number;
+  workflowMetrics: {
+    activeWorkflows: number;
+    completedToday: number;
+    pendingApproval: number;
+    slaBreaches: number;
+  };
+  loopMetrics: {
+    completionRate: number;
+    totalLoops: number;
+    completedLoops: number;
+  };
+}
+
 export function useOrgHealth() {
-  return useOrgQuery<{ data: { score: number; status: string; details: Record<string, number> } }>(
-    '/api/v1/analytics/org-health',
+  return useOrgQuery<{ data: OrgHealth }>('/api/v1/analytics/org-health');
+}
+
+// ─── Broadcasts ───────────────────────────────────────────────────────────────
+
+export interface BroadcastItem {
+  id: string;
+  organizationId: string;
+  title: string;
+  content: string;
+  targetType: string;
+  targetIds: string[];
+  status: string;
+  sentCount: number;
+  failedCount: number;
+  sentBy: string;
+  sentAt: string | null;
+  createdAt: string;
+}
+
+export function useBroadcasts(page = 1, limit = 20) {
+  return useOrgQuery<{ data: BroadcastItem[] }>(
+    `/api/v1/broadcasts?limit=${String(limit)}&offset=${String((page - 1) * limit)}`,
   );
 }
 

@@ -215,4 +215,67 @@ export async function analyticsRoutes(fastify: FastifyInstance): Promise<void> {
       );
     },
   );
+
+  fastify.get(
+    '/analytics/workflow-stats',
+    async (
+      request: FastifyRequest<{ Querystring: { organizationId: string } }>,
+      reply: FastifyReply,
+    ) => {
+      const { organizationId } = request.query;
+      if (!organizationId) return reply.status(400).send({ error: 'organizationId required' });
+
+      const result = await fastify.pg.query<{
+        active: string;
+        pending: string;
+        completed: string;
+        failed: string;
+        escalated: string;
+        avg_hours: string | null;
+        sla_breaches: string;
+      }>(
+        `SELECT
+          COUNT(*) FILTER (WHERE status = 'running') AS active,
+          COUNT(*) FILTER (WHERE status = 'pending') AS pending,
+          COUNT(*) FILTER (WHERE status = 'completed') AS completed,
+          COUNT(*) FILTER (WHERE status = 'failed') AS failed,
+          COUNT(*) FILTER (WHERE status = 'escalated') AS escalated,
+          AVG(EXTRACT(EPOCH FROM (completed_at - started_at)) / 3600)
+            FILTER (WHERE status = 'completed' AND started_at IS NOT NULL AND completed_at IS NOT NULL)
+            AS avg_hours,
+          COUNT(*) FILTER (WHERE status = 'escalated') AS sla_breaches
+        FROM workflow_runs
+        WHERE organization_id = $1`,
+        [organizationId],
+      );
+
+      const row = result.rows[0] ?? {
+        active: '0',
+        pending: '0',
+        completed: '0',
+        failed: '0',
+        escalated: '0',
+        avg_hours: null,
+        sla_breaches: '0',
+      };
+
+      const completed = parseInt(row.completed, 10);
+      const total = completed + parseInt(row.failed, 10) + parseInt(row.escalated, 10);
+      const autoApprovalRate = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+      return reply.send(
+        responseEnvelope(
+          {
+            active: parseInt(row.active, 10),
+            pending: parseInt(row.pending, 10),
+            completed,
+            avgDurationHours: row.avg_hours ? parseFloat(parseFloat(row.avg_hours).toFixed(1)) : 0,
+            autoApprovalRate,
+            slaBreaches: parseInt(row.sla_breaches, 10),
+          },
+          request.id,
+        ),
+      );
+    },
+  );
 }

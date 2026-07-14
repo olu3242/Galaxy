@@ -4,6 +4,7 @@ import { MetricCard, AIInsightCard, LiveActivityFeed, AuditTimeline } from '../.
 import type { AIInsight, ActivityItem, AuditEntry } from '../../../components/ui';
 import {
   useKPIs,
+  useOrgHealth,
   useAIInsights,
   useAIRecommendations,
   useRiskSignals,
@@ -29,6 +30,7 @@ function actSeverity(s: string): ActSev {
 
 export default function ExecutiveDashboard() {
   const { data: kpisData, isLoading: kpisLoading } = useKPIs();
+  const { data: orgHealthData } = useOrgHealth();
   const { data: insightsData } = useAIInsights();
   const { data: recsData } = useAIRecommendations();
   const { data: risksData } = useRiskSignals();
@@ -122,6 +124,26 @@ export default function ExecutiveDashboard() {
             value={String(pendingCount)}
             {...(highPriority > 0 ? { subtext: `${String(highPriority)} high priority` } : {})}
             accent="#f59e0b"
+          />
+          <MetricCard
+            label="Org Health Score"
+            value={
+              orgHealthData?.data.overall !== undefined
+                ? `${String(orgHealthData.data.overall)}%`
+                : '…'
+            }
+            {...(orgHealthData?.data.workflowMetrics
+              ? {
+                  subtext: `${String(orgHealthData.data.workflowMetrics.slaBreaches)} SLA breaches`,
+                }
+              : {})}
+            accent={
+              (orgHealthData?.data.overall ?? 100) >= 80
+                ? '#22c55e'
+                : (orgHealthData?.data.overall ?? 100) >= 60
+                  ? '#f59e0b'
+                  : '#ef4444'
+            }
           />
           <MetricCard
             label="Risk Signals"

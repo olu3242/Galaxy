@@ -15,7 +15,9 @@ const NAV_ITEMS = [
   null,
   { href: '/dashboard/approvals', label: 'Approvals', icon: '✅' },
   { href: '/dashboard/members', label: 'Members', icon: '👥' },
+  { href: '/dashboard/broadcast', label: 'Broadcast', icon: '📢' },
   null,
+  { href: '/dashboard/onboarding', label: 'Setup Wizard', icon: '🚀' },
   { href: '/dashboard/profile', label: 'My Profile', icon: '👤' },
 ] as const;
 
