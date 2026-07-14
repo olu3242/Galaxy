@@ -52,6 +52,16 @@ test.describe('Authenticated: Dashboard pages load', () => {
     { path: '/dashboard/analytics', label: 'Custom Analytics' },
     { path: '/dashboard/tenants', label: 'Tenants' },
     { path: '/dashboard/settings', label: 'Settings' },
+    { path: '/dashboard/loops', label: 'Loop OS' },
+    { path: '/dashboard/workflow-builder', label: 'Workflow Builder' },
+    { path: '/dashboard/broadcast', label: 'Broadcast' },
+    { path: '/dashboard/knowledge', label: 'Knowledge Base' },
+    { path: '/dashboard/people', label: 'People & Attendance' },
+    { path: '/dashboard/copilot', label: 'AI Copilot' },
+    { path: '/dashboard/reports', label: 'Reports' },
+    { path: '/dashboard/notifications', label: 'Notifications' },
+    { path: '/dashboard/onboarding', label: 'Setup Wizard' },
+    { path: '/dashboard/super-admin', label: 'Super Admin' },
   ];
 
   for (const { path, label } of dashboardPages) {

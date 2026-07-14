@@ -592,4 +592,63 @@ export async function frontendCompatRoutes(fastify: FastifyInstance): Promise<vo
       return reply.send(envelope(data, request.id));
     },
   );
+
+  // ── Sprint 34: Workflow definition PATCH ─────────────────────────────────────
+
+  fastify.patch(
+    '/workflow-os/definitions/:id',
+    async (
+      request: FastifyRequest<{
+        Params: { id: string };
+        Body: {
+          organizationId: string;
+          name?: string;
+          description?: string;
+          status?: string;
+          definition?: Record<string, unknown>;
+        };
+      }>,
+      reply: FastifyReply,
+    ) => {
+      const { id } = request.params;
+      const { organizationId } = request.body;
+      if (!organizationId) return reply.status(400).send({ error: 'organizationId required' });
+      await setTenant(fastify, organizationId);
+
+      const sets: string[] = [];
+      const params: unknown[] = [organizationId, id];
+
+      if (request.body.name !== undefined) {
+        params.push(request.body.name);
+        sets.push(`name = $${String(params.length)}`);
+      }
+      if (request.body.description !== undefined) {
+        params.push(request.body.description);
+        sets.push(`description = $${String(params.length)}`);
+      }
+      if (request.body.status !== undefined) {
+        params.push(request.body.status);
+        sets.push(`is_active = ($${String(params.length)} = 'active')`);
+      }
+      if (request.body.definition !== undefined) {
+        params.push(JSON.stringify(request.body.definition));
+        sets.push(`definition = $${String(params.length)}`);
+      }
+
+      if (sets.length === 0) return reply.status(400).send({ error: 'No fields to update' });
+      sets.push(`updated_at = NOW()`);
+
+      const result = await fastify.pg.query<{ id: string; updated_at: string }>(
+        `UPDATE workflows SET ${sets.join(', ')}
+         WHERE organization_id = $1 AND id = $2
+         RETURNING id, updated_at`,
+        params,
+      );
+
+      const row = result.rows[0];
+      if (!row) return reply.status(404).send({ error: 'Workflow definition not found' });
+
+      return reply.send(envelope({ id: row.id, updatedAt: row.updated_at }, request.id));
+    },
+  );
 }
