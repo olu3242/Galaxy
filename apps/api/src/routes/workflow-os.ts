@@ -480,6 +480,68 @@ export async function workflowOsRoutes(fastify: FastifyInstance): Promise<void> 
     },
   );
 
+  fastify.get(
+    '/workflow-os/approvals/:id',
+    async (
+      request: FastifyRequest<{
+        Params: { id: string };
+        Querystring: { organizationId: string };
+      }>,
+      reply: FastifyReply,
+    ) => {
+      const { id } = request.params;
+      const { organizationId } = request.query;
+      if (!organizationId) return reply.status(400).send({ error: 'organizationId required' });
+
+      await fastify.pg.query('SELECT set_config($1, $2, true)', [
+        'app.current_tenant',
+        organizationId,
+      ]);
+
+      const [approvalResult, stepsResult] = await Promise.all([
+        fastify.pg.query<ApprovalRow>(
+          `SELECT * FROM approvals WHERE organization_id = $1 AND id = $2`,
+          [organizationId, id],
+        ),
+        fastify.pg.query<{
+          id: string;
+          step_order: number;
+          approver_id: string;
+          approver_type: string;
+          status: string;
+          due_at: string | null;
+          decided_at: string | null;
+        }>(
+          `SELECT id, step_order, approver_id, approver_type, status, due_at, decided_at
+           FROM approval_steps WHERE organization_id = $1 AND approval_id = $2
+           ORDER BY step_order ASC`,
+          [organizationId, id],
+        ),
+      ]);
+
+      const approval = approvalResult.rows[0];
+      if (!approval) return reply.status(404).send({ error: 'Approval not found' });
+
+      return reply.send(
+        responseEnvelope(
+          {
+            ...approval,
+            steps: stepsResult.rows.map((s) => ({
+              id: s.id,
+              stepOrder: s.step_order,
+              approverId: s.approver_id,
+              approverType: s.approver_type,
+              status: s.status,
+              dueAt: s.due_at,
+              decidedAt: s.decided_at,
+            })),
+          },
+          request.id,
+        ),
+      );
+    },
+  );
+
   fastify.post(
     '/workflow-os/approvals',
     async (

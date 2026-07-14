@@ -390,4 +390,79 @@ export async function loopRoutes(fastify: FastifyInstance): Promise<void> {
       return reply.send(envelope(rec, request.id));
     },
   );
+
+  fastify.get(
+    '/loops/all',
+    async (
+      request: FastifyRequest<{
+        Querystring: {
+          organizationId: string;
+          status?: string;
+          limit?: string;
+          offset?: string;
+        };
+      }>,
+      reply: FastifyReply,
+    ) => {
+      const { organizationId, status, limit, offset } = request.query;
+      if (!organizationId) return reply.status(400).send({ error: 'organizationId required' });
+
+      await fastify.pg.query('SELECT set_config($1, $2, true)', [
+        'app.current_tenant',
+        organizationId,
+      ]);
+
+      const lim = limit ? parseInt(limit, 10) : 20;
+      const off = offset ? parseInt(offset, 10) : 0;
+
+      const conditions = ['organization_id = $1'];
+      const params: unknown[] = [organizationId];
+
+      if (status) {
+        params.push(status);
+        conditions.push(`status = $${String(params.length)}`);
+      }
+
+      const whereClause = conditions.join(' AND ');
+
+      const [rows, countResult] = await Promise.all([
+        fastify.pg.query<{
+          id: string;
+          workflow_instance_id: string;
+          status: string;
+          phase: string | null;
+          created_at: string;
+          updated_at: string;
+          verification_deadline: string | null;
+          feedback_score: number | null;
+        }>(
+          `SELECT id, workflow_instance_id, status, phase, created_at, updated_at,
+                  verification_deadline, feedback_score
+           FROM loop_instances
+           WHERE ${whereClause}
+           ORDER BY created_at DESC
+           LIMIT $${String(params.length + 1)} OFFSET $${String(params.length + 2)}`,
+          [...params, lim, off],
+        ),
+        fastify.pg.query<{ count: string }>(
+          `SELECT COUNT(*) AS count FROM loop_instances WHERE ${whereClause}`,
+          params,
+        ),
+      ]);
+
+      return reply.send({
+        data: rows.rows.map((r) => ({
+          id: r.id,
+          workflowInstanceId: r.workflow_instance_id,
+          status: r.status,
+          phase: r.phase,
+          createdAt: r.created_at,
+          updatedAt: r.updated_at,
+          verificationDeadline: r.verification_deadline,
+          feedbackScore: r.feedback_score,
+        })),
+        meta: { total: parseInt(countResult.rows[0]?.count ?? '0', 10) },
+      });
+    },
+  );
 }

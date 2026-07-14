@@ -30,6 +30,11 @@ export {
   useKnowledgeDocs,
   useKnowledgeSearch,
   useAttendance,
+  useAllApprovals,
+  useLoopInstances,
+  useWorkflowDefinitions,
+  useWorkflowDefinition,
+  useComplianceReports,
 } from './hooks';
 export type {
   OrgHealth,
@@ -50,4 +55,7 @@ export type {
   WorkflowStats,
   KnowledgeDoc,
   AttendanceRecord,
+  LoopInstance,
+  WorkflowDefinition,
+  ComplianceReport,
 } from './hooks';

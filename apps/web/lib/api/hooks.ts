@@ -392,6 +392,89 @@ export function useAttendance(page = 1, limit = 20) {
   );
 }
 
+// ─── All Approvals (with status filter) ──────────────────────────────────────
+
+export function useAllApprovals(status?: string, page = 1, limit = 20) {
+  const query = status ? `&status=${status}` : '';
+  return useOrgQuery<{ data: ApprovalItem[] }>(
+    `/api/v1/workflow-os/approvals?limit=${String(limit)}&offset=${String((page - 1) * limit)}${query}`,
+  );
+}
+
+// ─── Loop Instances ───────────────────────────────────────────────────────────
+
+export interface LoopInstance {
+  id: string;
+  workflowInstanceId: string;
+  status: 'pending' | 'verifying' | 'collecting_feedback' | 'completed' | 'escalated';
+  phase: string | null;
+  createdAt: string;
+  updatedAt: string;
+  verificationDeadline: string | null;
+  feedbackScore: number | null;
+}
+
+export function useLoopInstances(status?: string, page = 1, limit = 20) {
+  const query = status ? `&status=${status}` : '';
+  return useOrgQuery<{ data: LoopInstance[]; meta: { total: number } }>(
+    `/api/v1/loops/all?limit=${String(limit)}&offset=${String((page - 1) * limit)}${query}`,
+  );
+}
+
+// ─── Workflow Definitions (full) ──────────────────────────────────────────────
+
+export interface WorkflowDefinition {
+  id: string;
+  name: string;
+  description?: string | undefined;
+  category: string;
+  definition: Record<string, unknown>;
+  status: 'active' | 'paused' | 'archived';
+  version: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export function useWorkflowDefinitions(status?: string) {
+  const query = status ? `&status=${status}` : '';
+  return useOrgQuery<{ data: WorkflowDefinition[] }>(
+    `/api/v1/workflow-os/definitions?limit=50${query}`,
+  );
+}
+
+export function useWorkflowDefinition(id: string | null) {
+  const orgId = useOrganizationId();
+  const path = id && orgId ? `/api/v1/workflow-os/definitions/${id}?organizationId=${orgId}` : null;
+  return useApiQuery<{ data: WorkflowDefinition }>(path);
+}
+
+// ─── Reports (Governance) ─────────────────────────────────────────────────────
+
+export interface ComplianceReport {
+  id: string;
+  organizationId: string;
+  periodStart: string;
+  periodEnd: string;
+  generatedBy: string;
+  summary: Record<string, unknown>;
+  createdAt: string;
+}
+
+export function useComplianceReports(limit = 20) {
+  return useOrgQuery<{ data: ComplianceReport[] }>(
+    `/api/v1/governance/reports?limit=${String(limit)}`,
+  );
+}
+
+// ─── Observability Alerts (extended) ─────────────────────────────────────────
+
+export interface Alert {
+  id: string;
+  name: string;
+  severity: string;
+  firedAt: string;
+}
+
 export function useRealtimeEvents() {
   const orgId = useOrganizationId();
   const { mutate } = useSWRConfig();
