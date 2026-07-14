@@ -157,11 +157,11 @@ export async function analyticsRoutes(fastify: FastifyInstance): Promise<void> {
           sla_breaches: string;
         }>(
           `SELECT
-            COUNT(*) FILTER (WHERE status = 'active') AS active_workflows,
+            COUNT(*) FILTER (WHERE status = 'running') AS active_workflows,
             COUNT(*) FILTER (WHERE status = 'completed' AND updated_at > NOW() - INTERVAL '24 hours') AS completed_today,
-            COUNT(*) FILTER (WHERE status IN ('pending_approval','pending_finance_review')) AS pending_approval,
-            COUNT(*) FILTER (WHERE sla_deadline < NOW() AND status NOT IN ('completed','rejected')) AS sla_breaches
-          FROM workflow_instances
+            COUNT(*) FILTER (WHERE status = 'pending') AS pending_approval,
+            0::bigint AS sla_breaches
+          FROM workflow_runs
           WHERE organization_id = $1`,
           [organizationId],
         ),
