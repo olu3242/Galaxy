@@ -23,7 +23,12 @@ const NAV_ITEMS = [
   { href: '/dashboard/copilot', label: 'AI Copilot', icon: '💬' },
   { href: '/dashboard/reports', label: 'Reports', icon: '📈' },
   { href: '/dashboard/notifications', label: 'Notifications', icon: '🔔' },
+  { href: '/dashboard/integrations', label: 'Integrations', icon: '🔗' },
+  { href: '/dashboard/org-structure', label: 'Org Structure', icon: '🏗️' },
+  { href: '/dashboard/billing', label: 'Billing', icon: '💳' },
+  { href: '/dashboard/whatsapp', label: 'WhatsApp Center', icon: '📲' },
   null,
+  { href: '/dashboard/settings', label: 'Settings', icon: '⚙️' },
   { href: '/dashboard/onboarding', label: 'Setup Wizard', icon: '🚀' },
   { href: '/dashboard/profile', label: 'My Profile', icon: '👤' },
 ] as const;

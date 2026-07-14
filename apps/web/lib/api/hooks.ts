@@ -257,6 +257,7 @@ export function useAlerts(limit = 10) {
 export interface Department {
   id: string;
   name: string;
+  description?: string | undefined;
   parentDepartmentId?: string | undefined;
   headMemberId?: string | undefined;
   memberCount?: number | undefined;
@@ -271,7 +272,8 @@ export function useDepartments() {
 export interface RoleDefinition {
   id: string;
   name: string;
-  permissions?: string[];
+  permissions: string[];
+  isSystem?: boolean | undefined;
   memberCount?: number | undefined;
 }
 
@@ -390,6 +392,105 @@ export function useAttendance(page = 1, limit = 20) {
   return useOrgQuery<{ data: AttendanceRecord[]; meta: { total?: number } }>(
     `/api/v1/people/attendance?limit=${String(limit)}&offset=${String((page - 1) * limit)}`,
   );
+}
+
+// ─── Integrations ─────────────────────────────────────────────────────────────
+
+export interface Integration {
+  id: string;
+  name: string;
+  connectorType: string;
+  status: 'active' | 'inactive' | 'error';
+  config: Record<string, unknown>;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export function useIntegrations() {
+  const orgId = useOrganizationId();
+  const path = orgId ? '/api/v1/integrations' : null;
+  return useApiQuery<{ connectors: Integration[] }>(path, {
+    revalidateOnFocus: false,
+  });
+}
+
+// ─── Teams ────────────────────────────────────────────────────────────────────
+
+export interface Team {
+  id: string;
+  name: string;
+  description?: string | undefined;
+  departmentId: string;
+  leadMemberId?: string | undefined;
+  memberCount?: number | undefined;
+  createdAt: string;
+}
+
+export function useTeams(departmentId?: string) {
+  const query = departmentId ? `&departmentId=${departmentId}` : '';
+  return useOrgQuery<{ data: Team[] }>(`/api/v1/teams?limit=100${query}`);
+}
+
+// ─── Billing ──────────────────────────────────────────────────────────────────
+
+export interface BillingPlan {
+  id: string;
+  name: string;
+  priceMonthly: number;
+  description: string;
+  currency: string;
+  interval: string;
+  features: string[];
+  limits: Record<string, number>;
+}
+
+export interface Subscription {
+  id: string;
+  organizationId: string;
+  planId: string;
+  status: string;
+  seats: number;
+  currentPeriodStart: string;
+  currentPeriodEnd: string;
+  trialEnd?: string | undefined;
+}
+
+export function useBillingPlans() {
+  return useApiQuery<{ plans: BillingPlan[] }>('/api/v1/billing/plans');
+}
+
+export function useSubscription(orgId: string | null) {
+  const path = orgId ? `/api/v1/billing/organizations/${orgId}/subscription` : null;
+  return useApiQuery<{ subscription: Subscription }>(path);
+}
+
+export function useInvoices(orgId: string | null, limit = 10) {
+  const path = orgId
+    ? `/api/v1/billing/organizations/${orgId}/invoices?limit=${String(limit)}`
+    : null;
+  return useApiQuery<{
+    invoices: Array<{
+      id: string;
+      amountDue: number;
+      currency: string;
+      status: string;
+      createdAt: string;
+      pdfUrl?: string;
+    }>;
+  }>(path);
+}
+
+// ─── Feature Flags ────────────────────────────────────────────────────────────
+
+export interface FeatureFlag {
+  key: string;
+  enabled: boolean;
+  description?: string | undefined;
+  config?: Record<string, unknown> | undefined;
+}
+
+export function useFeatureFlags() {
+  return useApiQuery<{ flags: FeatureFlag[] }>('/api/v1/platform/features');
 }
 
 // ─── All Approvals (with status filter) ──────────────────────────────────────
