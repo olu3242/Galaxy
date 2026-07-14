@@ -228,11 +228,10 @@ export async function frontendCompatRoutes(fastify: FastifyInstance): Promise<vo
       if (!organizationId) return reply.status(400).send({ error: 'organizationId required' });
       await setTenant(fastify, organizationId);
 
-      const now = new Date().toISOString();
       let statusFilter = '';
-      if (status === 'active') statusFilter = `AND d.is_active = true AND d.end_at > '${now}'`;
+      if (status === 'active') statusFilter = `AND d.is_active = true AND d.end_at > NOW()`;
       else if (status === 'revoked') statusFilter = `AND d.is_active = false`;
-      else if (status === 'expired') statusFilter = `AND d.end_at <= '${now}'`;
+      else if (status === 'expired') statusFilter = `AND d.end_at <= NOW()`;
 
       const result = await fastify.pg.query<{
         id: string;
@@ -248,11 +247,11 @@ export async function frontendCompatRoutes(fastify: FastifyInstance): Promise<vo
       }>(
         `SELECT
           d.id, d.delegator_id, d.delegatee_id, d.permissions, d.reason, d.is_active, d.end_at, d.created_at,
-          dm.display_name AS delegator_name,
-          te.display_name AS delegatee_name
+          du.display_name AS delegator_name,
+          tu.display_name AS delegatee_name
         FROM delegations d
-        LEFT JOIN memberships dm ON dm.user_id = d.delegator_id AND dm.organization_id = d.organization_id
-        LEFT JOIN memberships te ON te.user_id = d.delegatee_id AND te.organization_id = d.organization_id
+        LEFT JOIN users du ON du.id = d.delegator_id
+        LEFT JOIN users tu ON tu.id = d.delegatee_id
         WHERE d.organization_id = $1 ${statusFilter}
         ORDER BY d.created_at DESC
         LIMIT $2`,
