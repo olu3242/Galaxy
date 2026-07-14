@@ -20,7 +20,7 @@ function RoleRow({ role }: { role: RoleDefinition }) {
       <div style={{ flex: 1 }}>
         <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--fg)' }}>{role.name}</div>
         <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '2px' }}>
-          {role.permissions.length} permission{role.permissions.length !== 1 ? 's' : ''}
+          {(role.permissions ?? []).length} permission{(role.permissions ?? []).length !== 1 ? 's' : ''}
         </div>
       </div>
       {role.isSystem && (

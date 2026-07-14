@@ -272,7 +272,7 @@ export function useDepartments() {
 export interface RoleDefinition {
   id: string;
   name: string;
-  permissions: string[];
+  permissions?: string[];
   isSystem?: boolean | undefined;
   memberCount?: number | undefined;
 }
@@ -440,7 +440,7 @@ export interface BillingPlan {
   description: string;
   currency: string;
   interval: string;
-  features: string[];
+  features?: string[];
   limits: Record<string, number>;
 }
 
