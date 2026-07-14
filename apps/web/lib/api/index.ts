@@ -41,6 +41,14 @@ export {
   useWorkflowDefinitions,
   useWorkflowDefinition,
   useComplianceReports,
+  useAgentDefinitions,
+  useAgentTasks,
+  useDelegations,
+  usePolicyRules,
+  useWaTemplates,
+  useTenants,
+  useKpiDefinitions,
+  useKpiTimeseries,
 } from './hooks';
 export type {
   OrgHealth,
@@ -69,4 +77,12 @@ export type {
   BillingPlan,
   Subscription,
   FeatureFlag,
+  AgentDefinition,
+  AgentTask,
+  DelegationRecord,
+  PolicyRule,
+  WaTemplate,
+  TenantSummary,
+  KpiDefinition,
+  MetricDataPoint,
 } from './hooks';

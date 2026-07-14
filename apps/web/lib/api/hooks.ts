@@ -629,3 +629,143 @@ export function useRealtimeEvents() {
     };
   }, [orgId, mutate]);
 }
+
+// ─── Sprint 21: Agent OS ───────────────────────────────────────────────────────
+
+export interface AgentDefinition {
+  id: string;
+  name: string;
+  type: string;
+  status: 'active' | 'paused' | 'error';
+  capabilities: string[];
+  tasksCompleted: number;
+  tasksFailed: number;
+  lastRunAt?: string | undefined;
+  createdAt: string;
+}
+
+export interface AgentTask {
+  id: string;
+  agentId: string;
+  type: string;
+  status: 'pending' | 'running' | 'completed' | 'failed';
+  input: Record<string, unknown>;
+  output?: Record<string, unknown> | undefined;
+  startedAt?: string | undefined;
+  completedAt?: string | undefined;
+  createdAt: string;
+}
+
+export function useAgentDefinitions() {
+  return useOrgQuery<{ data: AgentDefinition[] }>('/api/v1/agents/definitions');
+}
+
+export function useAgentTasks(agentId?: string, limit = 20) {
+  const query = agentId ? `&agentId=${agentId}` : '';
+  return useOrgQuery<{ data: AgentTask[] }>(`/api/v1/agents/tasks?limit=${String(limit)}${query}`);
+}
+
+// ─── Sprint 22: Delegation & Policy ───────────────────────────────────────────
+
+export interface DelegationRecord {
+  id: string;
+  delegatorId: string;
+  delegatorName?: string | undefined;
+  delegateeId: string;
+  delegateeName?: string | undefined;
+  scope: string[];
+  reason?: string | undefined;
+  status: 'active' | 'revoked' | 'expired';
+  expiresAt?: string | undefined;
+  createdAt: string;
+}
+
+export interface PolicyRule {
+  id: string;
+  name: string;
+  effect: 'allow' | 'deny';
+  subject: string;
+  resource: string;
+  action: string;
+  conditions?: Record<string, unknown> | undefined;
+  priority: number;
+  active: boolean;
+  createdAt: string;
+}
+
+export function useDelegations(status?: string) {
+  const query = status ? `&status=${status}` : '';
+  return useOrgQuery<{ data: DelegationRecord[] }>(`/api/v1/identity/delegations?limit=50${query}`);
+}
+
+export function usePolicyRules() {
+  return useOrgQuery<{ data: PolicyRule[] }>('/api/v1/governance/policies');
+}
+
+// ─── Sprint 23: WhatsApp Templates ────────────────────────────────────────────
+
+export interface WaTemplate {
+  id: string;
+  name: string;
+  category: 'UTILITY' | 'MARKETING' | 'AUTHENTICATION';
+  language: string;
+  status: 'APPROVED' | 'PENDING' | 'REJECTED';
+  body: string;
+  header?: string | undefined;
+  footer?: string | undefined;
+  buttons?: { type: string; text: string; value?: string }[] | undefined;
+  createdAt: string;
+}
+
+export function useWaTemplates() {
+  return useOrgQuery<{ data: WaTemplate[] }>('/api/v1/communication/templates');
+}
+
+// ─── Sprint 24: Tenant Management ─────────────────────────────────────────────
+
+export interface TenantSummary {
+  id: string;
+  name: string;
+  slug: string;
+  plan: string;
+  memberCount: number;
+  workflowCount: number;
+  status: 'active' | 'suspended' | 'trial';
+  createdAt: string;
+}
+
+export function useTenants(page = 1, limit = 20) {
+  return useApiQuery<{ data: TenantSummary[]; meta: { total: number } }>(
+    `/api/v1/admin/tenants?page=${String(page)}&limit=${String(limit)}`,
+  );
+}
+
+// ─── Sprint 25: Custom Analytics / KPIs ──────────────────────────────────────
+
+export interface KpiDefinition {
+  id: string;
+  name: string;
+  description?: string | undefined;
+  formula: string;
+  unit?: string | undefined;
+  target?: number | undefined;
+  current?: number | undefined;
+  trend?: 'up' | 'down' | 'flat' | undefined;
+  createdAt: string;
+}
+
+export interface MetricDataPoint {
+  timestamp: string;
+  value: number;
+  label?: string | undefined;
+}
+
+export function useKpiDefinitions() {
+  return useOrgQuery<{ data: KpiDefinition[] }>('/api/v1/analytics/kpis');
+}
+
+export function useKpiTimeseries(kpiId: string, days = 30) {
+  return useOrgQuery<{ data: MetricDataPoint[] }>(
+    kpiId ? `/api/v1/analytics/kpis/${kpiId}/timeseries?days=${String(days)}` : null,
+  );
+}
