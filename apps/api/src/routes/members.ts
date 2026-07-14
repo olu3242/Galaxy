@@ -199,4 +199,60 @@ export async function memberRoutes(fastify: FastifyInstance): Promise<void> {
       return reply.send(responseEnvelope(member, correlationId));
     },
   );
+
+  fastify.get(
+    '/people/attendance',
+    async (
+      request: FastifyRequest<{
+        Querystring: { organizationId: string; limit?: string; offset?: string };
+      }>,
+      reply: FastifyReply,
+    ) => {
+      const { organizationId, limit, offset } = request.query;
+      if (!organizationId) return reply.status(400).send({ error: 'organizationId required' });
+
+      await fastify.pg.query('SELECT set_config($1, $2, true)', [
+        'app.current_tenant',
+        organizationId,
+      ]);
+
+      const lim = limit ? parseInt(limit, 10) : 20;
+      const off = offset ? parseInt(offset, 10) : 0;
+
+      const [rows, countResult] = await Promise.all([
+        fastify.pg.query<{
+          id: string;
+          user_id: string;
+          display_name: string;
+          check_in_at: string;
+          check_out_at: string | null;
+          source: string;
+        }>(
+          `SELECT ar.id, ar.user_id, u.display_name, ar.check_in_at, ar.check_out_at, ar.source
+           FROM attendance_records ar
+           JOIN users u ON u.id = ar.user_id
+           WHERE ar.organization_id = $1
+           ORDER BY ar.check_in_at DESC
+           LIMIT $2 OFFSET $3`,
+          [organizationId, lim, off],
+        ),
+        fastify.pg.query<{ count: string }>(
+          `SELECT COUNT(*) AS count FROM attendance_records WHERE organization_id = $1`,
+          [organizationId],
+        ),
+      ]);
+
+      return reply.send({
+        data: rows.rows.map((r) => ({
+          id: r.id,
+          userId: r.user_id,
+          displayName: r.display_name,
+          checkInAt: r.check_in_at,
+          checkOutAt: r.check_out_at,
+          source: r.source,
+        })),
+        meta: { total: parseInt(countResult.rows[0]?.count ?? '0', 10) },
+      });
+    },
+  );
 }

@@ -7,12 +7,68 @@ import { useMembers, useRoles, useDepartments } from '../../../lib/api';
 
 const STEPS = [
   { id: 'org', label: 'Organization', description: 'Confirm your org details' },
+  { id: 'template', label: 'Industry', description: 'Choose your org type' },
   { id: 'roles', label: 'Roles', description: 'Review default roles' },
   { id: 'members', label: 'Members', description: 'Invite your first members' },
   { id: 'done', label: 'Done', description: "You're all set" },
 ] as const;
 
 type StepId = (typeof STEPS)[number]['id'];
+
+interface IndustryTemplate {
+  key: string;
+  label: string;
+  description: string;
+  icon: string;
+  defaultRoles: string[];
+  defaultDepartments: string[];
+  suggestedWorkflows: string[];
+}
+
+const INDUSTRY_TEMPLATES: IndustryTemplate[] = [
+  {
+    key: 'church',
+    label: 'Church / Religious Org',
+    description: 'Ministry teams, service attendance, tithe tracking, prayer requests',
+    icon: '⛪',
+    defaultRoles: ['Pastor', 'Elder', 'Deacon', 'Member', 'Volunteer'],
+    defaultDepartments: ['Worship', 'Children', 'Youth', 'Outreach', 'Administration'],
+    suggestedWorkflows: ['Leave Request', 'Event Approval', 'Volunteer Signup'],
+  },
+  {
+    key: 'ngo',
+    label: 'NGO / Non-Profit',
+    description: 'Grant management, beneficiary tracking, donor reports, field operations',
+    icon: '🌍',
+    defaultRoles: [
+      'Executive Director',
+      'Program Manager',
+      'Field Officer',
+      'Volunteer',
+      'Finance Officer',
+    ],
+    defaultDepartments: ['Programs', 'Finance', 'Field Operations', 'Communications', 'M&E'],
+    suggestedWorkflows: ['Expense Approval', 'Leave Request', 'Incident Report', 'Procurement'],
+  },
+  {
+    key: 'school',
+    label: 'School / Education',
+    description: 'Teacher workflows, student attendance, fees, parental communication',
+    icon: '🎓',
+    defaultRoles: ['Principal', 'Teacher', 'Bursar', 'Admin Staff', 'Parent'],
+    defaultDepartments: ['Academics', 'Finance', 'Administration', 'Sports', 'Welfare'],
+    suggestedWorkflows: ['Leave Request', 'Expense Approval', 'Incident Report'],
+  },
+  {
+    key: 'general',
+    label: 'General Business',
+    description: 'Standard corporate workflows — HR, finance, operations',
+    icon: '🏢',
+    defaultRoles: ['Admin', 'Manager', 'Staff', 'Finance Officer', 'HR Officer'],
+    defaultDepartments: ['Operations', 'Finance', 'HR', 'IT', 'Sales'],
+    suggestedWorkflows: ['Leave Request', 'Expense Approval', 'Incident Report'],
+  },
+];
 
 function StepIndicator({ current, steps }: { current: StepId; steps: typeof STEPS }) {
   const currentIdx = steps.findIndex((s) => s.id === current);
@@ -85,6 +141,7 @@ export default function OnboardingPage() {
   const client = useApiClient();
 
   const [step, setStep] = useState<StepId>('org');
+  const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
   const [invitePhone, setInvitePhone] = useState('');
   const [inviteName, setInviteName] = useState('');
   const [inviteRole, setInviteRole] = useState('');
@@ -222,11 +279,101 @@ export default function OnboardingPage() {
             <button
               style={btnPrimary}
               onClick={() => {
-                setStep('roles');
+                setStep('template');
               }}
             >
-              Next: Review Roles →
+              Next: Choose Industry →
             </button>
+          </div>
+        )}
+
+        {step === 'template' && (
+          <div style={cardStyle}>
+            <h2
+              style={{ fontSize: '16px', fontWeight: 700, color: 'var(--fg)', marginBottom: '8px' }}
+            >
+              Choose Your Industry
+            </h2>
+            <p style={{ color: 'var(--muted)', fontSize: '13px', marginBottom: '20px' }}>
+              We'll pre-configure roles, departments, and workflow suggestions for your org type.
+            </p>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: '1fr 1fr',
+                gap: '12px',
+                marginBottom: '24px',
+              }}
+            >
+              {INDUSTRY_TEMPLATES.map((t) => {
+                const selected = selectedTemplate === t.key;
+                return (
+                  <button
+                    key={t.key}
+                    onClick={() => {
+                      setSelectedTemplate(t.key);
+                    }}
+                    style={{
+                      textAlign: 'left',
+                      padding: '16px',
+                      borderRadius: '10px',
+                      border: selected ? '2px solid #6366f1' : '1px solid var(--mc-border)',
+                      background: selected ? 'rgba(99,102,241,0.1)' : 'rgba(255,255,255,0.03)',
+                      cursor: 'pointer',
+                      color: 'var(--fg)',
+                    }}
+                  >
+                    <div style={{ fontSize: '24px', marginBottom: '8px' }}>{t.icon}</div>
+                    <div style={{ fontSize: '13px', fontWeight: 700, marginBottom: '4px' }}>
+                      {t.label}
+                    </div>
+                    <div style={{ fontSize: '12px', color: 'var(--muted)', lineHeight: 1.4 }}>
+                      {t.description}
+                    </div>
+                    {selected && (
+                      <div style={{ marginTop: '10px' }}>
+                        <div
+                          style={{
+                            fontSize: '11px',
+                            color: '#818cf8',
+                            fontWeight: 600,
+                            marginBottom: '4px',
+                          }}
+                        >
+                          SUGGESTED ROLES
+                        </div>
+                        <div style={{ fontSize: '11px', color: 'var(--muted)' }}>
+                          {t.defaultRoles.join(', ')}
+                        </div>
+                      </div>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <button
+                style={btnSecondary}
+                onClick={() => {
+                  setStep('org');
+                }}
+              >
+                ← Back
+              </button>
+              <button
+                style={{
+                  ...btnPrimary,
+                  opacity: selectedTemplate ? 1 : 0.5,
+                  cursor: selectedTemplate ? 'pointer' : 'not-allowed',
+                }}
+                disabled={!selectedTemplate}
+                onClick={() => {
+                  setStep('roles');
+                }}
+              >
+                Next: Review Roles →
+              </button>
+            </div>
           </div>
         )}
 

@@ -27,6 +27,9 @@ export {
   useBroadcasts,
   useRealtimeEvents,
   useLoopInsights,
+  useKnowledgeDocs,
+  useKnowledgeSearch,
+  useAttendance,
 } from './hooks';
 export type {
   OrgHealth,
@@ -45,4 +48,6 @@ export type {
   RoleDefinition,
   QueueStat,
   WorkflowStats,
+  KnowledgeDoc,
+  AttendanceRecord,
 } from './hooks';
