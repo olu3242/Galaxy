@@ -12,6 +12,7 @@ import {
   agentQueue,
   analyticsRollupQueue,
   healthCheckQueue,
+  loopQueue,
 } from './queues.js';
 import { createWorkflowProcessor } from './processors/workflow-execution.js';
 import { createSlaProcessor } from './processors/sla-monitoring.js';
@@ -22,6 +23,7 @@ import { createKnowledgeIngestionProcessor } from './processors/knowledge-ingest
 import { createLoopLearningProcessor } from './processors/loop-learning.js';
 import { createAuditSyncProcessor } from './processors/audit-sync.js';
 import { createApprovalProcessor } from './processors/approval-processing.js';
+import { createLoopProcessor } from './processors/loop-processing.js';
 import { registerScheduledJobs } from './lib/scheduler.js';
 
 const logger = pino({ level: process.env.LOG_LEVEL ?? 'info' });
@@ -129,6 +131,15 @@ approvalWorker.on('failed', (job, err) => {
   logger.error({ jobId: job?.id, err }, 'approval job failed');
 });
 
+// Loop processing worker — lifecycle: create-loop, record-verification, record-feedback, run-compliance
+const loopWorker = new Worker('loop-processing', createLoopProcessor(pool), { connection });
+loopWorker.on('completed', (job) => {
+  logger.info({ jobId: job.id }, 'loop job completed');
+});
+loopWorker.on('failed', (job, err) => {
+  logger.error({ jobId: job?.id, err }, 'loop job failed');
+});
+
 // Agent execution worker
 const agentWorker = new Worker('agent-execution', processAgentJob, { connection });
 agentWorker.on('completed', (job) => {
@@ -162,6 +173,7 @@ const schedulerQueues = new Map([
   ['agent-execution', agentQueue],
   ['analytics-rollup', analyticsRollupQueue],
   ['health-check', healthCheckQueue],
+  ['loop-processing', loopQueue],
 ]);
 
 registerScheduledJobs(schedulerQueues).catch((err: unknown) => {
@@ -179,6 +191,7 @@ async function shutdown(): Promise<void> {
   await notificationWorker.close();
   await approvalWorker.close();
   await auditSyncWorker.close();
+  await loopWorker.close();
   await agentWorker.close();
   await healthCheckWorker.close();
   await pool.end();

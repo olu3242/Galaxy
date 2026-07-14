@@ -8,6 +8,10 @@ import { EventPublisher } from '@galaxy/events';
 
 // Manager approval button reply ID format: "approve:<runId>" or "reject:<runId>"
 const APPROVAL_REPLY_RE = /^(approve|reject):([0-9a-f-]{36})$/i;
+// Loop verification: "loop-yes:<loopId>" or "loop-no:<loopId>"
+const LOOP_VERIFY_RE = /^loop-(yes|no):([0-9a-f-]{36})$/i;
+// Loop feedback rating: "loop-rate:<loopId>:<1-5>"
+const LOOP_RATE_RE = /^loop-rate:([0-9a-f-]{36}):([1-5])$/i;
 
 const VERIFY_TOKEN = process.env.WHATSAPP_VERIFY_TOKEN ?? '';
 const APP_SECRET = process.env.WHATSAPP_APP_SECRET ?? '';
@@ -65,6 +69,7 @@ export async function whatsappWebhookRoutes(fastify: FastifyInstance): Promise<v
   });
   const intentQueue = new Queue('intent-detection', { connection: redis });
   const approvalQueue = new Queue('approval-processing', { connection: redis });
+  const loopQueue = new Queue('loop-processing', { connection: redis });
   const processor = new InboundMessageProcessor();
   const pool = new Pool({ connectionString: process.env.DATABASE_URL });
   const eventPublisher = new EventPublisher(pool);
@@ -118,13 +123,15 @@ export async function whatsappWebhookRoutes(fastify: FastifyInstance): Promise<v
           for (const msg of change.value.messages ?? []) {
             const phoneNumberId = change.value.metadata.phone_number_id;
 
-            // Handle manager approve/reject button replies
+            // Handle interactive button replies
             if (msg.type === 'interactive' && msg.interactive?.type === 'button_reply') {
               const buttonId = msg.interactive.button_reply?.id ?? '';
-              const match = APPROVAL_REPLY_RE.exec(buttonId);
-              if (match) {
-                const decision = match[1] === 'approve' ? 'approved' : 'rejected';
-                const workflowRunId = match[2];
+
+              // Manager approve/reject
+              const approvalMatch = APPROVAL_REPLY_RE.exec(buttonId);
+              if (approvalMatch) {
+                const decision = approvalMatch[1] === 'approve' ? 'approved' : 'rejected';
+                const workflowRunId = approvalMatch[2];
                 jobs.push(
                   approvalQueue.add('handle-approval', {
                     jobName:
@@ -134,9 +141,46 @@ export async function whatsappWebhookRoutes(fastify: FastifyInstance): Promise<v
                     approverId: msg.from,
                     decision,
                     correlationId,
-                    // organizationId resolved by worker from workflowRunId (global lookup)
                     organizationId: '',
                     _resolveOrgFromRun: true,
+                  }),
+                );
+                continue;
+              }
+
+              // Loop verification (requester confirms resolution)
+              const loopVerifyMatch = LOOP_VERIFY_RE.exec(buttonId);
+              if (loopVerifyMatch) {
+                const verified = loopVerifyMatch[1] === 'yes';
+                const loopInstanceId = loopVerifyMatch[2];
+                jobs.push(
+                  loopQueue.add('record-verification', {
+                    jobName: 'record-verification',
+                    organizationId: '',
+                    loopInstanceId,
+                    senderPhone: msg.from,
+                    verified,
+                    correlationId,
+                    _resolveOrgFromLoop: true,
+                  }),
+                );
+                continue;
+              }
+
+              // Loop feedback rating
+              const loopRateMatch = LOOP_RATE_RE.exec(buttonId);
+              if (loopRateMatch) {
+                const loopInstanceId = loopRateMatch[1];
+                const score = parseInt(loopRateMatch[2] ?? '3', 10);
+                jobs.push(
+                  loopQueue.add('record-feedback', {
+                    jobName: 'record-feedback',
+                    organizationId: '',
+                    loopInstanceId,
+                    senderPhone: msg.from,
+                    score,
+                    correlationId,
+                    _resolveOrgFromLoop: true,
                   }),
                 );
                 continue;
@@ -198,6 +242,7 @@ export async function whatsappWebhookRoutes(fastify: FastifyInstance): Promise<v
   fastify.addHook('onClose', async () => {
     await intentQueue.close();
     await approvalQueue.close();
+    await loopQueue.close();
     await redis.quit();
     await pool.end();
   });

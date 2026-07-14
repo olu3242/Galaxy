@@ -1,4 +1,5 @@
 import type { Pool } from 'pg';
+import { WhatsAppProvider } from '@galaxy/communication';
 
 interface OverdueRun {
   id: string;
@@ -11,7 +12,13 @@ interface OverdueLoopInstance {
   organization_id: string;
 }
 
+interface ManagerPhoneRow {
+  whatsapp_phone: string;
+}
+
 export function createSlaProcessor(pool: Pool): () => Promise<number> {
+  const whatsapp = new WhatsAppProvider();
+
   return async (): Promise<number> => {
     // Find all overdue workflow runs across all tenants
     const { rows } = await pool.query<OverdueRun>(
@@ -43,6 +50,29 @@ export function createSlaProcessor(pool: Pool): () => Promise<number> {
          WHERE id = $1 AND organization_id = $2`,
         [run.id, run.organization_id],
       );
+
+      // Notify manager via WhatsApp (best-effort)
+      const managerRow = await pool.query<ManagerPhoneRow>(
+        `SELECT u.whatsapp_phone
+         FROM memberships m
+         JOIN users u ON u.id = m.user_id
+         JOIN roles r ON r.id = m.role_id
+         WHERE m.organization_id = $1
+           AND r.name = 'manager'
+           AND m.status = 'active'
+           AND u.whatsapp_phone IS NOT NULL
+         LIMIT 1`,
+        [run.organization_id],
+      );
+      const managerPhone = managerRow.rows[0]?.whatsapp_phone;
+      if (managerPhone) {
+        await whatsapp
+          .send(managerPhone, {
+            type: 'text',
+            text: `SLA breached: workflow run ${run.id} has exceeded its deadline and requires immediate attention.`,
+          })
+          .catch(() => null);
+      }
 
       escalatedCount += 1;
     }

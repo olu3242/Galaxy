@@ -305,6 +305,9 @@ importers:
       '@galaxy/events':
         specifier: workspace:*
         version: link:../../packages/events
+      '@galaxy/governance':
+        specifier: workspace:*
+        version: link:../../packages/modules/governance
       '@galaxy/identity':
         specifier: workspace:*
         version: link:../../packages/modules/identity

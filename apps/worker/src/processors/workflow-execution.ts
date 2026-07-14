@@ -1,7 +1,36 @@
+import crypto from 'crypto';
 import type { Pool } from 'pg';
 import type { Job } from 'bullmq';
 import { WhatsAppProvider } from '@galaxy/communication';
 import { withEngineLifecycle } from '../lib/withEngineLifecycle.js';
+
+async function writeAuditLog(
+  pool: Pool,
+  opts: {
+    organizationId: string;
+    actorType: 'member' | 'agent' | 'system';
+    actorId: string | null;
+    action: string;
+    resourceType: string;
+    resourceId: string | null;
+    correlationId: string;
+  },
+): Promise<void> {
+  await pool.query(
+    `INSERT INTO audit_logs
+       (organization_id, actor_type, actor_id, action, resource_type, resource_id, correlation_id)
+     VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+    [
+      opts.organizationId,
+      opts.actorType,
+      opts.actorId,
+      opts.action,
+      opts.resourceType,
+      opts.resourceId,
+      opts.correlationId,
+    ],
+  );
+}
 
 type WorkflowJobName = 'start-workflow' | 'advance-step' | 'complete-workflow' | 'fail-workflow';
 
@@ -10,6 +39,7 @@ interface WorkflowJobData {
   organizationId: string;
   runId: string;
   data?: Record<string, unknown>;
+  correlationId?: string;
 }
 
 interface WorkflowRunRow {
@@ -116,6 +146,15 @@ export function createWorkflowProcessor(pool: Pool): (job: Job) => Promise<void>
            VALUES ($1, $2, 'running', 'completed', 'system', 'worker', 'Workflow completed')`,
             [organizationId, runId],
           );
+          await writeAuditLog(pool, {
+            organizationId,
+            actorType: 'system',
+            actorId: null,
+            action: 'workflow.completed',
+            resourceType: 'workflow_run',
+            resourceId: runId,
+            correlationId: payload.correlationId ?? crypto.randomUUID(),
+          }).catch(() => null);
           break;
         }
 
@@ -132,6 +171,15 @@ export function createWorkflowProcessor(pool: Pool): (job: Job) => Promise<void>
            VALUES ($1, $2, 'running', 'failed', 'system', 'worker', 'Workflow failed')`,
             [organizationId, runId],
           );
+          await writeAuditLog(pool, {
+            organizationId,
+            actorType: 'system',
+            actorId: null,
+            action: 'workflow.failed',
+            resourceType: 'workflow_run',
+            resourceId: runId,
+            correlationId: payload.correlationId ?? crypto.randomUUID(),
+          }).catch(() => null);
           break;
         }
 
