@@ -66,7 +66,7 @@ function PlanCard({
           lineHeight: 1.7,
         }}
       >
-        {plan.features.map((f) => (
+        {(plan.features ?? []).map((f) => (
           <li key={f} style={{ color: 'var(--fg)' }}>
             {f}
           </li>
