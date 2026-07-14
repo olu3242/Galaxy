@@ -56,6 +56,21 @@ test.describe('API Endpoint Availability', () => {
     const res = await request.get(`${API}/api/v1/roles?organizationId=test`);
     expect(res.status()).toBe(401);
   });
+
+  test('agents/definitions endpoint requires auth', async ({ request }) => {
+    const res = await request.get(`${API}/api/v1/agents/definitions?organizationId=test`);
+    expect(res.status()).toBe(401);
+  });
+
+  test('identity/delegations endpoint requires auth', async ({ request }) => {
+    const res = await request.get(`${API}/api/v1/identity/delegations?organizationId=test`);
+    expect(res.status()).toBe(401);
+  });
+
+  test('communication/templates endpoint requires auth', async ({ request }) => {
+    const res = await request.get(`${API}/api/v1/communication/templates?organizationId=test`);
+    expect(res.status()).toBe(401);
+  });
 });
 
 test.describe('Dashboard pages render without crash', () => {

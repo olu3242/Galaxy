@@ -42,6 +42,16 @@ test.describe('Authenticated: Dashboard pages load', () => {
     { path: '/dashboard/members', label: 'Members' },
     { path: '/dashboard/approvals', label: 'Approvals' },
     { path: '/dashboard/profile', label: 'My Profile' },
+    { path: '/dashboard/integrations', label: 'Integrations' },
+    { path: '/dashboard/org-structure', label: 'Org Structure' },
+    { path: '/dashboard/billing', label: 'Billing' },
+    { path: '/dashboard/whatsapp', label: 'WhatsApp Center' },
+    { path: '/dashboard/templates', label: 'WA Templates' },
+    { path: '/dashboard/agents', label: 'Agent OS' },
+    { path: '/dashboard/delegation', label: 'Delegation' },
+    { path: '/dashboard/analytics', label: 'Custom Analytics' },
+    { path: '/dashboard/tenants', label: 'Tenants' },
+    { path: '/dashboard/settings', label: 'Settings' },
   ];
 
   for (const { path, label } of dashboardPages) {

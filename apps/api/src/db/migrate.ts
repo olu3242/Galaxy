@@ -75,6 +75,8 @@ import * as migration073 from './migrations/073_loop_learning.js';
 import * as migration074 from './migrations/074_loop_learning_optimization.js';
 import * as migration075 from './migrations/075_organization_os.js';
 import * as migration076 from './migrations/076_memberships_role_column.js';
+import * as migration077 from './migrations/077_attendance_records.js';
+import * as migration078 from './migrations/078_wa_templates.js';
 
 interface Migration {
   up: (pool: Pool) => Promise<void>;
@@ -158,6 +160,8 @@ const migrations: { name: string; migration: Migration }[] = [
   { name: '074_loop_learning_optimization', migration: migration074 },
   { name: '075_organization_os', migration: migration075 },
   { name: '076_memberships_role_column', migration: migration076 },
+  { name: '077_attendance_records', migration: migration077 },
+  { name: '078_wa_templates', migration: migration078 },
 ];
 
 async function ensureMigrationsTable(pool: Pool): Promise<void> {
