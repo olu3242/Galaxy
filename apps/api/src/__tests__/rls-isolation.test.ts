@@ -12,7 +12,7 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { Pool } from 'pg';
 import crypto from 'crypto';
 
-const DATABASE_URL = process.env.DATABASE_URL;
+const DATABASE_URL = process.env.DATABASE_URL ?? '';
 
 // Tables that carry organization_id and have RLS enabled
 const RLS_TABLES = [
@@ -24,21 +24,15 @@ const RLS_TABLES = [
   'usage_alerts',
 ] as const;
 
-function skipIfNoDb(): boolean {
-  return !DATABASE_URL;
-}
-
-describe('Cross-tenant RLS isolation', () => {
-  let pool: Pool | undefined;
+describe.skipIf(!process.env.DATABASE_URL)('Cross-tenant RLS isolation', () => {
+  // pool is always initialized when the describe block runs (DATABASE_URL is defined)
+  let pool: Pool;
   let orgAId: string;
   let orgBId: string;
 
   beforeAll(async () => {
-    if (skipIfNoDb()) return;
-
     pool = new Pool({ connectionString: DATABASE_URL });
 
-    // Insert two isolated test organizations
     orgAId = crypto.randomUUID();
     orgBId = crypto.randomUUID();
 
@@ -46,7 +40,14 @@ describe('Cross-tenant RLS isolation', () => {
       `INSERT INTO organizations (id, name, slug, tier, status)
        VALUES ($1, $2, $3, 'free', 'active'), ($4, $5, $6, 'free', 'active')
        ON CONFLICT (id) DO NOTHING`,
-      [orgAId, 'RLS Test Org A', `rls-test-a-${orgAId}`, orgBId, 'RLS Test Org B', `rls-test-b-${orgBId}`],
+      [
+        orgAId,
+        'RLS Test Org A',
+        `rls-test-a-${orgAId}`,
+        orgBId,
+        'RLS Test Org B',
+        `rls-test-b-${orgBId}`,
+      ],
     );
 
     // Seed one workflow per org so workflow_runs FK is satisfied
@@ -62,19 +63,14 @@ describe('Cross-tenant RLS isolation', () => {
       [wfAId, orgAId, wfBId, orgBId],
     );
 
-    // Insert a workflow_run for org A and one for org B
     await pool.query(
       `INSERT INTO workflow_runs (id, organization_id, workflow_id, status, triggered_by, trigger_data, correlation_id)
        VALUES
          ($1, $2, $3, 'pending', 'test', '{}', $1),
          ($4, $5, $6, 'pending', 'test', '{}', $4)`,
-      [
-        crypto.randomUUID(), orgAId, wfAId,
-        crypto.randomUUID(), orgBId, wfBId,
-      ],
+      [crypto.randomUUID(), orgAId, wfAId, crypto.randomUUID(), orgBId, wfBId],
     );
 
-    // Insert an intent_detection for each org
     await pool.query(
       `INSERT INTO intent_detections
          (id, organization_id, source_type, raw_input, detected_intent, confidence_score, requires_human_review)
@@ -86,14 +82,8 @@ describe('Cross-tenant RLS isolation', () => {
   });
 
   afterAll(async () => {
-    if (!pool) return;
-
-    // Clean up — delete test data in dependency order
     await pool
-      .query(
-        `DELETE FROM workflow_runs WHERE organization_id IN ($1, $2)`,
-        [orgAId, orgBId],
-      )
+      .query(`DELETE FROM workflow_runs WHERE organization_id IN ($1, $2)`, [orgAId, orgBId])
       .catch(() => null);
     await pool
       .query(`DELETE FROM workflows WHERE organization_id IN ($1, $2)`, [orgAId, orgBId])
@@ -108,7 +98,7 @@ describe('Cross-tenant RLS isolation', () => {
     await pool.end();
   });
 
-  it.skipIf(skipIfNoDb())('org A context cannot read org B workflow_runs', async () => {
+  it('org A context cannot read org B workflow_runs', async () => {
     await pool.query('SELECT set_config($1, $2, true)', ['app.current_tenant', orgAId]);
     const { rows } = await pool.query<{ organization_id: string }>(
       'SELECT organization_id FROM workflow_runs WHERE organization_id = $1',
@@ -117,7 +107,7 @@ describe('Cross-tenant RLS isolation', () => {
     expect(rows).toHaveLength(0);
   });
 
-  it.skipIf(skipIfNoDb())('org B context cannot read org A workflow_runs', async () => {
+  it('org B context cannot read org A workflow_runs', async () => {
     await pool.query('SELECT set_config($1, $2, true)', ['app.current_tenant', orgBId]);
     const { rows } = await pool.query<{ organization_id: string }>(
       'SELECT organization_id FROM workflow_runs WHERE organization_id = $1',
@@ -126,7 +116,7 @@ describe('Cross-tenant RLS isolation', () => {
     expect(rows).toHaveLength(0);
   });
 
-  it.skipIf(skipIfNoDb())('org A context only sees its own workflow_runs', async () => {
+  it('org A context only sees its own workflow_runs', async () => {
     await pool.query('SELECT set_config($1, $2, true)', ['app.current_tenant', orgAId]);
     const { rows } = await pool.query<{ organization_id: string }>(
       'SELECT DISTINCT organization_id FROM workflow_runs WHERE organization_id IN ($1, $2)',
@@ -135,7 +125,7 @@ describe('Cross-tenant RLS isolation', () => {
     expect(rows.every((r) => r.organization_id === orgAId)).toBe(true);
   });
 
-  it.skipIf(skipIfNoDb())('org A context cannot read org B intent_detections', async () => {
+  it('org A context cannot read org B intent_detections', async () => {
     await pool.query('SELECT set_config($1, $2, true)', ['app.current_tenant', orgAId]);
     const { rows } = await pool.query<{ organization_id: string }>(
       'SELECT organization_id FROM intent_detections WHERE organization_id = $1',
@@ -145,16 +135,13 @@ describe('Cross-tenant RLS isolation', () => {
   });
 
   for (const table of RLS_TABLES) {
-    it.skipIf(skipIfNoDb())(
-      `org A context cannot see org B rows in ${table}`,
-      async () => {
-        await pool.query('SELECT set_config($1, $2, true)', ['app.current_tenant', orgAId]);
-        const { rows } = await pool.query<{ organization_id: string }>(
-          `SELECT organization_id FROM ${table} WHERE organization_id = $1`,
-          [orgBId],
-        );
-        expect(rows).toHaveLength(0);
-      },
-    );
+    it(`org A context cannot see org B rows in ${table}`, async () => {
+      await pool.query('SELECT set_config($1, $2, true)', ['app.current_tenant', orgAId]);
+      const { rows } = await pool.query<{ organization_id: string }>(
+        `SELECT organization_id FROM ${table} WHERE organization_id = $1`,
+        [orgBId],
+      );
+      expect(rows).toHaveLength(0);
+    });
   }
 });
