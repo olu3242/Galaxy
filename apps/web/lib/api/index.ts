@@ -25,6 +25,7 @@ export {
   useWorkflowStats,
   useSecurityMetrics,
   useBroadcasts,
+  useRealtimeEvents,
 } from './hooks';
 export type {
   OrgHealth,

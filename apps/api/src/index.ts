@@ -53,6 +53,7 @@ import { billingV2Routes } from './routes/billing-v2.js';
 import { loopRoutes } from './routes/loop.js';
 import { broadcastRoutes } from './routes/broadcast.js';
 import { onboardingRoutes } from './routes/onboarding.js';
+import { eventsSseRoutes } from './routes/events-sse.js';
 import { authRoutes } from './routes/auth.js';
 
 declare module 'fastify' {
@@ -169,6 +170,7 @@ async function buildApp(): Promise<FastifyInstance> {
   await fastify.register(broadcastRoutes, { prefix: '/api/v1' });
   await fastify.register(onboardingRoutes, { prefix: '/api/v1' });
   await fastify.register(authRoutes, { prefix: '/api/v1' });
+  await fastify.register(eventsSseRoutes, { prefix: '/api/v1' });
 
   // Graceful shutdown
   fastify.addHook('onClose', async () => {

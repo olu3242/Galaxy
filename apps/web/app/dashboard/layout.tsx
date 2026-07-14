@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { AuthProvider, useAuth } from '../../lib/auth/context';
 import { ApiProvider } from '../../lib/api/context';
 import { Sidebar } from '../../components/dashboard/Sidebar';
+import { useRealtimeEvents } from '../../lib/api';
 
 function DashboardGuard({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading, user, token } = useAuth();
@@ -44,12 +45,19 @@ function DashboardGuard({ children }: { children: React.ReactNode }) {
         window.location.href = '/login';
       }}
     >
-      <div style={{ display: 'flex', minHeight: '100vh' }}>
-        <Sidebar />
-        <div style={{ flex: 1, minWidth: 0, overflowX: 'hidden' }}>{children}</div>
-      </div>
+      <RealtimeProvider>
+        <div style={{ display: 'flex', minHeight: '100vh' }}>
+          <Sidebar />
+          <div style={{ flex: 1, minWidth: 0, overflowX: 'hidden' }}>{children}</div>
+        </div>
+      </RealtimeProvider>
     </ApiProvider>
   );
+}
+
+function RealtimeProvider({ children }: { children: React.ReactNode }) {
+  useRealtimeEvents();
+  return <>{children}</>;
 }
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {

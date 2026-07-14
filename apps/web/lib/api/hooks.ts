@@ -1,6 +1,7 @@
 'use client';
 
-import useSWR, { type SWRConfiguration } from 'swr';
+import useSWR, { type SWRConfiguration, useSWRConfig } from 'swr';
+import { useEffect, useRef } from 'react';
 import { useApiClient, useOrganizationId } from './context';
 import type { ApiError } from './client';
 
@@ -311,4 +312,66 @@ export function useSecurityMetrics() {
       rlsViolations: number;
     };
   }>('/api/v1/governance/security-metrics');
+}
+
+// ─── Real-time SSE ────────────────────────────────────────────────────────────
+
+/**
+ * Opens a Server-Sent Events connection to /api/v1/events/stream and
+ * triggers SWR revalidation for affected endpoints when workflow/loop/broadcast
+ * events arrive. Components don't need to call this directly — it's wired into
+ * the dashboard layout.
+ */
+export function useRealtimeEvents() {
+  const orgId = useOrganizationId();
+  const { mutate } = useSWRConfig();
+  const esRef = useRef<EventSource | null>(null);
+
+  useEffect(() => {
+    if (!orgId) return;
+
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL ?? '';
+    const url = `${baseUrl}/api/v1/events/stream?organizationId=${encodeURIComponent(orgId)}`;
+    const es = new EventSource(url);
+    esRef.current = es;
+
+    es.addEventListener('galaxy', (e: MessageEvent<string>) => {
+      let event: { type?: string } = {};
+      try {
+        event = JSON.parse(e.data) as { type?: string };
+      } catch {
+        return;
+      }
+      const type = event.type ?? '';
+
+      // Invalidate relevant SWR keys based on event type
+      if (type.startsWith('workflow.')) {
+        void mutate((key) => typeof key === 'string' && key.includes('/analytics/workflow-stats'));
+        void mutate((key) => typeof key === 'string' && key.includes('/workflow-os/approvals'));
+        void mutate((key) => typeof key === 'string' && key.includes('/analytics/org-health'));
+      }
+      if (type.startsWith('broadcast.')) {
+        void mutate((key) => typeof key === 'string' && key.includes('/broadcasts'));
+      }
+      if (type.startsWith('loop.')) {
+        void mutate((key) => typeof key === 'string' && key.includes('/analytics/org-health'));
+      }
+      if (type.startsWith('audit.') || type.startsWith('workflow.') || type.startsWith('loop.')) {
+        void mutate((key) => typeof key === 'string' && key.includes('/audit/logs'));
+      }
+    });
+
+    es.addEventListener('reconnect', () => {
+      es.close();
+    });
+
+    es.onerror = () => {
+      // EventSource auto-reconnects on error — no manual handling needed
+    };
+
+    return () => {
+      es.close();
+      esRef.current = null;
+    };
+  }, [orgId, mutate]);
 }

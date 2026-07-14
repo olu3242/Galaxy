@@ -259,15 +259,22 @@ Respond with exactly this JSON structure:
         ],
       );
 
-      // Wire leave_request → workflow start (WhatsApp webhook path only, high confidence)
-      if (
-        classification.detectedIntent === 'leave_request' &&
-        !requiresHumanReview &&
-        isWebhookPayload(jobData)
-      ) {
+      // Route high-confidence intents to their workflow templates (WhatsApp webhook path only)
+      const INTENT_TO_WORKFLOW: Partial<Record<DetectedIntent, string>> = {
+        leave_request: 'Leave Request',
+        expense_request: 'Expense Approval',
+        incident_report: 'Incident Report',
+      };
+
+      const workflowName =
+        !requiresHumanReview && isWebhookPayload(jobData)
+          ? INTENT_TO_WORKFLOW[classification.detectedIntent]
+          : undefined;
+
+      if (workflowName) {
         const workflowRow = await pool.query<{ id: string }>(
-          `SELECT id FROM workflows WHERE organization_id = $1 AND name = 'Leave Request' AND is_active = true LIMIT 1`,
-          [organizationId],
+          `SELECT id FROM workflows WHERE organization_id = $1 AND name = $2 AND is_active = true LIMIT 1`,
+          [organizationId, workflowName],
         );
         const workflow = workflowRow.rows[0];
         if (workflow) {
@@ -280,11 +287,11 @@ Respond with exactly this JSON structure:
               organizationId,
               workflow.id,
               JSON.stringify({
-                senderPhone: jobData.normalized.senderPhone,
+                senderPhone: (jobData as WebhookIntentJobData).normalized.senderPhone,
                 rawInput,
-                rawMessageId: jobData.rawMessageId,
+                rawMessageId: (jobData as WebhookIntentJobData).rawMessageId,
               }),
-              jobData.correlationId ?? crypto.randomUUID(),
+              (jobData as WebhookIntentJobData).correlationId ?? crypto.randomUUID(),
             ],
           );
           const run = runResult.rows[0];
@@ -293,15 +300,16 @@ Respond with exactly this JSON structure:
               jobName: 'start-workflow',
               organizationId,
               runId: run.id,
-              data: { senderPhone: jobData.normalized.senderPhone },
+              data: { senderPhone: (jobData as WebhookIntentJobData).normalized.senderPhone },
             });
           }
         } else {
           console.warn(
             JSON.stringify({
               level: 'warn',
-              event: 'intent.leave_request.no_workflow',
+              event: `intent.${classification.detectedIntent}.no_workflow`,
               organizationId,
+              workflowName,
             }),
           );
         }
