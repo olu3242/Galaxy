@@ -217,6 +217,89 @@ export async function analyticsRoutes(fastify: FastifyInstance): Promise<void> {
   );
 
   fastify.get(
+    '/analytics/loop-insights',
+    async (
+      request: FastifyRequest<{ Querystring: { organizationId: string } }>,
+      reply: FastifyReply,
+    ) => {
+      const { organizationId } = request.query;
+      if (!organizationId) return reply.status(400).send({ error: 'organizationId required' });
+
+      await fastify.pg.query('SELECT set_config($1, $2, true)', [
+        'app.current_tenant',
+        organizationId,
+      ]);
+
+      const [insights, loopStats] = await Promise.all([
+        fastify.pg.query<{
+          id: string;
+          summary: string;
+          recommendations: string[];
+          optimization_score: number;
+          priority: string;
+          created_at: string;
+        }>(
+          `SELECT id, summary, recommendations, optimization_score, priority, created_at
+           FROM loop_learning_insights
+           WHERE organization_id = $1
+           ORDER BY created_at DESC
+           LIMIT 10`,
+          [organizationId],
+        ),
+        fastify.pg.query<{
+          total: string;
+          completed: string;
+          escalated: string;
+          avg_score: string | null;
+        }>(
+          `SELECT
+            COUNT(*) AS total,
+            COUNT(*) FILTER (WHERE status = 'completed') AS completed,
+            COUNT(*) FILTER (WHERE status = 'escalated') AS escalated,
+            AVG(feedback_score) FILTER (WHERE feedback_score IS NOT NULL) AS avg_score
+           FROM loop_instances
+           WHERE organization_id = $1`,
+          [organizationId],
+        ),
+      ]);
+
+      const stats = loopStats.rows[0] ?? {
+        total: '0',
+        completed: '0',
+        escalated: '0',
+        avg_score: null,
+      };
+      const total = parseInt(stats.total, 10);
+      const completed = parseInt(stats.completed, 10);
+
+      return reply.send(
+        responseEnvelope(
+          {
+            insights: insights.rows.map((r) => ({
+              id: r.id,
+              summary: r.summary,
+              recommendations: r.recommendations,
+              optimizationScore: r.optimization_score,
+              priority: r.priority,
+              createdAt: r.created_at,
+            })),
+            stats: {
+              total,
+              completed,
+              escalated: parseInt(stats.escalated, 10),
+              completionRate: total > 0 ? Math.round((completed / total) * 100) : 100,
+              avgFeedbackScore: stats.avg_score
+                ? parseFloat(parseFloat(stats.avg_score).toFixed(1))
+                : null,
+            },
+          },
+          request.id,
+        ),
+      );
+    },
+  );
+
+  fastify.get(
     '/analytics/workflow-stats',
     async (
       request: FastifyRequest<{ Querystring: { organizationId: string } }>,

@@ -76,6 +76,31 @@ export interface BroadcastItem {
   createdAt: string;
 }
 
+// ─── Loop Insights ────────────────────────────────────────────────────────────
+
+export interface LoopInsight {
+  id: string;
+  summary: string;
+  recommendations: string[];
+  optimizationScore: number;
+  priority: 'low' | 'medium' | 'high' | 'critical';
+  createdAt: string;
+}
+
+export interface LoopStats {
+  total: number;
+  completed: number;
+  escalated: number;
+  completionRate: number;
+  avgFeedbackScore: number | null;
+}
+
+export function useLoopInsights() {
+  return useOrgQuery<{ data: { insights: LoopInsight[]; stats: LoopStats } }>(
+    '/api/v1/analytics/loop-insights',
+  );
+}
+
 export function useBroadcasts(page = 1, limit = 20) {
   return useOrgQuery<{ data: BroadcastItem[] }>(
     `/api/v1/broadcasts?limit=${String(limit)}&offset=${String((page - 1) * limit)}`,
@@ -322,6 +347,51 @@ export function useSecurityMetrics() {
  * events arrive. Components don't need to call this directly — it's wired into
  * the dashboard layout.
  */
+// ─── Knowledge ────────────────────────────────────────────────────────────────
+
+export interface KnowledgeDoc {
+  id: string;
+  title: string;
+  content: string;
+  status: string;
+  category: string | null;
+  tags: string[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export function useKnowledgeDocs(page = 1, limit = 20) {
+  return useOrgQuery<{ data: KnowledgeDoc[]; meta: { total?: number } }>(
+    `/api/v1/knowledge/documents?limit=${String(limit)}&offset=${String((page - 1) * limit)}`,
+  );
+}
+
+export function useKnowledgeSearch(query: string) {
+  const orgId = useOrganizationId();
+  const path =
+    query.trim().length >= 2 && orgId
+      ? `/api/v1/knowledge/search?query=${encodeURIComponent(query)}&organizationId=${orgId}`
+      : null;
+  return useApiQuery<{ data: KnowledgeDoc[] }>(path, { revalidateOnFocus: false });
+}
+
+// ─── Attendance ───────────────────────────────────────────────────────────────
+
+export interface AttendanceRecord {
+  id: string;
+  userId: string;
+  displayName: string;
+  checkInAt: string;
+  checkOutAt: string | null;
+  source: string;
+}
+
+export function useAttendance(page = 1, limit = 20) {
+  return useOrgQuery<{ data: AttendanceRecord[]; meta: { total?: number } }>(
+    `/api/v1/people/attendance?limit=${String(limit)}&offset=${String((page - 1) * limit)}`,
+  );
+}
+
 export function useRealtimeEvents() {
   const orgId = useOrganizationId();
   const { mutate } = useSWRConfig();

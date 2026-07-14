@@ -5,6 +5,7 @@ import type { AIInsight, ActivityItem, AuditEntry } from '../../../components/ui
 import {
   useKPIs,
   useOrgHealth,
+  useLoopInsights,
   useAIInsights,
   useAIRecommendations,
   useRiskSignals,
@@ -31,6 +32,7 @@ function actSeverity(s: string): ActSev {
 export default function ExecutiveDashboard() {
   const { data: kpisData, isLoading: kpisLoading } = useKPIs();
   const { data: orgHealthData } = useOrgHealth();
+  const { data: loopData } = useLoopInsights();
   const { data: insightsData } = useAIInsights();
   const { data: recsData } = useAIRecommendations();
   const { data: risksData } = useRiskSignals();
@@ -177,6 +179,83 @@ export default function ExecutiveDashboard() {
           <LiveActivityFeed items={activity} title="Today's Activity" />
           <AuditTimeline entries={auditEntries} />
         </div>
+
+        {(loopData?.data.stats.total ?? 0) > 0 && (
+          <>
+            <h2 className="mc-section-title" style={{ marginTop: '24px' }}>
+              Loop OS — Learning Insights
+            </h2>
+            <div className="mc-grid" style={{ marginBottom: '16px' }}>
+              <MetricCard
+                label="Loop Completion Rate"
+                value={`${String(loopData?.data.stats.completionRate ?? 0)}%`}
+                accent="#22c55e"
+              />
+              <MetricCard
+                label="Avg Feedback Score"
+                value={
+                  loopData?.data.stats.avgFeedbackScore !== null &&
+                  loopData?.data.stats.avgFeedbackScore !== undefined
+                    ? `${String(loopData.data.stats.avgFeedbackScore)}/5`
+                    : '—'
+                }
+                accent="#6366f1"
+              />
+              <MetricCard label="Total Loops" value={String(loopData?.data.stats.total ?? 0)} />
+              <MetricCard
+                label="Escalated"
+                value={String(loopData?.data.stats.escalated ?? 0)}
+                accent="#ef4444"
+              />
+            </div>
+            {(loopData?.data.insights.length ?? 0) > 0 && (
+              <div
+                style={{
+                  background: 'var(--mc-card)',
+                  border: '1px solid var(--mc-border)',
+                  borderRadius: '10px',
+                  padding: '16px 20px',
+                  marginBottom: '24px',
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: '12px',
+                    fontWeight: 700,
+                    color: 'var(--muted)',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.06em',
+                    marginBottom: '10px',
+                  }}
+                >
+                  Latest AI-Generated Insights
+                </div>
+                {loopData?.data.insights.slice(0, 2).map((insight) => (
+                  <div
+                    key={insight.id}
+                    style={{
+                      marginBottom: '12px',
+                      paddingBottom: '12px',
+                      borderBottom: '1px solid var(--mc-border)',
+                    }}
+                  >
+                    <div style={{ fontSize: '13px', color: 'var(--fg)', marginBottom: '4px' }}>
+                      {insight.summary}
+                    </div>
+                    {insight.recommendations.slice(0, 2).map((rec, i) => (
+                      <div
+                        key={i}
+                        style={{ fontSize: '12px', color: 'var(--muted)', paddingLeft: '12px' }}
+                      >
+                        · {rec}
+                      </div>
+                    ))}
+                  </div>
+                ))}
+              </div>
+            )}
+          </>
+        )}
       </div>
     </main>
   );

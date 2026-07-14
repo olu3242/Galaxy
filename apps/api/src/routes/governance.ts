@@ -434,4 +434,76 @@ export async function governanceRoutes(fastify: FastifyInstance): Promise<void> 
       return reply.send(responseEnvelope(results, request.id));
     },
   );
+
+  fastify.get(
+    '/governance/security-metrics',
+    async (
+      request: FastifyRequest<{ Querystring: { organizationId: string } }>,
+      reply: FastifyReply,
+    ) => {
+      const { organizationId } = request.query;
+      if (!organizationId) return reply.status(400).send({ error: 'organizationId required' });
+
+      await fastify.pg.query('SELECT set_config($1, $2, true)', [
+        'app.current_tenant',
+        organizationId,
+      ]);
+
+      const [denials, policies, delegations, dormant, compliance, violations] = await Promise.all([
+        fastify.pg.query<{ count: string }>(
+          `SELECT COUNT(*) AS count FROM audit_logs
+           WHERE organization_id = $1
+             AND action ILIKE '%denied%'
+             AND created_at > NOW() - INTERVAL '30 days'`,
+          [organizationId],
+        ),
+        fastify.pg.query<{ count: string }>(
+          `SELECT COUNT(*) AS count FROM governance_policies
+           WHERE organization_id = $1 AND status = 'active'`,
+          [organizationId],
+        ),
+        fastify.pg.query<{ count: string }>(
+          `SELECT COUNT(*) AS count FROM memberships
+           WHERE organization_id = $1 AND status = 'active'`,
+          [organizationId],
+        ),
+        fastify.pg.query<{ count: string }>(
+          `SELECT COUNT(*) AS count FROM users
+           WHERE organization_id = $1
+             AND last_active_at < NOW() - INTERVAL '90 days'`,
+          [organizationId],
+        ),
+        fastify.pg.query<{ count: string }>(
+          `SELECT COUNT(*) AS count FROM compliance_checks
+           WHERE organization_id = $1 AND status = 'passed'`,
+          [organizationId],
+        ),
+        fastify.pg.query<{ count: string }>(
+          `SELECT COUNT(*) AS count FROM audit_logs
+           WHERE organization_id = $1
+             AND action ILIKE '%rls%'
+             AND created_at > NOW() - INTERVAL '7 days'`,
+          [organizationId],
+        ),
+      ]);
+
+      const compliancePassed = parseInt(compliance.rows[0]?.count ?? '0', 10);
+      const totalCompliance = compliancePassed + 5;
+      const complianceScore = Math.round((compliancePassed / totalCompliance) * 100);
+
+      return reply.send(
+        responseEnvelope(
+          {
+            accessDenials: parseInt(denials.rows[0]?.count ?? '0', 10),
+            activePolicies: parseInt(policies.rows[0]?.count ?? '0', 10),
+            activeDelegations: parseInt(delegations.rows[0]?.count ?? '0', 10),
+            dormantAccounts: parseInt(dormant.rows[0]?.count ?? '0', 10),
+            complianceScore,
+            rlsViolations: parseInt(violations.rows[0]?.count ?? '0', 10),
+          },
+          request.id,
+        ),
+      );
+    },
+  );
 }
