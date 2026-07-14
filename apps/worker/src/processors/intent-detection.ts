@@ -4,6 +4,7 @@ import type { Pool } from 'pg';
 import type { Job } from 'bullmq';
 import { Queue } from 'bullmq';
 import { Redis } from 'ioredis';
+import { WhatsAppProvider } from '@galaxy/communication';
 import { withEngineLifecycle } from '../lib/withEngineLifecycle.js';
 
 type DetectedIntent =
@@ -13,6 +14,7 @@ type DetectedIntent =
   | 'leave_request'
   | 'expense_request'
   | 'membership_registration'
+  | 'attendance_checkin'
   | 'information_request'
   | 'other';
 
@@ -82,6 +84,7 @@ const VALID_INTENTS: ReadonlySet<string> = new Set<DetectedIntent>([
   'leave_request',
   'expense_request',
   'membership_registration',
+  'attendance_checkin',
   'information_request',
   'other',
 ]);
@@ -174,6 +177,7 @@ export function createIntentProcessor(
 ): (job: Job) => Promise<void> {
   const anthropic = new Anthropic({ apiKey: anthropicApiKey });
   const workflowQueue = makeWorkflowQueue();
+  const whatsapp = new WhatsAppProvider();
 
   return async (job: Job): Promise<void> =>
     withEngineLifecycle(job, pool, async () => {
@@ -223,7 +227,7 @@ Message: "${rawInput}"
 
 Respond with exactly this JSON structure:
 {
-  "detectedIntent": one of ["approval_request","task_creation","incident_report","leave_request","expense_request","membership_registration","information_request","other"],
+  "detectedIntent": one of ["approval_request","task_creation","incident_report","leave_request","expense_request","membership_registration","attendance_checkin","information_request","other"],
   "automationDomain": one of ["communication","task","approval","incident","membership","event","hr","finance","knowledge","governance","executive"] or null,
   "flowType": one of ["screen_flow","record_trigger","scheduled","automated","ai_flow"] or null,
   "confidence": a number between 0 and 1
@@ -312,6 +316,133 @@ Respond with exactly this JSON structure:
               workflowName,
             }),
           );
+        }
+      }
+
+      // Attendance check-in — record and reply (WhatsApp only, high confidence)
+      if (
+        classification.detectedIntent === 'attendance_checkin' &&
+        !requiresHumanReview &&
+        isWebhookPayload(jobData)
+      ) {
+        const senderPhone = jobData.normalized.senderPhone;
+        const userRow = await pool.query<{ id: string; display_name: string }>(
+          `SELECT id, display_name FROM users WHERE whatsapp_phone = $1 AND organization_id = $2 LIMIT 1`,
+          [senderPhone, organizationId],
+        );
+        const user = userRow.rows[0];
+        if (user) {
+          await pool.query(
+            `INSERT INTO attendance_records (organization_id, user_id, source) VALUES ($1, $2, 'whatsapp')`,
+            [organizationId, user.id],
+          );
+          await whatsapp
+            .send(senderPhone, {
+              type: 'text',
+              text: `Check-in recorded for ${user.display_name}. Have a great day!`,
+            })
+            .catch(() => {
+              // Non-fatal
+            });
+        }
+      }
+
+      // Membership registration — create user + membership and welcome them (WhatsApp only)
+      if (
+        classification.detectedIntent === 'membership_registration' &&
+        !requiresHumanReview &&
+        isWebhookPayload(jobData)
+      ) {
+        const senderPhone = jobData.normalized.senderPhone;
+        const existing = await pool.query<{ id: string }>(
+          `SELECT u.id FROM users u
+           JOIN memberships m ON m.user_id = u.id
+           WHERE u.whatsapp_phone = $1 AND u.organization_id = $2 AND m.status = 'active'
+           LIMIT 1`,
+          [senderPhone, organizationId],
+        );
+        if (existing.rows.length === 0) {
+          const newUserId = crypto.randomUUID();
+          await pool.query(
+            `INSERT INTO users (id, organization_id, display_name, whatsapp_phone) VALUES ($1, $2, $3, $4)`,
+            [newUserId, organizationId, `Member ${senderPhone.slice(-4)}`, senderPhone],
+          );
+          await pool.query(`INSERT INTO memberships (organization_id, user_id) VALUES ($1, $2)`, [
+            organizationId,
+            newUserId,
+          ]);
+          await whatsapp
+            .send(senderPhone, {
+              type: 'text',
+              text: "Welcome! You've been registered as a member. You can now submit requests through WhatsApp.",
+            })
+            .catch(() => {
+              // Non-fatal
+            });
+        } else {
+          await whatsapp
+            .send(senderPhone, {
+              type: 'text',
+              text: "You're already a registered member. How can we help you today?",
+            })
+            .catch(() => {
+              // Non-fatal
+            });
+        }
+      }
+
+      // Information request — search knowledge base and reply with an AI-synthesized answer
+      if (
+        classification.detectedIntent === 'information_request' &&
+        !requiresHumanReview &&
+        isWebhookPayload(jobData)
+      ) {
+        const senderPhone = jobData.normalized.senderPhone;
+        const chunks = await pool.query<{ content: string; title: string | null }>(
+          `SELECT kc.content, kd.title
+           FROM knowledge_chunks kc
+           JOIN knowledge_documents kd ON kd.id = kc.document_id
+           WHERE kd.organization_id = $1
+             AND kd.status = 'published'
+             AND to_tsvector('english', kc.content) @@ plainto_tsquery('english', $2)
+           ORDER BY ts_rank(to_tsvector('english', kc.content), plainto_tsquery('english', $2)) DESC
+           LIMIT 4`,
+          [organizationId, rawInput],
+        );
+
+        if (chunks.rows.length > 0) {
+          const context = chunks.rows
+            .map(
+              (c, i) => `[${String(i + 1)}] ${c.title ?? 'Document'}: ${c.content.slice(0, 300)}`,
+            )
+            .join('\n\n');
+
+          const answerResponse = await anthropic.messages.create({
+            model: 'claude-haiku-4-5-20251001',
+            max_tokens: 256,
+            messages: [
+              {
+                role: 'user',
+                content: `Answer this question concisely using only the context below. If the context doesn't answer it, say you'll connect them with a team member.\n\nQuestion: ${rawInput}\n\nContext:\n${context}`,
+              },
+            ],
+          });
+          const answerBlock = answerResponse.content[0];
+          const answer = answerBlock?.type === 'text' ? answerBlock.text : null;
+          if (answer) {
+            await whatsapp.send(senderPhone, { type: 'text', text: answer }).catch(() => {
+              // Non-fatal
+            });
+          }
+        } else {
+          await whatsapp
+            .send(senderPhone, {
+              type: 'text',
+              text: 'Thank you for your question. A team member will get back to you shortly.',
+            })
+            .catch(() => {
+              // Non-fatal
+            });
         }
       }
     });

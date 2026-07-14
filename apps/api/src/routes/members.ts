@@ -2,6 +2,7 @@ import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { z } from 'zod';
 import { MemberService, type UpdateMemberInput } from '@galaxy/people';
 import { newCorrelationId } from '@galaxy/utils';
+import { randomUUID } from 'crypto';
 
 function responseEnvelope<T>(data: T, requestId: string) {
   return {
@@ -13,13 +14,108 @@ function responseEnvelope<T>(data: T, requestId: string) {
   };
 }
 
+const CreateMemberSchema = z.object({
+  organizationId: z.string().uuid(),
+  displayName: z.string().min(1).max(255),
+  whatsappPhone: z.string().max(20).optional().nullable(),
+  email: z.string().email().optional().nullable(),
+  roleId: z.string().uuid().optional().nullable(),
+});
+
 const UpdateMemberSchema = z.object({
   displayName: z.string().min(1).max(255).optional(),
   profileData: z.record(z.unknown()).optional(),
 });
 
+interface NewMemberRow {
+  id: string;
+  display_name: string;
+  whatsapp_phone: string | null;
+  email: string | null;
+  created_at: string;
+}
+
+interface NewMembershipRow {
+  id: string;
+  organization_id: string;
+  user_id: string;
+  role_id: string | null;
+  status: string;
+  created_at: string;
+}
+
 export async function memberRoutes(fastify: FastifyInstance): Promise<void> {
   const memberService = new MemberService(fastify.pg);
+
+  fastify.post(
+    '/members',
+    async (
+      request: FastifyRequest<{
+        Body: {
+          organizationId: string;
+          displayName: string;
+          whatsappPhone?: string | null;
+          email?: string | null;
+          roleId?: string | null;
+        };
+      }>,
+      reply: FastifyReply,
+    ) => {
+      const correlationId = newCorrelationId();
+      const parsed = CreateMemberSchema.safeParse(request.body);
+      if (!parsed.success) {
+        return reply.status(400).send({ error: 'Validation error', details: parsed.error.errors });
+      }
+
+      const { organizationId, displayName, whatsappPhone, email, roleId } = parsed.data;
+      await fastify.pg.query('SELECT set_config($1, $2, true)', [
+        'app.current_tenant',
+        organizationId,
+      ]);
+
+      // Create user then membership in a transaction
+      const userId = randomUUID();
+      const userResult = await fastify.pg.query<NewMemberRow>(
+        `INSERT INTO users (id, organization_id, display_name, whatsapp_phone, email)
+         VALUES ($1, $2, $3, $4, $5)
+         RETURNING id, display_name, whatsapp_phone, email, created_at`,
+        [userId, organizationId, displayName, whatsappPhone ?? null, email ?? null],
+      );
+      const user = userResult.rows[0];
+      if (!user) {
+        return reply.status(500).send({ error: 'Failed to create user' });
+      }
+
+      const membershipResult = await fastify.pg.query<NewMembershipRow>(
+        `INSERT INTO memberships (organization_id, user_id, role_id)
+         VALUES ($1, $2, $3)
+         RETURNING id, organization_id, user_id, role_id, status, created_at`,
+        [organizationId, userId, roleId ?? null],
+      );
+      const membership = membershipResult.rows[0];
+      if (!membership) {
+        return reply.status(500).send({ error: 'Failed to create membership' });
+      }
+
+      return reply.status(201).send(
+        responseEnvelope(
+          {
+            id: membership.id,
+            organizationId,
+            userId,
+            displayName: user.display_name,
+            whatsappPhone: user.whatsapp_phone,
+            email: user.email,
+            roleId: membership.role_id,
+            status: membership.status,
+            createdAt: user.created_at,
+            correlationId,
+          },
+          correlationId,
+        ),
+      );
+    },
+  );
 
   fastify.get(
     '/members',
