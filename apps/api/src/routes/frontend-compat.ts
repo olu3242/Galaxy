@@ -967,30 +967,4 @@ export async function frontendCompatRoutes(fastify: FastifyInstance): Promise<vo
     },
   );
 
-  // ── Sprint 43: Broadcast send action ─────────────────────────────────────────
-
-  fastify.post(
-    '/broadcasts/:id/send',
-    async (
-      request: FastifyRequest<{
-        Params: { id: string };
-        Body: { organizationId: string };
-      }>,
-      reply: FastifyReply,
-    ) => {
-      const { id } = request.params;
-      const { organizationId } = request.body;
-      if (!organizationId) return reply.status(400).send({ error: 'organizationId required' });
-      await setTenant(fastify, organizationId);
-      const result = await fastify.pg.query<{ id: string }>(
-        `UPDATE broadcasts SET status = 'sending', scheduled_at = NOW(), updated_at = NOW()
-         WHERE id = $1 AND organization_id = $2
-         RETURNING id`,
-        [id, organizationId],
-      );
-      const row = result.rows[0];
-      if (!row) return reply.status(404).send({ error: 'Broadcast not found' });
-      return reply.send(envelope({ id: row.id, status: 'sending' }, request.id));
-    },
-  );
 }
