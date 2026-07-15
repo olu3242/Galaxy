@@ -651,4 +651,248 @@ export async function frontendCompatRoutes(fastify: FastifyInstance): Promise<vo
       return reply.send(envelope({ id: row.id, updatedAt: row.updated_at }, request.id));
     },
   );
+
+  // ── Sprint 36: WhatsApp send ──────────────────────────────────────────────────
+
+  fastify.post(
+    '/communication/whatsapp/send',
+    async (
+      request: FastifyRequest<{
+        Body: { organizationId: string; to: string; templateName: string; params?: unknown[] };
+      }>,
+      reply: FastifyReply,
+    ) => {
+      const { organizationId, to, templateName } = request.body;
+      if (!organizationId || !to || !templateName) {
+        return reply
+          .status(400)
+          .send({ error: 'organizationId, to, and templateName are required' });
+      }
+      await setTenant(fastify, organizationId);
+      const result = await fastify.pg.query<{ id: string; created_at: string }>(
+        `INSERT INTO whatsapp_messages
+           (organization_id, direction, phone_number, message_type, content, status)
+         VALUES ($1, 'outbound', $2, 'template', $3, 'queued')
+         RETURNING id, created_at`,
+        [organizationId, to, JSON.stringify({ templateName, params: request.body.params ?? [] })],
+      );
+      const row = result.rows[0];
+      if (!row) return reply.status(500).send({ error: 'Failed to queue message' });
+      return reply
+        .status(201)
+        .send(envelope({ id: row.id, createdAt: row.created_at }, request.id));
+    },
+  );
+
+  // ── Sprint 37: Governance reports ─────────────────────────────────────────────
+
+  fastify.post(
+    '/governance/reports',
+    async (
+      request: FastifyRequest<{
+        Body: {
+          organizationId: string;
+          title: string;
+          type: string;
+          config?: Record<string, unknown>;
+        };
+      }>,
+      reply: FastifyReply,
+    ) => {
+      const { organizationId, title, type } = request.body;
+      if (!organizationId || !title || !type) {
+        return reply.status(400).send({ error: 'organizationId, title, and type are required' });
+      }
+      await setTenant(fastify, organizationId);
+      const result = await fastify.pg.query<{ id: string; created_at: string }>(
+        `INSERT INTO reports (organization_id, name, type, config, status)
+         VALUES ($1, $2, $3, $4, 'pending')
+         RETURNING id, created_at`,
+        [organizationId, title, type, JSON.stringify(request.body.config ?? {})],
+      );
+      const row = result.rows[0];
+      if (!row) return reply.status(500).send({ error: 'Failed to create report' });
+      return reply
+        .status(201)
+        .send(envelope({ id: row.id, createdAt: row.created_at }, request.id));
+    },
+  );
+
+  // ── Sprint 38: Identity roles alias ───────────────────────────────────────────
+
+  fastify.post(
+    '/identity/roles',
+    async (
+      request: FastifyRequest<{
+        Body: {
+          organizationId: string;
+          name: string;
+          slug: string;
+          scope?: string;
+          description?: string;
+        };
+      }>,
+      reply: FastifyReply,
+    ) => {
+      const { organizationId, name, slug } = request.body;
+      if (!organizationId || !name || !slug) {
+        return reply.status(400).send({ error: 'organizationId, name, and slug are required' });
+      }
+      await setTenant(fastify, organizationId);
+      const result = await fastify.pg.query<{ id: string; created_at: string }>(
+        `INSERT INTO roles (organization_id, name, slug, scope, description)
+         VALUES ($1, $2, $3, $4, $5)
+         RETURNING id, created_at`,
+        [
+          organizationId,
+          name,
+          slug,
+          request.body.scope ?? 'organization',
+          request.body.description ?? null,
+        ],
+      );
+      const row = result.rows[0];
+      if (!row) return reply.status(500).send({ error: 'Failed to create role' });
+      return reply
+        .status(201)
+        .send(envelope({ id: row.id, createdAt: row.created_at }, request.id));
+    },
+  );
+
+  // ── Sprint 39: People departments / teams aliases ─────────────────────────────
+
+  fastify.post(
+    '/people/departments',
+    async (
+      request: FastifyRequest<{
+        Body: { organizationId: string; name: string; description?: string; parentId?: string };
+      }>,
+      reply: FastifyReply,
+    ) => {
+      const { organizationId, name } = request.body;
+      if (!organizationId || !name) {
+        return reply.status(400).send({ error: 'organizationId and name are required' });
+      }
+      await setTenant(fastify, organizationId);
+      const result = await fastify.pg.query<{ id: string; created_at: string }>(
+        `INSERT INTO departments (organization_id, name, description, parent_department_id)
+         VALUES ($1, $2, $3, $4)
+         RETURNING id, created_at`,
+        [organizationId, name, request.body.description ?? null, request.body.parentId ?? null],
+      );
+      const row = result.rows[0];
+      if (!row) return reply.status(500).send({ error: 'Failed to create department' });
+      return reply
+        .status(201)
+        .send(envelope({ id: row.id, createdAt: row.created_at }, request.id));
+    },
+  );
+
+  fastify.post(
+    '/people/teams',
+    async (
+      request: FastifyRequest<{
+        Body: { organizationId: string; name: string; departmentId?: string; description?: string };
+      }>,
+      reply: FastifyReply,
+    ) => {
+      const { organizationId, name } = request.body;
+      if (!organizationId || !name) {
+        return reply.status(400).send({ error: 'organizationId and name are required' });
+      }
+      await setTenant(fastify, organizationId);
+      const result = await fastify.pg.query<{ id: string; created_at: string }>(
+        `INSERT INTO teams (organization_id, name, description, department_id)
+         VALUES ($1, $2, $3, $4)
+         RETURNING id, created_at`,
+        [organizationId, name, request.body.description ?? null, request.body.departmentId ?? null],
+      );
+      const row = result.rows[0];
+      if (!row) return reply.status(500).send({ error: 'Failed to create team' });
+      return reply
+        .status(201)
+        .send(envelope({ id: row.id, createdAt: row.created_at }, request.id));
+    },
+  );
+
+  // ── Sprint 40: Knowledge documents ───────────────────────────────────────────
+
+  fastify.post(
+    '/knowledge/documents',
+    async (
+      request: FastifyRequest<{
+        Body: {
+          organizationId: string;
+          title: string;
+          content: string;
+          categoryId?: string;
+          tags?: string[];
+        };
+      }>,
+      reply: FastifyReply,
+    ) => {
+      const { organizationId, title, content } = request.body;
+      if (!organizationId || !title || !content) {
+        return reply.status(400).send({ error: 'organizationId, title, and content are required' });
+      }
+      await setTenant(fastify, organizationId);
+      const result = await fastify.pg.query<{ id: string; created_at: string }>(
+        `INSERT INTO knowledge_documents
+           (organization_id, title, content, category_id, status)
+         VALUES ($1, $2, $3, $4, 'draft')
+         RETURNING id, created_at`,
+        [organizationId, title, content, request.body.categoryId ?? null],
+      );
+      const row = result.rows[0];
+      if (!row) return reply.status(500).send({ error: 'Failed to create document' });
+      return reply
+        .status(201)
+        .send(envelope({ id: row.id, createdAt: row.created_at }, request.id));
+    },
+  );
+
+  fastify.patch(
+    '/knowledge/documents/:id',
+    async (
+      request: FastifyRequest<{
+        Params: { id: string };
+        Body: { organizationId: string; status?: string; title?: string; content?: string };
+      }>,
+      reply: FastifyReply,
+    ) => {
+      const { id } = request.params;
+      const { organizationId } = request.body;
+      if (!organizationId) {
+        return reply.status(400).send({ error: 'organizationId is required' });
+      }
+      await setTenant(fastify, organizationId);
+      const sets: string[] = [];
+      const params: unknown[] = [organizationId, id];
+      if (request.body.status !== undefined) {
+        params.push(request.body.status);
+        sets.push(`status = $${String(params.length)}`);
+      }
+      if (request.body.title !== undefined) {
+        params.push(request.body.title);
+        sets.push(`title = $${String(params.length)}`);
+      }
+      if (request.body.content !== undefined) {
+        params.push(request.body.content);
+        sets.push(`content = $${String(params.length)}`);
+      }
+      if (sets.length === 0) {
+        return reply.status(400).send({ error: 'No fields to update' });
+      }
+      sets.push('updated_at = NOW()');
+      const result = await fastify.pg.query<{ id: string; updated_at: string }>(
+        `UPDATE knowledge_documents SET ${sets.join(', ')}
+         WHERE organization_id = $1 AND id = $2
+         RETURNING id, updated_at`,
+        params,
+      );
+      const row = result.rows[0];
+      if (!row) return reply.status(404).send({ error: 'Document not found' });
+      return reply.send(envelope({ id: row.id, updatedAt: row.updated_at }, request.id));
+    },
+  );
 }
