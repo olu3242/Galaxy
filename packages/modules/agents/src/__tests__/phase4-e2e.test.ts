@@ -650,36 +650,67 @@ describe('AgentRuntime', () => {
 
   function makeRuntimePool(): Pool {
     const query = vi.fn();
-    // buildContext issues: set_config + 4 parallel queries (Promise.all) + 1 INSERT snapshot
-    // So the full call sequence inside execute() is:
+    // Full call sequence inside execute() — updated to match GxContextEngine + GxGovernanceEngine:
     //  0: set_config (runtime.setTenantContext)
     //  1: INSERT agent_executions → execRow
-    //  2: set_config (contextEngine.setTenantContext)
-    //  3..6: Promise.all([wf, approvals, decisions, org]) — 4 SELECTs, each returns ok([])
-    //  7: INSERT agent_context_snapshots → contextRow
-    //  8: set_config (riskEngine.setTenantContext)
-    //  9: INSERT risk_assessments → riskRow
-    // 10: set_config (decisionEngine.loadRules → setTenantContext)
-    // 11: SELECT decision_rules → []
-    // 12: set_config (decisionEngine.recordDecision → setTenantContext)
-    // 13: INSERT decisions → decisionRow
-    // 14: UPDATE agent_executions → completed
+    //  — STAGE 1 OBSERVE: GxContextEngine.enrich —
+    //  2: set_config (gxContextEngine)
+    //  3..6: Promise.all([org, memberRole, pendingApprovals, workflowCount]) — 4 SELECTs
+    //  — STAGE 5 GOVERNANCE: GxGovernanceEngine.evaluate —
+    //  7: set_config (gxGovernance)
+    //  8: SELECT policies → []  (tier-3, no human approval required)
+    //  — STAGE 6 EXECUTE: legacy contextEngine.buildContext —
+    //  9: set_config (contextEngine)
+    // 10..13: Promise.all([wf, approvals, decisions, org]) — 4 SELECTs
+    // 14: INSERT agent_context_snapshots → contextRow
+    //  — STAGE 6: riskEngine.assessRisk —
+    // 15: set_config (riskEngine)
+    // 16: INSERT risk_assessments → riskRow
+    //  — STAGE 6: decisionEngine.loadRules —
+    // 17: set_config (decisionEngine.loadRules)
+    // 18: SELECT decision_rules → []
+    //  — STAGE 6: decisionEngine.recordDecision —
+    // 19: set_config (decisionEngine.recordDecision)
+    // 20: INSERT decisions → decisionRow
+    //  — STAGE 6: GxExecutionEngine.executePlan (3 tasks, each defaultExecute/audit_logger) —
+    // 21: set_config (task-1)
+    // 22: set_config (task-2)
+    // 23: set_config (task-3 audit_logger)
+    //  — STAGE 8 LEARN: GxLearningEngine.recordOutcome —
+    // 24: set_config (learning)
+    // 25: INSERT agent_learning_events
+    //  — UPDATE exec to completed —
+    // 26: UPDATE agent_executions → completed
     query
-      .mockResolvedValueOnce(ok([])) //  0: set_config
+      .mockResolvedValueOnce(ok([])) //  0: set_config runtime
       .mockResolvedValueOnce(ok([execRow])) //  1: INSERT exec
-      .mockResolvedValueOnce(ok([])) //  2: set_config context
-      .mockResolvedValueOnce(ok([])) //  3: SELECT workflow_runs
-      .mockResolvedValueOnce(ok([])) //  4: SELECT approvals
-      .mockResolvedValueOnce(ok([])) //  5: SELECT decisions
-      .mockResolvedValueOnce(ok([{ member_count: '0', workflow_count: '0' }])) // 6: org counts
-      .mockResolvedValueOnce(ok([contextRow])) //  7: INSERT context_snapshots
-      .mockResolvedValueOnce(ok([])) //  8: set_config risk
-      .mockResolvedValueOnce(ok([riskRow])) //  9: INSERT risk_assessments
-      .mockResolvedValueOnce(ok([])) // 10: set_config rules
-      .mockResolvedValueOnce(ok([])) // 11: SELECT decision_rules
-      .mockResolvedValueOnce(ok([])) // 12: set_config decision
-      .mockResolvedValueOnce(ok([decisionRow])) // 13: INSERT decisions
-      .mockResolvedValueOnce(ok([{ ...execRow, status: 'completed' }])); // 14: UPDATE exec
+      .mockResolvedValueOnce(ok([])) //  2: set_config gxContext
+      .mockResolvedValueOnce(ok([])) //  3: SELECT org
+      .mockResolvedValueOnce(ok([])) //  4: SELECT member role
+      .mockResolvedValueOnce(ok([])) //  5: SELECT pending approvals
+      .mockResolvedValueOnce(ok([])) //  6: SELECT workflow count
+      .mockResolvedValueOnce(ok([])) //  7: set_config gxGovernance
+      .mockResolvedValueOnce(ok([])) //  8: SELECT policies
+      .mockResolvedValueOnce(ok([])) //  9: set_config contextEngine
+      .mockResolvedValueOnce(ok([])) // 10: SELECT workflow_runs
+      .mockResolvedValueOnce(ok([])) // 11: SELECT approvals
+      .mockResolvedValueOnce(ok([])) // 12: SELECT decisions
+      .mockResolvedValueOnce(ok([{ member_count: '0', workflow_count: '0' }])) // 13: org counts
+      .mockResolvedValueOnce(ok([contextRow])) // 14: INSERT context_snapshots
+      .mockResolvedValueOnce(ok([])) // 15: set_config riskEngine
+      .mockResolvedValueOnce(ok([riskRow])) // 16: INSERT risk_assessments
+      .mockResolvedValueOnce(ok([])) // 17: set_config decisionEngine loadRules
+      .mockResolvedValueOnce(ok([])) // 18: SELECT decision_rules
+      .mockResolvedValueOnce(ok([])) // 19: set_config decisionEngine recordDecision
+      .mockResolvedValueOnce(ok([decisionRow])) // 20: INSERT decisions
+      .mockResolvedValueOnce(ok([])) // 21: set_config executePlan task-1
+      .mockResolvedValueOnce(ok([])) // 22: set_config executePlan task-2
+      .mockResolvedValueOnce(ok([])) // 23: set_config executePlan task-3 (audit_logger)
+      .mockResolvedValueOnce(ok([])) // 24: set_config learning
+      .mockResolvedValueOnce(ok([])) // 25: INSERT agent_learning_events
+      .mockResolvedValueOnce(ok([])) // 26: set_config optimization (fire-and-forget, fires before UPDATE)
+      .mockResolvedValueOnce(ok([{ ...execRow, status: 'completed' }])) // 27: UPDATE exec
+      .mockResolvedValue(ok([])); // 28+: optimization SELECT + any remaining fire-and-forget
     return { query } as unknown as Pool;
   }
 
