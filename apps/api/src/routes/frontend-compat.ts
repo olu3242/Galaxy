@@ -684,40 +684,6 @@ export async function frontendCompatRoutes(fastify: FastifyInstance): Promise<vo
     },
   );
 
-  // ── Sprint 37: Governance reports ─────────────────────────────────────────────
-
-  fastify.post(
-    '/governance/reports',
-    async (
-      request: FastifyRequest<{
-        Body: {
-          organizationId: string;
-          title: string;
-          type: string;
-          config?: Record<string, unknown>;
-        };
-      }>,
-      reply: FastifyReply,
-    ) => {
-      const { organizationId, title, type } = request.body;
-      if (!organizationId || !title || !type) {
-        return reply.status(400).send({ error: 'organizationId, title, and type are required' });
-      }
-      await setTenant(fastify, organizationId);
-      const result = await fastify.pg.query<{ id: string; created_at: string }>(
-        `INSERT INTO reports (organization_id, name, type, config, status)
-         VALUES ($1, $2, $3, $4, 'pending')
-         RETURNING id, created_at`,
-        [organizationId, title, type, JSON.stringify(request.body.config ?? {})],
-      );
-      const row = result.rows[0];
-      if (!row) return reply.status(500).send({ error: 'Failed to create report' });
-      return reply
-        .status(201)
-        .send(envelope({ id: row.id, createdAt: row.created_at }, request.id));
-    },
-  );
-
   // ── Sprint 38: Identity roles alias ───────────────────────────────────────────
 
   fastify.post(
@@ -812,87 +778,6 @@ export async function frontendCompatRoutes(fastify: FastifyInstance): Promise<vo
       return reply
         .status(201)
         .send(envelope({ id: row.id, createdAt: row.created_at }, request.id));
-    },
-  );
-
-  // ── Sprint 40: Knowledge documents ───────────────────────────────────────────
-
-  fastify.post(
-    '/knowledge/documents',
-    async (
-      request: FastifyRequest<{
-        Body: {
-          organizationId: string;
-          title: string;
-          content: string;
-          categoryId?: string;
-          tags?: string[];
-        };
-      }>,
-      reply: FastifyReply,
-    ) => {
-      const { organizationId, title, content } = request.body;
-      if (!organizationId || !title || !content) {
-        return reply.status(400).send({ error: 'organizationId, title, and content are required' });
-      }
-      await setTenant(fastify, organizationId);
-      const result = await fastify.pg.query<{ id: string; created_at: string }>(
-        `INSERT INTO knowledge_documents
-           (organization_id, title, content, category_id, status)
-         VALUES ($1, $2, $3, $4, 'draft')
-         RETURNING id, created_at`,
-        [organizationId, title, content, request.body.categoryId ?? null],
-      );
-      const row = result.rows[0];
-      if (!row) return reply.status(500).send({ error: 'Failed to create document' });
-      return reply
-        .status(201)
-        .send(envelope({ id: row.id, createdAt: row.created_at }, request.id));
-    },
-  );
-
-  fastify.patch(
-    '/knowledge/documents/:id',
-    async (
-      request: FastifyRequest<{
-        Params: { id: string };
-        Body: { organizationId: string; status?: string; title?: string; content?: string };
-      }>,
-      reply: FastifyReply,
-    ) => {
-      const { id } = request.params;
-      const { organizationId } = request.body;
-      if (!organizationId) {
-        return reply.status(400).send({ error: 'organizationId is required' });
-      }
-      await setTenant(fastify, organizationId);
-      const sets: string[] = [];
-      const params: unknown[] = [organizationId, id];
-      if (request.body.status !== undefined) {
-        params.push(request.body.status);
-        sets.push(`status = $${String(params.length)}`);
-      }
-      if (request.body.title !== undefined) {
-        params.push(request.body.title);
-        sets.push(`title = $${String(params.length)}`);
-      }
-      if (request.body.content !== undefined) {
-        params.push(request.body.content);
-        sets.push(`content = $${String(params.length)}`);
-      }
-      if (sets.length === 0) {
-        return reply.status(400).send({ error: 'No fields to update' });
-      }
-      sets.push('updated_at = NOW()');
-      const result = await fastify.pg.query<{ id: string; updated_at: string }>(
-        `UPDATE knowledge_documents SET ${sets.join(', ')}
-         WHERE organization_id = $1 AND id = $2
-         RETURNING id, updated_at`,
-        params,
-      );
-      const row = result.rows[0];
-      if (!row) return reply.status(404).send({ error: 'Document not found' });
-      return reply.send(envelope({ id: row.id, updatedAt: row.updated_at }, request.id));
     },
   );
 
