@@ -895,4 +895,160 @@ export async function frontendCompatRoutes(fastify: FastifyInstance): Promise<vo
       return reply.send(envelope({ id: row.id, updatedAt: row.updated_at }, request.id));
     },
   );
+
+  // ── Sprint 41: Feature-flag toggle ───────────────────────────────────────────
+
+  fastify.put(
+    '/governance/feature-flags/:key',
+    async (
+      request: FastifyRequest<{
+        Params: { key: string };
+        Body: { organizationId: string; enabled: boolean };
+      }>,
+      reply: FastifyReply,
+    ) => {
+      const { key } = request.params;
+      const { organizationId, enabled } = request.body;
+      if (!organizationId) return reply.status(400).send({ error: 'organizationId required' });
+      await setTenant(fastify, organizationId);
+      await fastify.pg.query(
+        `UPDATE feature_flags SET enabled = $3, updated_at = NOW()
+         WHERE organization_id = $1 AND key = $2`,
+        [organizationId, key, enabled],
+      );
+      return reply.send(envelope({ key, enabled }, request.id));
+    },
+  );
+
+  // ── Sprint 42: Organization settings update ───────────────────────────────────
+
+  fastify.put(
+    '/identity/organizations/:orgId',
+    async (
+      request: FastifyRequest<{
+        Params: { orgId: string };
+        Body: {
+          name?: string;
+          timezone?: string;
+          locale?: string;
+          metadata?: Record<string, unknown>;
+        };
+      }>,
+      reply: FastifyReply,
+    ) => {
+      const { orgId } = request.params;
+      const sets: string[] = [];
+      const params: unknown[] = [orgId];
+      if (request.body.name !== undefined) {
+        params.push(request.body.name);
+        sets.push(`name = $${String(params.length)}`);
+      }
+      if (request.body.timezone !== undefined) {
+        params.push(request.body.timezone);
+        sets.push(`timezone = $${String(params.length)}`);
+      }
+      if (request.body.locale !== undefined) {
+        params.push(request.body.locale);
+        sets.push(`locale = $${String(params.length)}`);
+      }
+      if (request.body.metadata !== undefined) {
+        params.push(JSON.stringify(request.body.metadata));
+        sets.push(`metadata = $${String(params.length)}`);
+      }
+      if (sets.length === 0) return reply.status(400).send({ error: 'No fields to update' });
+      sets.push('updated_at = NOW()');
+      const result = await fastify.pg.query<{ id: string; updated_at: string }>(
+        `UPDATE organizations SET ${sets.join(', ')} WHERE id = $1 RETURNING id, updated_at`,
+        params,
+      );
+      const row = result.rows[0];
+      if (!row) return reply.status(404).send({ error: 'Organization not found' });
+      return reply.send(envelope({ id: row.id, updatedAt: row.updated_at }, request.id));
+    },
+  );
+
+  // ── Sprint 43: Broadcast send action ─────────────────────────────────────────
+
+  fastify.post(
+    '/broadcasts/:id/send',
+    async (
+      request: FastifyRequest<{
+        Params: { id: string };
+        Body: { organizationId: string };
+      }>,
+      reply: FastifyReply,
+    ) => {
+      const { id } = request.params;
+      const { organizationId } = request.body;
+      if (!organizationId) return reply.status(400).send({ error: 'organizationId required' });
+      await setTenant(fastify, organizationId);
+      const result = await fastify.pg.query<{ id: string }>(
+        `UPDATE broadcasts SET status = 'sending', scheduled_at = NOW(), updated_at = NOW()
+         WHERE id = $1 AND organization_id = $2
+         RETURNING id`,
+        [id, organizationId],
+      );
+      const row = result.rows[0];
+      if (!row) return reply.status(404).send({ error: 'Broadcast not found' });
+      return reply.send(envelope({ id: row.id, status: 'sending' }, request.id));
+    },
+  );
+
+  // ── Sprint 44: Integration connect/disconnect + create ───────────────────────
+
+  fastify.put(
+    '/integrations/:id/:action',
+    async (
+      request: FastifyRequest<{
+        Params: { id: string; action: string };
+        Body: { organizationId?: string };
+      }>,
+      reply: FastifyReply,
+    ) => {
+      const { id, action } = request.params;
+      const orgId = request.body.organizationId;
+      if (!orgId) return reply.status(400).send({ error: 'organizationId required' });
+      await setTenant(fastify, orgId);
+      const status = action === 'connect' ? 'active' : action === 'disconnect' ? 'inactive' : null;
+      if (!status) return reply.status(400).send({ error: 'action must be connect or disconnect' });
+      await fastify.pg.query(
+        `UPDATE integrations SET status = $3, updated_at = NOW()
+         WHERE id = $1 AND organization_id = $2`,
+        [id, orgId, status],
+      );
+      return reply.send(envelope({ id, status }, request.id));
+    },
+  );
+
+  fastify.post(
+    '/integrations',
+    async (
+      request: FastifyRequest<{
+        Body: {
+          organizationId: string;
+          name: string;
+          connectorType: string;
+          config?: Record<string, unknown>;
+        };
+      }>,
+      reply: FastifyReply,
+    ) => {
+      const { organizationId, name, connectorType } = request.body;
+      if (!organizationId || !name || !connectorType) {
+        return reply.status(400).send({ error: 'organizationId, name, connectorType required' });
+      }
+      await setTenant(fastify, organizationId);
+      const result = await fastify.pg.query<{ id: string; created_at: string }>(
+        `INSERT INTO integrations (organization_id, name, connector_type, config, status)
+         VALUES ($1, $2, $3, $4, 'inactive')
+         RETURNING id, created_at`,
+        [organizationId, name, connectorType, JSON.stringify(request.body.config ?? {})],
+      );
+      const row = result.rows[0];
+      if (!row) return reply.status(500).send({ error: 'Failed to create integration' });
+      return reply
+        .status(201)
+        .send(envelope({ id: row.id, createdAt: row.created_at }, request.id));
+    },
+  );
 }
