@@ -120,12 +120,13 @@ describe('BroadcastService.create', () => {
   it('throws Zod error for invalid targetType', async () => {
     const pool = makePool([ok([])]);
     const svc = new BroadcastService(pool, makeEventPublisher(), makeAuditService());
+    const badType: unknown = 'unknown';
     await expect(
       svc.create({
         organizationId: ORG,
         title: 'Update',
         content: 'Content',
-        targetType: 'unknown' as never,
+        targetType: badType as 'all',
         sentBy: ACTOR,
         correlationId: CORR,
       }),

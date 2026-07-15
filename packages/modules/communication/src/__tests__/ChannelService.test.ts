@@ -137,11 +137,12 @@ describe('ChannelService.create', () => {
   it('throws Zod error for invalid channelType', async () => {
     const pool = makePool([ok([])]);
     const svc = new ChannelService(pool, makeEventPublisher(), makeAuditService());
+    const badType: unknown = 'invalid';
     await expect(
       svc.create({
         organizationId: ORG,
         name: 'Bad',
-        channelType: 'invalid' as never,
+        channelType: badType as 'group',
         createdBy: ACTOR,
         correlationId: CORR,
       }),

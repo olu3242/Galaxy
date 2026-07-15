@@ -154,13 +154,14 @@ describe('MessageService.send', () => {
   it('throws Zod error for invalid contentType', async () => {
     const pool = makePool([ok([])]);
     const svc = new MessageService(pool, makeEventPublisher(), makeAuditService());
+    const badType: unknown = 'gif';
     await expect(
       svc.send({
         organizationId: ORG,
         channelId: CHANNEL_ID,
         senderId: SENDER,
         content: 'Hello!',
-        contentType: 'gif' as never,
+        contentType: badType as 'text',
         correlationId: CORR,
       }),
     ).rejects.toThrow();
