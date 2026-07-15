@@ -261,8 +261,8 @@ describe('WorkflowGeneratorService.listRequests', () => {
     const result = await service.listRequests(ORG_ID);
 
     expect(result).toHaveLength(2);
-    expect(result[0].id).toBe(REQUEST_ID);
-    expect(result[1].id).toBe('cccccccc-0000-0000-0000-000000000003');
+    expect(result[0]?.id).toBe(REQUEST_ID);
+    expect(result[1]?.id).toBe('cccccccc-0000-0000-0000-000000000003');
   });
 });
 
@@ -356,9 +356,9 @@ describe('WorkflowGeneratorService.generateWorkflow', () => {
     const stepsJson = finalParams[3] as string;
     const steps = JSON.parse(stepsJson) as WorkflowStep[];
     expect(steps).toHaveLength(3);
-    expect(steps[0].order).toBe(1);
-    expect(steps[1].order).toBe(2);
-    expect(steps[2].name).toContain('Step C');
+    expect(steps[0]?.order).toBe(1);
+    expect(steps[1]?.order).toBe(2);
+    expect(steps[2]?.name).toContain('Step C');
   });
 
   it('includes industryHint in generatedWorkflow when present', async () => {

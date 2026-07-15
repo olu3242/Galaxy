@@ -100,7 +100,7 @@ describe('PolicyService', () => {
       await svc.createPolicy(maliciousOrgId, 'Test', undefined, 'enforce').catch(() => undefined);
 
       const mock = pool.query as ReturnType<typeof vi.fn>;
-      const calls = mock.mock.calls as Array<[string, unknown[]]>;
+      const calls = mock.mock.calls as [string, unknown[]][];
       for (const [sql] of calls) {
         expect(sql).not.toContain(maliciousOrgId);
       }
@@ -267,7 +267,7 @@ describe('PolicyService', () => {
       await svc.getPolicy(ORG_ID, POLICY_ID);
 
       const mock = pool.query as ReturnType<typeof vi.fn>;
-      const calls = mock.mock.calls as Array<[string, unknown[]]>;
+      const calls = mock.mock.calls as [string, unknown[]][];
       const tenantCall = calls[0];
       // Tenant context must reference ORG_ID, not OTHER_ORG
       expect(tenantCall).toEqual([
