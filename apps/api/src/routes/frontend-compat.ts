@@ -966,5 +966,4 @@ export async function frontendCompatRoutes(fastify: FastifyInstance): Promise<vo
       return reply.send(envelope({ id: row.id, updatedAt: row.updated_at }, request.id));
     },
   );
-
 }
