@@ -40,11 +40,10 @@ describe('PolicyService', () => {
       await svc.createPolicy(ORG_ID, 'Test Policy', 'A test policy', 'enforce');
 
       const mock = pool.query as ReturnType<typeof vi.fn>;
-      expect(mock).toHaveBeenNthCalledWith(
-        1,
-        'SELECT set_config($1, $2, true)',
-        ['app.current_tenant', ORG_ID],
-      );
+      expect(mock).toHaveBeenNthCalledWith(1, 'SELECT set_config($1, $2, true)', [
+        'app.current_tenant',
+        ORG_ID,
+      ]);
     });
 
     it('returns a typed Policy domain object on success', async () => {
@@ -68,11 +67,12 @@ describe('PolicyService', () => {
       await svc.createPolicy(ORG_ID, 'Test Policy', undefined, 'audit');
 
       const mock = pool.query as ReturnType<typeof vi.fn>;
-      expect(mock).toHaveBeenNthCalledWith(
-        2,
-        expect.stringContaining('INSERT INTO policies'),
-        [ORG_ID, 'Test Policy', null, 'audit'],
-      );
+      expect(mock).toHaveBeenNthCalledWith(2, expect.stringContaining('INSERT INTO policies'), [
+        ORG_ID,
+        'Test Policy',
+        null,
+        'audit',
+      ]);
     });
 
     it('omits description key when DB returns null', async () => {
@@ -114,11 +114,10 @@ describe('PolicyService', () => {
       await svc.getPolicy(ORG_ID, POLICY_ID);
 
       const mock = pool.query as ReturnType<typeof vi.fn>;
-      expect(mock).toHaveBeenNthCalledWith(
-        1,
-        'SELECT set_config($1, $2, true)',
-        ['app.current_tenant', ORG_ID],
-      );
+      expect(mock).toHaveBeenNthCalledWith(1, 'SELECT set_config($1, $2, true)', [
+        'app.current_tenant',
+        ORG_ID,
+      ]);
     });
 
     it('returns the policy when found', async () => {
@@ -142,11 +141,10 @@ describe('PolicyService', () => {
       await svc.getPolicy(ORG_ID, POLICY_ID);
 
       const mock = pool.query as ReturnType<typeof vi.fn>;
-      expect(mock).toHaveBeenNthCalledWith(
-        2,
-        expect.stringContaining('FROM policies'),
-        [ORG_ID, POLICY_ID],
-      );
+      expect(mock).toHaveBeenNthCalledWith(2, expect.stringContaining('FROM policies'), [
+        ORG_ID,
+        POLICY_ID,
+      ]);
     });
   });
 
@@ -157,11 +155,10 @@ describe('PolicyService', () => {
       await svc.listPolicies(ORG_ID);
 
       const mock = pool.query as ReturnType<typeof vi.fn>;
-      expect(mock).toHaveBeenNthCalledWith(
-        1,
-        'SELECT set_config($1, $2, true)',
-        ['app.current_tenant', ORG_ID],
-      );
+      expect(mock).toHaveBeenNthCalledWith(1, 'SELECT set_config($1, $2, true)', [
+        'app.current_tenant',
+        ORG_ID,
+      ]);
     });
 
     it('returns all policies mapped to domain objects', async () => {
@@ -193,11 +190,10 @@ describe('PolicyService', () => {
       await svc.activatePolicy(ORG_ID, POLICY_ID);
 
       const mock = pool.query as ReturnType<typeof vi.fn>;
-      expect(mock).toHaveBeenNthCalledWith(
-        1,
-        'SELECT set_config($1, $2, true)',
-        ['app.current_tenant', ORG_ID],
-      );
+      expect(mock).toHaveBeenNthCalledWith(1, 'SELECT set_config($1, $2, true)', [
+        'app.current_tenant',
+        ORG_ID,
+      ]);
     });
 
     it('returns policy with status active', async () => {
@@ -220,11 +216,10 @@ describe('PolicyService', () => {
       await svc.activatePolicy(ORG_ID, POLICY_ID);
 
       const mock = pool.query as ReturnType<typeof vi.fn>;
-      expect(mock).toHaveBeenNthCalledWith(
-        2,
-        expect.stringContaining('UPDATE policies'),
-        [ORG_ID, POLICY_ID],
-      );
+      expect(mock).toHaveBeenNthCalledWith(2, expect.stringContaining('UPDATE policies'), [
+        ORG_ID,
+        POLICY_ID,
+      ]);
     });
   });
 
@@ -251,11 +246,10 @@ describe('PolicyService', () => {
       await svc.deactivatePolicy(ORG_ID, POLICY_ID);
 
       const mock = pool.query as ReturnType<typeof vi.fn>;
-      expect(mock).toHaveBeenNthCalledWith(
-        2,
-        expect.stringContaining('UPDATE policies'),
-        [ORG_ID, POLICY_ID],
-      );
+      expect(mock).toHaveBeenNthCalledWith(2, expect.stringContaining('UPDATE policies'), [
+        ORG_ID,
+        POLICY_ID,
+      ]);
     });
   });
 

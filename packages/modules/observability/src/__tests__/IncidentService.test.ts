@@ -51,11 +51,10 @@ describe('IncidentService', () => {
       expect(inc.id).toBe('inc-1');
       expect(inc.status).toBe('open');
       expect(inc.severity).toBe('sev1');
-      expect(pool.query).toHaveBeenNthCalledWith(
-        1,
-        'SELECT set_config($1, $2, true)',
-        ['app.current_tenant', ORG],
-      );
+      expect(pool.query).toHaveBeenNthCalledWith(1, 'SELECT set_config($1, $2, true)', [
+        'app.current_tenant',
+        ORG,
+      ]);
     });
 
     it('throws when insert returns no row', async () => {

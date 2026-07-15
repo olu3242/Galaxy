@@ -41,11 +41,10 @@ describe('PolicyRuleService', () => {
       await svc.addRule(ORG_ID, POLICY_ID, 'amount', 'greater_than', 1000, 'deny', 10);
 
       const mock = pool.query as ReturnType<typeof vi.fn>;
-      expect(mock).toHaveBeenNthCalledWith(
-        1,
-        'SELECT set_config($1, $2, true)',
-        ['app.current_tenant', ORG_ID],
-      );
+      expect(mock).toHaveBeenNthCalledWith(1, 'SELECT set_config($1, $2, true)', [
+        'app.current_tenant',
+        ORG_ID,
+      ]);
     });
 
     it('returns a typed PolicyRule on success', async () => {
@@ -69,11 +68,15 @@ describe('PolicyRuleService', () => {
       await svc.addRule(ORG_ID, POLICY_ID, 'amount', 'equals', 'X', 'deny');
 
       const mock = pool.query as ReturnType<typeof vi.fn>;
-      expect(mock).toHaveBeenNthCalledWith(
-        2,
-        expect.stringContaining('INSERT INTO policy_rules'),
-        [ORG_ID, POLICY_ID, 'amount', 'equals', JSON.stringify('X'), 'deny', 0],
-      );
+      expect(mock).toHaveBeenNthCalledWith(2, expect.stringContaining('INSERT INTO policy_rules'), [
+        ORG_ID,
+        POLICY_ID,
+        'amount',
+        'equals',
+        JSON.stringify('X'),
+        'deny',
+        0,
+      ]);
     });
 
     it('JSON-stringifies value before passing to query', async () => {
@@ -102,9 +105,9 @@ describe('PolicyRuleService', () => {
       const maliciousField = "'; DROP TABLE policy_rules; --";
       const pool = makePool([ok([]), ok([ruleRow])]);
       const svc = new PolicyRuleService(pool);
-      await svc.addRule(ORG_ID, POLICY_ID, maliciousField, 'equals', 'val', 'deny').catch(
-        () => undefined,
-      );
+      await svc
+        .addRule(ORG_ID, POLICY_ID, maliciousField, 'equals', 'val', 'deny')
+        .catch(() => undefined);
 
       const mock = pool.query as ReturnType<typeof vi.fn>;
       const calls = mock.mock.calls as [string, unknown[]][];
@@ -121,11 +124,10 @@ describe('PolicyRuleService', () => {
       await svc.getRules(ORG_ID, POLICY_ID);
 
       const mock = pool.query as ReturnType<typeof vi.fn>;
-      expect(mock).toHaveBeenNthCalledWith(
-        1,
-        'SELECT set_config($1, $2, true)',
-        ['app.current_tenant', ORG_ID],
-      );
+      expect(mock).toHaveBeenNthCalledWith(1, 'SELECT set_config($1, $2, true)', [
+        'app.current_tenant',
+        ORG_ID,
+      ]);
     });
 
     it('returns rules sorted by priority (caller trusts DB ordering)', async () => {
@@ -154,11 +156,10 @@ describe('PolicyRuleService', () => {
       await svc.getRules(ORG_ID, POLICY_ID);
 
       const mock = pool.query as ReturnType<typeof vi.fn>;
-      expect(mock).toHaveBeenNthCalledWith(
-        2,
-        expect.stringContaining('FROM policy_rules'),
-        [ORG_ID, POLICY_ID],
-      );
+      expect(mock).toHaveBeenNthCalledWith(2, expect.stringContaining('FROM policy_rules'), [
+        ORG_ID,
+        POLICY_ID,
+      ]);
     });
 
     it('maps all operator types correctly', async () => {
@@ -187,11 +188,10 @@ describe('PolicyRuleService', () => {
       await svc.deleteRule(ORG_ID, RULE_ID);
 
       const mock = pool.query as ReturnType<typeof vi.fn>;
-      expect(mock).toHaveBeenNthCalledWith(
-        1,
-        'SELECT set_config($1, $2, true)',
-        ['app.current_tenant', ORG_ID],
-      );
+      expect(mock).toHaveBeenNthCalledWith(1, 'SELECT set_config($1, $2, true)', [
+        'app.current_tenant',
+        ORG_ID,
+      ]);
     });
 
     it('issues DELETE with parameterized orgId and ruleId', async () => {
@@ -200,11 +200,10 @@ describe('PolicyRuleService', () => {
       await svc.deleteRule(ORG_ID, RULE_ID);
 
       const mock = pool.query as ReturnType<typeof vi.fn>;
-      expect(mock).toHaveBeenNthCalledWith(
-        2,
-        expect.stringContaining('DELETE FROM policy_rules'),
-        [ORG_ID, RULE_ID],
-      );
+      expect(mock).toHaveBeenNthCalledWith(2, expect.stringContaining('DELETE FROM policy_rules'), [
+        ORG_ID,
+        RULE_ID,
+      ]);
     });
 
     it('resolves without error on success', async () => {

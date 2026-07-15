@@ -74,11 +74,10 @@ describe('NotificationPreferenceService.get', () => {
 
     await svc.get(ORG, MEMBER_ID, 'in_app', 'workflow.submitted');
 
-    expect(pool.query).toHaveBeenNthCalledWith(
-      1,
-      'SELECT set_config($1, $2, true)',
-      ['app.current_tenant', ORG],
-    );
+    expect(pool.query).toHaveBeenNthCalledWith(1, 'SELECT set_config($1, $2, true)', [
+      'app.current_tenant',
+      ORG,
+    ]);
   });
 
   it('maps all fields from the row', async () => {
@@ -113,11 +112,10 @@ describe('NotificationPreferenceService.upsert', () => {
     expect(result.isEnabled).toBe(false);
     expect(result.organizationId).toBe(ORG);
 
-    expect(pool.query).toHaveBeenNthCalledWith(
-      1,
-      'SELECT set_config($1, $2, true)',
-      ['app.current_tenant', ORG],
-    );
+    expect(pool.query).toHaveBeenNthCalledWith(1, 'SELECT set_config($1, $2, true)', [
+      'app.current_tenant',
+      ORG,
+    ]);
   });
 
   it('enables a preference', async () => {
@@ -158,7 +156,11 @@ describe('NotificationPreferenceService.listForMember', () => {
   it('returns all preferences for a member', async () => {
     const rows = [
       prefRow({ channel: 'in_app', notification_type: 'workflow.submitted' }),
-      prefRow({ id: '00000000-0000-0000-0000-000000000031', channel: 'email', notification_type: 'report.ready' }),
+      prefRow({
+        id: '00000000-0000-0000-0000-000000000031',
+        channel: 'email',
+        notification_type: 'report.ready',
+      }),
     ];
     const pool = makePool([ok([]), ok(rows)]);
     const svc = new NotificationPreferenceService(pool);
@@ -183,10 +185,9 @@ describe('NotificationPreferenceService.listForMember', () => {
 
     await svc.listForMember(ORG, MEMBER_ID);
 
-    expect(pool.query).toHaveBeenNthCalledWith(
-      1,
-      'SELECT set_config($1, $2, true)',
-      ['app.current_tenant', ORG],
-    );
+    expect(pool.query).toHaveBeenNthCalledWith(1, 'SELECT set_config($1, $2, true)', [
+      'app.current_tenant',
+      ORG,
+    ]);
   });
 });

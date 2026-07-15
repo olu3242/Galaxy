@@ -31,7 +31,13 @@ function makePool(responses: QueryResult[]): Pool {
   } as unknown as Pool;
 }
 
-function syncLogRow(overrides: Partial<{ records_synced: string; error_count: string; completed_at: string | null }> = {}) {
+function syncLogRow(
+  overrides: Partial<{
+    records_synced: string;
+    error_count: string;
+    completed_at: string | null;
+  }> = {},
+) {
   return {
     id: SYNC_LOG_ID,
     organization_id: ORG,
@@ -68,7 +74,11 @@ describe('IntegrationSyncService.triggerSync', () => {
   it('sets tenant context before INSERT', async () => {
     const pool = makePool([ok([]), ok([syncLogRow()])]);
     const svc = new IntegrationSyncService(pool);
-    await svc.triggerSync({ organizationId: ORG, connectorId: CONNECTOR_ID, direction: 'outbound' });
+    await svc.triggerSync({
+      organizationId: ORG,
+      connectorId: CONNECTOR_ID,
+      direction: 'outbound',
+    });
     const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as [string, string[]][];
     const [sql, params] = calls[0] ?? ['', []];
     expect(sql).toBe('SELECT set_config($1, $2, true)');
@@ -86,7 +96,11 @@ describe('IntegrationSyncService.triggerSync', () => {
   it('passes direction to parameterized query', async () => {
     const pool = makePool([ok([]), ok([syncLogRow()])]);
     const svc = new IntegrationSyncService(pool);
-    await svc.triggerSync({ organizationId: ORG, connectorId: CONNECTOR_ID, direction: 'bidirectional' });
+    await svc.triggerSync({
+      organizationId: ORG,
+      connectorId: CONNECTOR_ID,
+      direction: 'bidirectional',
+    });
     const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as [string, unknown[]][];
     const params = calls[1]?.[1] ?? [];
     expect(params).toContain('bidirectional');
@@ -133,10 +147,7 @@ describe('IntegrationSyncService.completeSyncLog', () => {
 
 describe('IntegrationSyncService.listSyncLogs', () => {
   it('returns all sync logs for a connector', async () => {
-    const rows = [
-      syncLogRow({ records_synced: '100' }),
-      syncLogRow({ records_synced: '200' }),
-    ];
+    const rows = [syncLogRow({ records_synced: '100' }), syncLogRow({ records_synced: '200' })];
     const pool = makePool([ok([]), ok(rows)]);
     const svc = new IntegrationSyncService(pool);
     const result = await svc.listSyncLogs(ORG, CONNECTOR_ID);

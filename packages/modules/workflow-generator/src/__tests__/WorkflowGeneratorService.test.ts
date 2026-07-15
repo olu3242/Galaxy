@@ -113,7 +113,11 @@ describe('WorkflowGeneratorService.createRequest', () => {
     const pool = makePool([ok([]), ok([rowWithHint])]);
     const service = new WorkflowGeneratorService(pool);
 
-    const result = await service.createRequest(ORG_ID, 'Submit invoice then approve payment', 'sme');
+    const result = await service.createRequest(
+      ORG_ID,
+      'Submit invoice then approve payment',
+      'sme',
+    );
 
     expect(result.id).toBe(REQUEST_ID);
     expect(result.organizationId).toBe(ORG_ID);
@@ -279,10 +283,10 @@ describe('WorkflowGeneratorService.listRequests', () => {
 describe('WorkflowGeneratorService.generateWorkflow', () => {
   it('sets tenant context as the very first call', async () => {
     const pool = makePool([
-      ok([]),          // set_config
-      ok([]),          // UPDATE generating
-      ok([]),          // set_config (getRequest)
-      ok([baseRow]),   // SELECT (getRequest)
+      ok([]), // set_config
+      ok([]), // UPDATE generating
+      ok([]), // set_config (getRequest)
+      ok([baseRow]), // SELECT (getRequest)
       ok([completeRow]), // UPDATE complete RETURNING *
     ]);
     const service = new WorkflowGeneratorService(pool);
@@ -297,13 +301,7 @@ describe('WorkflowGeneratorService.generateWorkflow', () => {
   });
 
   it('marks status generating before fetching request', async () => {
-    const pool = makePool([
-      ok([]),
-      ok([]),
-      ok([]),
-      ok([baseRow]),
-      ok([completeRow]),
-    ]);
+    const pool = makePool([ok([]), ok([]), ok([]), ok([baseRow]), ok([completeRow])]);
     const service = new WorkflowGeneratorService(pool);
 
     await service.generateWorkflow(ORG_ID, REQUEST_ID);
@@ -316,13 +314,7 @@ describe('WorkflowGeneratorService.generateWorkflow', () => {
   });
 
   it('returns a complete domain object with generated_workflow and steps', async () => {
-    const pool = makePool([
-      ok([]),
-      ok([]),
-      ok([]),
-      ok([baseRow]),
-      ok([completeRow]),
-    ]);
+    const pool = makePool([ok([]), ok([]), ok([]), ok([baseRow]), ok([completeRow])]);
     const service = new WorkflowGeneratorService(pool);
 
     const result = await service.generateWorkflow(ORG_ID, REQUEST_ID);
@@ -339,13 +331,7 @@ describe('WorkflowGeneratorService.generateWorkflow', () => {
       ...baseRow,
       natural_language_description: 'Step A then Step B then Step C',
     };
-    const pool = makePool([
-      ok([]),
-      ok([]),
-      ok([]),
-      ok([twoStepRow]),
-      ok([completeRow]),
-    ]);
+    const pool = makePool([ok([]), ok([]), ok([]), ok([twoStepRow]), ok([completeRow])]);
     const service = new WorkflowGeneratorService(pool);
 
     await service.generateWorkflow(ORG_ID, REQUEST_ID);
@@ -366,13 +352,7 @@ describe('WorkflowGeneratorService.generateWorkflow', () => {
       ...baseRow,
       industry_hint: 'sme',
     };
-    const pool = makePool([
-      ok([]),
-      ok([]),
-      ok([]),
-      ok([rowWithHint]),
-      ok([completeRow]),
-    ]);
+    const pool = makePool([ok([]), ok([]), ok([]), ok([rowWithHint]), ok([completeRow])]);
     const service = new WorkflowGeneratorService(pool);
 
     await service.generateWorkflow(ORG_ID, REQUEST_ID);
@@ -385,13 +365,7 @@ describe('WorkflowGeneratorService.generateWorkflow', () => {
   });
 
   it('does not include industryHint in generatedWorkflow when absent', async () => {
-    const pool = makePool([
-      ok([]),
-      ok([]),
-      ok([]),
-      ok([baseRow]),
-      ok([completeRow]),
-    ]);
+    const pool = makePool([ok([]), ok([]), ok([]), ok([baseRow]), ok([completeRow])]);
     const service = new WorkflowGeneratorService(pool);
 
     await service.generateWorkflow(ORG_ID, REQUEST_ID);
@@ -404,13 +378,7 @@ describe('WorkflowGeneratorService.generateWorkflow', () => {
   });
 
   it('throws when final UPDATE returns no rows', async () => {
-    const pool = makePool([
-      ok([]),
-      ok([]),
-      ok([]),
-      ok([baseRow]),
-      ok([]),
-    ]);
+    const pool = makePool([ok([]), ok([]), ok([]), ok([baseRow]), ok([])]);
     const service = new WorkflowGeneratorService(pool);
 
     await expect(service.generateWorkflow(ORG_ID, REQUEST_ID)).rejects.toThrow(
@@ -423,7 +391,7 @@ describe('WorkflowGeneratorService.generateWorkflow', () => {
       ok([]),
       ok([]),
       ok([]),
-      ok([]),   // getRequest returns empty → throws
+      ok([]), // getRequest returns empty → throws
     ]);
     const service = new WorkflowGeneratorService(pool);
 

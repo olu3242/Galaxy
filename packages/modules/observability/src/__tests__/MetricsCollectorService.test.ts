@@ -44,11 +44,10 @@ describe('MetricsCollectorService', () => {
       expect(point.id).toBe('mp-1');
       expect(point.metricValue).toBe(75.5);
       expect(point.metricName).toBe('cpu_usage');
-      expect(pool.query).toHaveBeenNthCalledWith(
-        1,
-        'SELECT set_config($1, $2, true)',
-        ['app.current_tenant', ORG],
-      );
+      expect(pool.query).toHaveBeenNthCalledWith(1, 'SELECT set_config($1, $2, true)', [
+        'app.current_tenant',
+        ORG,
+      ]);
     });
 
     it('uses provided timestamp when given', async () => {
@@ -185,11 +184,10 @@ describe('MetricsCollectorService', () => {
       const pool = makePool([TENANT_CALL, ok([valueRow])]);
       const svc = new MetricsCollectorService(pool);
       await svc.aggregate(ORG, 'cpu_usage', '2025-01-01T00:00:00Z', '2025-01-02T00:00:00Z', 'min');
-      expect(pool.query).toHaveBeenNthCalledWith(
-        1,
-        'SELECT set_config($1, $2, true)',
-        ['app.current_tenant', ORG],
-      );
+      expect(pool.query).toHaveBeenNthCalledWith(1, 'SELECT set_config($1, $2, true)', [
+        'app.current_tenant',
+        ORG,
+      ]);
     });
   });
 });

@@ -7,7 +7,10 @@
  */
 import { describe, it, expect, vi } from 'vitest';
 import type { Pool, QueryResult } from 'pg';
-import { NotificationTemplateService, renderTemplate } from '../services/NotificationTemplateService.js';
+import {
+  NotificationTemplateService,
+  renderTemplate,
+} from '../services/NotificationTemplateService.js';
 import type { NotificationTemplateRow } from '../types.js';
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
@@ -96,11 +99,10 @@ describe('NotificationTemplateService.create', () => {
     expect(result.name).toBe('Welcome');
     expect(result.isActive).toBe(true);
 
-    expect(pool.query).toHaveBeenNthCalledWith(
-      1,
-      'SELECT set_config($1, $2, true)',
-      ['app.current_tenant', ORG],
-    );
+    expect(pool.query).toHaveBeenNthCalledWith(1, 'SELECT set_config($1, $2, true)', [
+      'app.current_tenant',
+      ORG,
+    ]);
   });
 
   it('throws ZodError for invalid channel', async () => {
@@ -176,11 +178,10 @@ describe('NotificationTemplateService.getById', () => {
 
     await svc.getById(ORG, TMPL_ID);
 
-    expect(pool.query).toHaveBeenNthCalledWith(
-      1,
-      'SELECT set_config($1, $2, true)',
-      ['app.current_tenant', ORG],
-    );
+    expect(pool.query).toHaveBeenNthCalledWith(1, 'SELECT set_config($1, $2, true)', [
+      'app.current_tenant',
+      ORG,
+    ]);
   });
 });
 
@@ -204,11 +205,10 @@ describe('NotificationTemplateService.update', () => {
 
     await svc.update(ORG, TMPL_ID, { name: 'New Name' });
 
-    expect(pool.query).toHaveBeenNthCalledWith(
-      1,
-      'SELECT set_config($1, $2, true)',
-      ['app.current_tenant', ORG],
-    );
+    expect(pool.query).toHaveBeenNthCalledWith(1, 'SELECT set_config($1, $2, true)', [
+      'app.current_tenant',
+      ORG,
+    ]);
   });
 
   it('throws when UPDATE RETURNING returns no row', async () => {
@@ -230,11 +230,10 @@ describe('NotificationTemplateService.delete', () => {
 
     await svc.delete(ORG, TMPL_ID);
 
-    expect(pool.query).toHaveBeenNthCalledWith(
-      1,
-      'SELECT set_config($1, $2, true)',
-      ['app.current_tenant', ORG],
-    );
+    expect(pool.query).toHaveBeenNthCalledWith(1, 'SELECT set_config($1, $2, true)', [
+      'app.current_tenant',
+      ORG,
+    ]);
     expect(pool.query).toHaveBeenCalledTimes(2);
   });
 
@@ -250,7 +249,10 @@ describe('NotificationTemplateService.delete', () => {
 
 describe('NotificationTemplateService.list', () => {
   it('returns all templates for the org', async () => {
-    const rows = [templateRow(), templateRow({ id: '00000000-0000-0000-0000-000000000011', name: 'Goodbye' })];
+    const rows = [
+      templateRow(),
+      templateRow({ id: '00000000-0000-0000-0000-000000000011', name: 'Goodbye' }),
+    ];
     const pool = makePool([ok([]), ok(rows)]);
     const svc = new NotificationTemplateService(pool);
 
@@ -273,10 +275,9 @@ describe('NotificationTemplateService.list', () => {
 
     await svc.list(ORG);
 
-    expect(pool.query).toHaveBeenNthCalledWith(
-      1,
-      'SELECT set_config($1, $2, true)',
-      ['app.current_tenant', ORG],
-    );
+    expect(pool.query).toHaveBeenNthCalledWith(1, 'SELECT set_config($1, $2, true)', [
+      'app.current_tenant',
+      ORG,
+    ]);
   });
 });

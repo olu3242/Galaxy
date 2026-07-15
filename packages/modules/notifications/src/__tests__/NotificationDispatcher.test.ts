@@ -8,7 +8,10 @@
 import { describe, it, expect, vi } from 'vitest';
 import { NotificationDispatcher } from '../services/NotificationDispatcher.js';
 import type { NotificationService } from '../services/NotificationService.js';
-import type { NotificationPreferenceService, NotificationPreference } from '../services/NotificationPreferenceService.js';
+import type {
+  NotificationPreferenceService,
+  NotificationPreference,
+} from '../services/NotificationPreferenceService.js';
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
 
@@ -45,9 +48,8 @@ function makePrefService(
   prefsByChannel: Record<string, NotificationPreference | null> = {},
 ): NotificationPreferenceService {
   return {
-    get: vi.fn(
-      (_org: string, _member: string, channel: string, _type: string) =>
-        Promise.resolve(prefsByChannel[channel] ?? null),
+    get: vi.fn((_org: string, _member: string, channel: string, _type: string) =>
+      Promise.resolve(prefsByChannel[channel] ?? null),
     ),
     upsert: vi.fn(),
     listForMember: vi.fn(),
@@ -88,9 +90,7 @@ describe('NotificationDispatcher.dispatch', () => {
     await dispatcher.dispatch(BASE_INPUT);
 
     expect(notifSvc.create).toHaveBeenCalledOnce();
-    expect(notifSvc.create).toHaveBeenCalledWith(
-      expect.objectContaining({ channel: 'in_app' }),
-    );
+    expect(notifSvc.create).toHaveBeenCalledWith(expect.objectContaining({ channel: 'in_app' }));
   });
 
   it('sends to all specified channels when all preferences are enabled', async () => {
@@ -117,9 +117,7 @@ describe('NotificationDispatcher.dispatch', () => {
     await dispatcher.dispatch({ ...BASE_INPUT, channels: ['in_app', 'email'] });
 
     expect(notifSvc.create).toHaveBeenCalledOnce();
-    expect(notifSvc.create).toHaveBeenCalledWith(
-      expect.objectContaining({ channel: 'in_app' }),
-    );
+    expect(notifSvc.create).toHaveBeenCalledWith(expect.objectContaining({ channel: 'in_app' }));
   });
 
   it('sends when no preference record exists (defaults to enabled)', async () => {
@@ -131,9 +129,7 @@ describe('NotificationDispatcher.dispatch', () => {
     await dispatcher.dispatch({ ...BASE_INPUT, channels: ['whatsapp'] });
 
     expect(notifSvc.create).toHaveBeenCalledOnce();
-    expect(notifSvc.create).toHaveBeenCalledWith(
-      expect.objectContaining({ channel: 'whatsapp' }),
-    );
+    expect(notifSvc.create).toHaveBeenCalledWith(expect.objectContaining({ channel: 'whatsapp' }));
   });
 
   it('skips all channels when all preferences are disabled', async () => {
@@ -157,9 +153,7 @@ describe('NotificationDispatcher.dispatch', () => {
     const data = { workflowId: 'wf-123' };
     await dispatcher.dispatch({ ...BASE_INPUT, data });
 
-    expect(notifSvc.create).toHaveBeenCalledWith(
-      expect.objectContaining({ data }),
-    );
+    expect(notifSvc.create).toHaveBeenCalledWith(expect.objectContaining({ data }));
   });
 
   it('passes correlationId and actorId to NotificationService.create', async () => {

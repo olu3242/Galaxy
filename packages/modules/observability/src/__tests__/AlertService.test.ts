@@ -66,11 +66,10 @@ describe('AlertService', () => {
       expect(rule.threshold).toBe(80);
       expect(rule.operator).toBe('gt');
       expect(pool.query).toHaveBeenCalledTimes(2);
-      expect(pool.query).toHaveBeenNthCalledWith(
-        1,
-        'SELECT set_config($1, $2, true)',
-        ['app.current_tenant', ORG],
-      );
+      expect(pool.query).toHaveBeenNthCalledWith(1, 'SELECT set_config($1, $2, true)', [
+        'app.current_tenant',
+        ORG,
+      ]);
     });
 
     it('throws when insert returns no row', async () => {
@@ -136,7 +135,11 @@ describe('AlertService', () => {
 
   describe('resolveAlert', () => {
     it('returns resolved alert', async () => {
-      const resolved: AlertRow = { ...alertRow, state: 'resolved', resolved_at: '2025-01-01T02:00:00Z' };
+      const resolved: AlertRow = {
+        ...alertRow,
+        state: 'resolved',
+        resolved_at: '2025-01-01T02:00:00Z',
+      };
       const pool = makePool([TENANT_CALL, ok([resolved])]);
       const svc = new AlertService(pool);
       const alert = await svc.resolveAlert(ORG, 'alert-1');
@@ -250,13 +253,7 @@ describe('AlertService', () => {
 
     it('fires alert for eq operator', async () => {
       const eqRule: AlertRuleRow = { ...ruleRow, operator: 'eq', threshold: '50' };
-      const pool = makePool([
-        TENANT_CALL,
-        ok([eqRule]),
-        TENANT_CALL,
-        ok([eqRule]),
-        ok([alertRow]),
-      ]);
+      const pool = makePool([TENANT_CALL, ok([eqRule]), TENANT_CALL, ok([eqRule]), ok([alertRow])]);
       const svc = new AlertService(pool);
       const alerts = await svc.evaluateRules(ORG, 'cpu_usage', 50);
       expect(alerts).toHaveLength(1);

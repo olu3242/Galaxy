@@ -84,11 +84,10 @@ describe('NotificationService.create', () => {
     expect(result.status).toBe('pending');
 
     // tenant context must be set first
-    expect(pool.query).toHaveBeenNthCalledWith(
-      1,
-      'SELECT set_config($1, $2, true)',
-      ['app.current_tenant', ORG],
-    );
+    expect(pool.query).toHaveBeenNthCalledWith(1, 'SELECT set_config($1, $2, true)', [
+      'app.current_tenant',
+      ORG,
+    ]);
   });
 
   it('publishes a notification.sent event after insert', async () => {
@@ -212,11 +211,10 @@ describe('NotificationService.getById', () => {
 
     await svc.getById(ORG, NOTIF_ID);
 
-    expect(pool.query).toHaveBeenNthCalledWith(
-      1,
-      'SELECT set_config($1, $2, true)',
-      ['app.current_tenant', ORG],
-    );
+    expect(pool.query).toHaveBeenNthCalledWith(1, 'SELECT set_config($1, $2, true)', [
+      'app.current_tenant',
+      ORG,
+    ]);
   });
 });
 
@@ -224,7 +222,10 @@ describe('NotificationService.getById', () => {
 
 describe('NotificationService.listForMember', () => {
   it('returns mapped notifications for a member', async () => {
-    const rows = [notifRow({ id: NOTIF_ID }), notifRow({ id: '00000000-0000-0000-0000-000000000011' })];
+    const rows = [
+      notifRow({ id: NOTIF_ID }),
+      notifRow({ id: '00000000-0000-0000-0000-000000000011' }),
+    ];
     const pool = makePool([ok([]), ok(rows)]);
     const svc = new NotificationService(pool, makeEventPublisher());
 
@@ -247,11 +248,10 @@ describe('NotificationService.listForMember', () => {
 
     await svc.listForMember(ORG, MEMBER_ID);
 
-    expect(pool.query).toHaveBeenNthCalledWith(
-      1,
-      'SELECT set_config($1, $2, true)',
-      ['app.current_tenant', ORG],
-    );
+    expect(pool.query).toHaveBeenNthCalledWith(1, 'SELECT set_config($1, $2, true)', [
+      'app.current_tenant',
+      ORG,
+    ]);
   });
 });
 
@@ -284,10 +284,9 @@ describe('NotificationService.markAsRead', () => {
 
     await svc.markAsRead(ORG, NOTIF_ID, MEMBER_ID);
 
-    expect(pool.query).toHaveBeenNthCalledWith(
-      1,
-      'SELECT set_config($1, $2, true)',
-      ['app.current_tenant', ORG],
-    );
+    expect(pool.query).toHaveBeenNthCalledWith(1, 'SELECT set_config($1, $2, true)', [
+      'app.current_tenant',
+      ORG,
+    ]);
   });
 });
