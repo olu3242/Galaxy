@@ -8,6 +8,7 @@
     "build": "tsc --build",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src/",
+    "test": "vitest run --passWithNoTests",
     "clean": "rm -rf dist tsconfig.tsbuildinfo"
   },
   "dependencies": {
