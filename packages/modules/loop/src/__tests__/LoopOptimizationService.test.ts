@@ -6,7 +6,7 @@
  *
  * All DB calls are mocked via a pool stub; no real database required.
  */
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import type { Pool, QueryResult } from 'pg';
 import { LoopOptimizationService } from '../services/LoopOptimizationService.js';
 
@@ -62,7 +62,6 @@ describe('LoopOptimizationService.generateRecommendations', () => {
       avg_completion_hours: '8',
       sample_size: '3', // below threshold
     };
-    // set_config, then parallel SLA+approval queries return small samples
     const pool = makePool([ok([]), ok([slaRow]), ok([])]);
     const svc = new LoopOptimizationService(pool);
     const result = await svc.generateRecommendations(ORG);
@@ -77,12 +76,10 @@ describe('LoopOptimizationService.generateRecommendations', () => {
       sample_size: '10',
     };
     const saved = recRow({ recommendation_type: 'increase_sla_window', priority: 'high' });
-    // set_config, SLA query, approval query (empty), set_config (save loop), INSERT
     const pool = makePool([ok([]), ok([slaRow]), ok([]), ok([saved])]);
     const svc = new LoopOptimizationService(pool);
-    const [rec] = await svc.generateRecommendations(ORG);
-    expect(rec.recommendationType).toBe('increase_sla_window');
-    expect(rec.priority).toBe('high');
+    const result = await svc.generateRecommendations(ORG);
+    expect(result).toMatchObject([{ recommendationType: 'increase_sla_window', priority: 'high' }]);
   });
 
   it('recommends reduce_sla_window for fast, low-breach workflows', async () => {
@@ -95,9 +92,8 @@ describe('LoopOptimizationService.generateRecommendations', () => {
     const saved = recRow({ recommendation_type: 'reduce_sla_window', priority: 'low' });
     const pool = makePool([ok([]), ok([slaRow]), ok([]), ok([saved])]);
     const svc = new LoopOptimizationService(pool);
-    const [rec] = await svc.generateRecommendations(ORG);
-    expect(rec.recommendationType).toBe('reduce_sla_window');
-    expect(rec.priority).toBe('low');
+    const result = await svc.generateRecommendations(ORG);
+    expect(result).toMatchObject([{ recommendationType: 'reduce_sla_window', priority: 'low' }]);
   });
 
   it('does NOT recommend reduce_sla_window when avg_completion_hours is null', async () => {
@@ -127,10 +123,12 @@ describe('LoopOptimizationService.generateRecommendations', () => {
     });
     const pool = makePool([ok([]), ok([]), ok([approvalRow]), ok([saved])]);
     const svc = new LoopOptimizationService(pool);
-    const [rec] = await svc.generateRecommendations(ORG);
-    expect(rec.recommendationType).toBe('enable_auto_approval');
-    expect(rec.priority).toBe('medium');
-    expect(rec.workflowType).toBe('expense');
+    const result = await svc.generateRecommendations(ORG);
+    expect(result).toMatchObject([{
+      recommendationType: 'enable_auto_approval',
+      priority: 'medium',
+      workflowType: 'expense',
+    }]);
   });
 
   it('does NOT recommend auto_approval when ratio is below 70%', async () => {
@@ -162,8 +160,8 @@ describe('LoopOptimizationService.generateRecommendations', () => {
     });
     const pool = makePool([ok([]), ok([slaRow]), ok([]), ok([saved])]);
     const svc = new LoopOptimizationService(pool);
-    const [rec] = await svc.generateRecommendations(ORG);
-    expect(rec).toMatchObject({
+    const result = await svc.generateRecommendations(ORG);
+    expect(result).toMatchObject([{
       id: REC_ID,
       organizationId: ORG,
       workflowType: 'incident',
@@ -171,16 +169,17 @@ describe('LoopOptimizationService.generateRecommendations', () => {
       priority: 'high',
       status: 'pending',
       createdAt: NOW,
-    });
+    }]);
   });
 
   it('sets tenant context before running queries', async () => {
     const pool = makePool([ok([]), ok([]), ok([])]);
     const svc = new LoopOptimizationService(pool);
     await svc.generateRecommendations(ORG);
-    const firstCall = (pool.query as ReturnType<typeof vi.fn>).mock.calls[0] as unknown[];
-    expect(firstCall[0]).toBe('SELECT set_config($1, $2, true)');
-    expect((firstCall[1] as string[])[1]).toBe(ORG);
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as [string, string[]][];
+    const [sql, params] = calls[0] ?? ['', []];
+    expect(sql).toBe('SELECT set_config($1, $2, true)');
+    expect(params[1]).toBe(ORG);
   });
 });
 
@@ -202,9 +201,9 @@ describe('LoopOptimizationService.listRecommendations', () => {
     const pool = makePool([ok([]), ok([recRow({ status: 'pending' })])]);
     const svc = new LoopOptimizationService(pool);
     await svc.listRecommendations(ORG, 'pending');
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown[][];
-    // status filter arg should be present
-    expect((calls[1][1] as unknown[])).toContain('pending');
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as [string, unknown[]][];
+    const selectParams = calls[1]?.[1] ?? [];
+    expect(selectParams).toContain('pending');
   });
 
   it('returns empty array when no recommendations exist', async () => {
@@ -238,10 +237,10 @@ describe('LoopOptimizationService.applyRecommendation', () => {
     const pool = makePool([ok([]), ok([recRow({ status: 'applied' })])]);
     const svc = new LoopOptimizationService(pool);
     await svc.applyRecommendation(ORG, REC_ID);
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown[][];
-    const updateArgs = calls[1][1] as string[];
-    expect(updateArgs).toContain(ORG);
-    expect(updateArgs).toContain(REC_ID);
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as [string, string[]][];
+    const updateParams = calls[1]?.[1] ?? [];
+    expect(updateParams).toContain(ORG);
+    expect(updateParams).toContain(REC_ID);
   });
 });
 

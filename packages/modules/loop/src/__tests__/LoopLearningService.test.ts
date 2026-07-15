@@ -6,7 +6,7 @@
  *
  * All DB calls are mocked via a pool stub; no real database required.
  */
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import type { Pool, QueryResult } from 'pg';
 import { LoopLearningService } from '../services/LoopLearningService.js';
 
@@ -51,15 +51,15 @@ describe('LoopLearningService.analyzePatterns', () => {
     };
     const pool = makePool([ok([]), ok([aggRow])]);
     const svc = new LoopLearningService(pool);
-    const [pattern] = await svc.analyzePatterns(ORG);
-    expect(pattern).toMatchObject({
+    const result = await svc.analyzePatterns(ORG);
+    expect(result).toMatchObject([{
       workflowType: 'leave_request',
       avgFeedbackScore: 3.8,
-      completionRate: 0.8, // 16/20
+      completionRate: 0.8,
       avgVerificationCount: 1.5,
-      escalationRate: 0.1, // 2/20
+      escalationRate: 0.1,
       sampleSize: 20,
-    });
+    }]);
   });
 
   it('handles null workflow_type as "unknown"', async () => {
@@ -73,10 +73,12 @@ describe('LoopLearningService.analyzePatterns', () => {
     };
     const pool = makePool([ok([]), ok([aggRow])]);
     const svc = new LoopLearningService(pool);
-    const [pattern] = await svc.analyzePatterns(ORG);
-    expect(pattern.workflowType).toBe('unknown');
-    expect(pattern.avgFeedbackScore).toBe(0);
-    expect(pattern.avgVerificationCount).toBe(0);
+    const result = await svc.analyzePatterns(ORG);
+    expect(result).toMatchObject([{
+      workflowType: 'unknown',
+      avgFeedbackScore: 0,
+      avgVerificationCount: 0,
+    }]);
   });
 
   it('computes zero rates safely when total is 0', async () => {
@@ -90,18 +92,18 @@ describe('LoopLearningService.analyzePatterns', () => {
     };
     const pool = makePool([ok([]), ok([aggRow])]);
     const svc = new LoopLearningService(pool);
-    const [pattern] = await svc.analyzePatterns(ORG);
-    expect(pattern.completionRate).toBe(0);
-    expect(pattern.escalationRate).toBe(0);
+    const result = await svc.analyzePatterns(ORG);
+    expect(result).toMatchObject([{ completionRate: 0, escalationRate: 0 }]);
   });
 
   it('sets tenant context before querying', async () => {
     const pool = makePool([ok([]), ok([])]);
     const svc = new LoopLearningService(pool);
     await svc.analyzePatterns(ORG);
-    const firstCall = (pool.query as ReturnType<typeof vi.fn>).mock.calls[0] as unknown[];
-    expect(firstCall[0]).toBe('SELECT set_config($1, $2, true)');
-    expect((firstCall[1] as string[])[1]).toBe(ORG);
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as [string, string[]][];
+    const [sql, params] = calls[0] ?? ['', []];
+    expect(sql).toBe('SELECT set_config($1, $2, true)');
+    expect(params[1]).toBe(ORG);
   });
 });
 
@@ -142,13 +144,14 @@ describe('LoopLearningService.generateInsights', () => {
       data_points: { avgFeedbackScore: 2.1, sampleSize: 10 },
       generated_at: NOW,
     };
-    // Calls: set_config (analyzePatterns), SELECT (analyzePatterns), set_config (generateInsights), INSERT
     const pool = makePool([ok([]), ok([aggRow]), ok([]), ok([insightRow])]);
     const svc = new LoopLearningService(pool);
-    const [insight] = await svc.generateInsights(ORG);
-    expect(insight.insightType).toBe('low_feedback');
-    expect(insight.severity).toBe('warning');
-    expect(insight.workflowType).toBe('leave_request');
+    const result = await svc.generateInsights(ORG);
+    expect(result).toMatchObject([{
+      insightType: 'low_feedback',
+      severity: 'warning',
+      workflowType: 'leave_request',
+    }]);
   });
 
   it('marks low_feedback critical when score is below 2.0', async () => {
@@ -172,8 +175,8 @@ describe('LoopLearningService.generateInsights', () => {
     };
     const pool = makePool([ok([]), ok([aggRow]), ok([]), ok([insightRow])]);
     const svc = new LoopLearningService(pool);
-    const [insight] = await svc.generateInsights(ORG);
-    expect(insight.severity).toBe('critical');
+    const result = await svc.generateInsights(ORG);
+    expect(result).toMatchObject([{ severity: 'critical' }]);
   });
 
   it('generates high_escalation insight when escalation rate > 0.3', async () => {
@@ -197,8 +200,8 @@ describe('LoopLearningService.generateInsights', () => {
     };
     const pool = makePool([ok([]), ok([aggRow]), ok([]), ok([insightRow])]);
     const svc = new LoopLearningService(pool);
-    const [insight] = await svc.generateInsights(ORG);
-    expect(insight.insightType).toBe('high_escalation');
+    const result = await svc.generateInsights(ORG);
+    expect(result).toMatchObject([{ insightType: 'high_escalation' }]);
   });
 
   it('marks high_escalation critical when rate > 0.5', async () => {
@@ -222,8 +225,8 @@ describe('LoopLearningService.generateInsights', () => {
     };
     const pool = makePool([ok([]), ok([aggRow]), ok([]), ok([insightRow])]);
     const svc = new LoopLearningService(pool);
-    const [insight] = await svc.generateInsights(ORG);
-    expect(insight.severity).toBe('critical');
+    const result = await svc.generateInsights(ORG);
+    expect(result).toMatchObject([{ severity: 'critical' }]);
   });
 
   it('generates verification_bottleneck when avg verifications > 3', async () => {
@@ -247,9 +250,8 @@ describe('LoopLearningService.generateInsights', () => {
     };
     const pool = makePool([ok([]), ok([aggRow]), ok([]), ok([insightRow])]);
     const svc = new LoopLearningService(pool);
-    const [insight] = await svc.generateInsights(ORG);
-    expect(insight.insightType).toBe('verification_bottleneck');
-    expect(insight.severity).toBe('warning');
+    const result = await svc.generateInsights(ORG);
+    expect(result).toMatchObject([{ insightType: 'verification_bottleneck', severity: 'warning' }]);
   });
 
   it('generates positive_pattern for high-performing workflows', async () => {
@@ -258,7 +260,7 @@ describe('LoopLearningService.generateInsights', () => {
       avg_score: '4.5',
       total: '20',
       completed: '19', // 95% completion
-      escalated: '0',  // 0% escalation
+      escalated: '0',
       avg_verifications: '1.0',
     };
     const insightRow = {
@@ -273,9 +275,8 @@ describe('LoopLearningService.generateInsights', () => {
     };
     const pool = makePool([ok([]), ok([aggRow]), ok([]), ok([insightRow])]);
     const svc = new LoopLearningService(pool);
-    const [insight] = await svc.generateInsights(ORG);
-    expect(insight.insightType).toBe('positive_pattern');
-    expect(insight.severity).toBe('info');
+    const result = await svc.generateInsights(ORG);
+    expect(result).toMatchObject([{ insightType: 'positive_pattern', severity: 'info' }]);
   });
 
   it('maps saved insight rows back to LoopInsight domain objects', async () => {
@@ -299,15 +300,15 @@ describe('LoopLearningService.generateInsights', () => {
     };
     const pool = makePool([ok([]), ok([aggRow]), ok([]), ok([insightRow])]);
     const svc = new LoopLearningService(pool);
-    const [insight] = await svc.generateInsights(ORG);
-    expect(insight).toMatchObject({
+    const result = await svc.generateInsights(ORG);
+    expect(result).toMatchObject([{
       id: 'ins-7',
       organizationId: ORG,
       workflowType: 'leave_request',
       insightType: 'low_feedback',
       severity: 'critical',
       generatedAt: NOW,
-    });
+    }]);
   });
 });
 
@@ -341,25 +342,25 @@ describe('LoopLearningService.listInsights', () => {
     const svc = new LoopLearningService(pool);
     const result = await svc.listInsights(ORG);
     expect(result).toHaveLength(2);
-    expect(result[0].id).toBe('ins-a');
-    expect(result[1].id).toBe('ins-b');
+    expect(result).toMatchObject([{ id: 'ins-a' }, { id: 'ins-b' }]);
   });
 
   it('defaults to limit 20 and passes it to the query', async () => {
     const pool = makePool([ok([]), ok([])]);
     const svc = new LoopLearningService(pool);
     await svc.listInsights(ORG);
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown[][];
-    const selectCall = calls[1];
-    expect((selectCall[1] as unknown[])[1]).toBe(20);
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as [string, unknown[]][];
+    const selectParams = calls[1]?.[1] ?? [];
+    expect(selectParams[1]).toBe(20);
   });
 
   it('respects a custom limit', async () => {
     const pool = makePool([ok([]), ok([])]);
     const svc = new LoopLearningService(pool);
     await svc.listInsights(ORG, 5);
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown[][];
-    expect((calls[1][1] as unknown[])[1]).toBe(5);
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as [string, unknown[]][];
+    const selectParams = calls[1]?.[1] ?? [];
+    expect(selectParams[1]).toBe(5);
   });
 
   it('returns empty array when no insights exist', async () => {
