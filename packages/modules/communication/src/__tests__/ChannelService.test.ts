@@ -114,8 +114,7 @@ describe('ChannelService.create', () => {
       correlationId: CORR,
     });
     expect(ep.publish).toHaveBeenCalledOnce();
-    const [event] = (ep.publish as ReturnType<typeof vi.fn>).mock.calls[0] as [{ type: string }];
-    expect(event?.type).toBe('channel.created');
+    expect(ep.publish).toHaveBeenCalledWith(expect.objectContaining({ type: 'channel.created' }));
   });
 
   it('records an audit entry', async () => {
@@ -130,10 +129,9 @@ describe('ChannelService.create', () => {
       correlationId: CORR,
     });
     expect(audit.record).toHaveBeenCalledOnce();
-    const [input] = (audit.record as ReturnType<typeof vi.fn>).mock.calls[0] as [
-      { action: string },
-    ];
-    expect(input?.action).toBe('channel.created');
+    expect(audit.record).toHaveBeenCalledWith(
+      expect.objectContaining({ action: 'channel.created' }),
+    );
   });
 
   it('throws Zod error for invalid channelType', async () => {
@@ -213,11 +211,9 @@ describe('ChannelService.delete', () => {
     const svc = new ChannelService(pool, makeEventPublisher(), audit);
     await svc.delete(ORG, CHANNEL_ID, ACTOR, CORR);
     expect(audit.record).toHaveBeenCalledOnce();
-    const [input] = (audit.record as ReturnType<typeof vi.fn>).mock.calls[0] as [
-      { action: string; resourceId: string },
-    ];
-    expect(input?.action).toBe('channel.deleted');
-    expect(input?.resourceId).toBe(CHANNEL_ID);
+    expect(audit.record).toHaveBeenCalledWith(
+      expect.objectContaining({ action: 'channel.deleted', resourceId: CHANNEL_ID }),
+    );
   });
 
   it('passes organizationId and channelId to the UPDATE query', async () => {
@@ -246,8 +242,9 @@ describe('ChannelService.addMember', () => {
       correlationId: CORR,
     });
     expect(ep.publish).toHaveBeenCalledOnce();
-    const [event] = (ep.publish as ReturnType<typeof vi.fn>).mock.calls[0] as [{ type: string }];
-    expect(event?.type).toBe('channel.member.added');
+    expect(ep.publish).toHaveBeenCalledWith(
+      expect.objectContaining({ type: 'channel.member.added' }),
+    );
   });
 
   it('defaults role to "member" when not specified', async () => {

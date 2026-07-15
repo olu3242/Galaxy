@@ -172,8 +172,9 @@ describe('AnnouncementService.publish', () => {
     const svc = new AnnouncementService(pool, ep, makeAuditService());
     await svc.publish(ORG, ANN_ID, ACTOR, CORR);
     expect(ep.publish).toHaveBeenCalledOnce();
-    const [event] = (ep.publish as ReturnType<typeof vi.fn>).mock.calls[0] as [{ type: string }];
-    expect(event?.type).toBe('announcement.published');
+    expect(ep.publish).toHaveBeenCalledWith(
+      expect.objectContaining({ type: 'announcement.published' }),
+    );
   });
 
   it('records audit entry with action announcement.published', async () => {
@@ -183,10 +184,9 @@ describe('AnnouncementService.publish', () => {
     const svc = new AnnouncementService(pool, makeEventPublisher(), audit);
     await svc.publish(ORG, ANN_ID, ACTOR, CORR);
     expect(audit.record).toHaveBeenCalledOnce();
-    const [input] = (audit.record as ReturnType<typeof vi.fn>).mock.calls[0] as [
-      { action: string },
-    ];
-    expect(input?.action).toBe('announcement.published');
+    expect(audit.record).toHaveBeenCalledWith(
+      expect.objectContaining({ action: 'announcement.published' }),
+    );
   });
 
   it('throws when UPDATE RETURNING returns no row', async () => {
@@ -216,10 +216,9 @@ describe('AnnouncementService.archive', () => {
     const svc = new AnnouncementService(pool, makeEventPublisher(), audit);
     await svc.archive(ORG, ANN_ID, ACTOR, CORR);
     expect(audit.record).toHaveBeenCalledOnce();
-    const [input] = (audit.record as ReturnType<typeof vi.fn>).mock.calls[0] as [
-      { action: string },
-    ];
-    expect(input?.action).toBe('announcement.archived');
+    expect(audit.record).toHaveBeenCalledWith(
+      expect.objectContaining({ action: 'announcement.archived' }),
+    );
   });
 });
 

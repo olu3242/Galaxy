@@ -119,8 +119,7 @@ describe('MessageService.send', () => {
       correlationId: CORR,
     });
     expect(ep.publish).toHaveBeenCalledOnce();
-    const [event] = (ep.publish as ReturnType<typeof vi.fn>).mock.calls[0] as [{ type: string }];
-    expect(event?.type).toBe('message.sent');
+    expect(ep.publish).toHaveBeenCalledWith(expect.objectContaining({ type: 'message.sent' }));
   });
 
   it('records audit entry for message.sent', async () => {
@@ -135,10 +134,7 @@ describe('MessageService.send', () => {
       correlationId: CORR,
     });
     expect(audit.record).toHaveBeenCalledOnce();
-    const [input] = (audit.record as ReturnType<typeof vi.fn>).mock.calls[0] as [
-      { action: string },
-    ];
-    expect(input?.action).toBe('message.sent');
+    expect(audit.record).toHaveBeenCalledWith(expect.objectContaining({ action: 'message.sent' }));
   });
 
   it('throws Zod error for empty content', async () => {
@@ -233,11 +229,9 @@ describe('MessageService.softDelete', () => {
     const svc = new MessageService(pool, makeEventPublisher(), audit);
     await svc.softDelete(ORG, MSG_ID, SENDER, CORR);
     expect(audit.record).toHaveBeenCalledOnce();
-    const [input] = (audit.record as ReturnType<typeof vi.fn>).mock.calls[0] as [
-      { action: string; resourceId: string },
-    ];
-    expect(input?.action).toBe('message.deleted');
-    expect(input?.resourceId).toBe(MSG_ID);
+    expect(audit.record).toHaveBeenCalledWith(
+      expect.objectContaining({ action: 'message.deleted', resourceId: MSG_ID }),
+    );
   });
 
   it('scopes the UPDATE to org and message id', async () => {

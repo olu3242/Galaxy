@@ -162,8 +162,7 @@ describe('BroadcastService.send', () => {
     const result = await svc.send(ORG, BROADCAST_ID, ACTOR, CORR);
     expect(result.status).toBe('sent');
     expect(ep.publish).toHaveBeenCalledOnce();
-    const [event] = (ep.publish as ReturnType<typeof vi.fn>).mock.calls[0] as [{ type: string }];
-    expect(event?.type).toBe('broadcast.sent');
+    expect(ep.publish).toHaveBeenCalledWith(expect.objectContaining({ type: 'broadcast.sent' }));
   });
 
   it('records audit entry after successful send', async () => {
@@ -173,10 +172,9 @@ describe('BroadcastService.send', () => {
     const svc = new BroadcastService(pool, makeEventPublisher(), audit);
     await svc.send(ORG, BROADCAST_ID, ACTOR, CORR);
     expect(audit.record).toHaveBeenCalledOnce();
-    const [input] = (audit.record as ReturnType<typeof vi.fn>).mock.calls[0] as [
-      { action: string },
-    ];
-    expect(input?.action).toBe('broadcast.sent');
+    expect(audit.record).toHaveBeenCalledWith(
+      expect.objectContaining({ action: 'broadcast.sent' }),
+    );
   });
 
   it('marks failed and publishes broadcast.failed when UPDATE returns no row', async () => {
@@ -189,8 +187,7 @@ describe('BroadcastService.send', () => {
       'UPDATE RETURNING returned no row',
     );
     expect(ep.publish).toHaveBeenCalledOnce();
-    const [event] = (ep.publish as ReturnType<typeof vi.fn>).mock.calls[0] as [{ type: string }];
-    expect(event?.type).toBe('broadcast.failed');
+    expect(ep.publish).toHaveBeenCalledWith(expect.objectContaining({ type: 'broadcast.failed' }));
   });
 });
 
