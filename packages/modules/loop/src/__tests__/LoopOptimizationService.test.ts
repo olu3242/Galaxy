@@ -31,13 +31,15 @@ function makePool(responses: QueryResult[]): Pool {
   } as unknown as Pool;
 }
 
-function recRow(overrides: Partial<{
-  id: string;
-  recommendation_type: string;
-  priority: string;
-  status: string;
-  workflow_type: string | null;
-}> = {}) {
+function recRow(
+  overrides: Partial<{
+    id: string;
+    recommendation_type: string;
+    priority: string;
+    status: string;
+    workflow_type: string | null;
+  }> = {},
+) {
   return {
     id: overrides.id ?? REC_ID,
     organization_id: ORG,
@@ -124,11 +126,13 @@ describe('LoopOptimizationService.generateRecommendations', () => {
     const pool = makePool([ok([]), ok([]), ok([approvalRow]), ok([saved])]);
     const svc = new LoopOptimizationService(pool);
     const result = await svc.generateRecommendations(ORG);
-    expect(result).toMatchObject([{
-      recommendationType: 'enable_auto_approval',
-      priority: 'medium',
-      workflowType: 'expense',
-    }]);
+    expect(result).toMatchObject([
+      {
+        recommendationType: 'enable_auto_approval',
+        priority: 'medium',
+        workflowType: 'expense',
+      },
+    ]);
   });
 
   it('does NOT recommend auto_approval when ratio is below 70%', async () => {
@@ -161,15 +165,17 @@ describe('LoopOptimizationService.generateRecommendations', () => {
     const pool = makePool([ok([]), ok([slaRow]), ok([]), ok([saved])]);
     const svc = new LoopOptimizationService(pool);
     const result = await svc.generateRecommendations(ORG);
-    expect(result).toMatchObject([{
-      id: REC_ID,
-      organizationId: ORG,
-      workflowType: 'incident',
-      recommendationType: 'increase_sla_window',
-      priority: 'high',
-      status: 'pending',
-      createdAt: NOW,
-    }]);
+    expect(result).toMatchObject([
+      {
+        id: REC_ID,
+        organizationId: ORG,
+        workflowType: 'incident',
+        recommendationType: 'increase_sla_window',
+        priority: 'high',
+        status: 'pending',
+        createdAt: NOW,
+      },
+    ]);
   });
 
   it('sets tenant context before running queries', async () => {
@@ -187,10 +193,7 @@ describe('LoopOptimizationService.generateRecommendations', () => {
 
 describe('LoopOptimizationService.listRecommendations', () => {
   it('returns all recommendations when no status filter is given', async () => {
-    const rows = [
-      recRow({ id: 'r1', status: 'pending' }),
-      recRow({ id: 'r2', status: 'applied' }),
-    ];
+    const rows = [recRow({ id: 'r1', status: 'pending' }), recRow({ id: 'r2', status: 'applied' })];
     const pool = makePool([ok([]), ok(rows)]);
     const svc = new LoopOptimizationService(pool);
     const result = await svc.listRecommendations(ORG);

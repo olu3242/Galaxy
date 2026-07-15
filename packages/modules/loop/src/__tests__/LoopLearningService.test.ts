@@ -52,14 +52,16 @@ describe('LoopLearningService.analyzePatterns', () => {
     const pool = makePool([ok([]), ok([aggRow])]);
     const svc = new LoopLearningService(pool);
     const result = await svc.analyzePatterns(ORG);
-    expect(result).toMatchObject([{
-      workflowType: 'leave_request',
-      avgFeedbackScore: 3.8,
-      completionRate: 0.8,
-      avgVerificationCount: 1.5,
-      escalationRate: 0.1,
-      sampleSize: 20,
-    }]);
+    expect(result).toMatchObject([
+      {
+        workflowType: 'leave_request',
+        avgFeedbackScore: 3.8,
+        completionRate: 0.8,
+        avgVerificationCount: 1.5,
+        escalationRate: 0.1,
+        sampleSize: 20,
+      },
+    ]);
   });
 
   it('handles null workflow_type as "unknown"', async () => {
@@ -74,11 +76,13 @@ describe('LoopLearningService.analyzePatterns', () => {
     const pool = makePool([ok([]), ok([aggRow])]);
     const svc = new LoopLearningService(pool);
     const result = await svc.analyzePatterns(ORG);
-    expect(result).toMatchObject([{
-      workflowType: 'unknown',
-      avgFeedbackScore: 0,
-      avgVerificationCount: 0,
-    }]);
+    expect(result).toMatchObject([
+      {
+        workflowType: 'unknown',
+        avgFeedbackScore: 0,
+        avgVerificationCount: 0,
+      },
+    ]);
   });
 
   it('computes zero rates safely when total is 0', async () => {
@@ -147,11 +151,13 @@ describe('LoopLearningService.generateInsights', () => {
     const pool = makePool([ok([]), ok([aggRow]), ok([]), ok([insightRow])]);
     const svc = new LoopLearningService(pool);
     const result = await svc.generateInsights(ORG);
-    expect(result).toMatchObject([{
-      insightType: 'low_feedback',
-      severity: 'warning',
-      workflowType: 'leave_request',
-    }]);
+    expect(result).toMatchObject([
+      {
+        insightType: 'low_feedback',
+        severity: 'warning',
+        workflowType: 'leave_request',
+      },
+    ]);
   });
 
   it('marks low_feedback critical when score is below 2.0', async () => {
@@ -301,14 +307,16 @@ describe('LoopLearningService.generateInsights', () => {
     const pool = makePool([ok([]), ok([aggRow]), ok([]), ok([insightRow])]);
     const svc = new LoopLearningService(pool);
     const result = await svc.generateInsights(ORG);
-    expect(result).toMatchObject([{
-      id: 'ins-7',
-      organizationId: ORG,
-      workflowType: 'leave_request',
-      insightType: 'low_feedback',
-      severity: 'critical',
-      generatedAt: NOW,
-    }]);
+    expect(result).toMatchObject([
+      {
+        id: 'ins-7',
+        organizationId: ORG,
+        workflowType: 'leave_request',
+        insightType: 'low_feedback',
+        severity: 'critical',
+        generatedAt: NOW,
+      },
+    ]);
   });
 });
 
