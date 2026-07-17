@@ -148,7 +148,7 @@ describe('ProviderRegistry', () => {
   function makeProvider(name: string): MessagingProvider {
     return {
       name,
-      send: vi.fn().mockResolvedValue({ success: true, externalId: 'ext-1' }),
+      send: vi.fn().mockResolvedValue({ success: true, providerMessageId: 'ext-1' }),
     };
   }
 
@@ -199,7 +199,7 @@ describe('MessageDispatcher.dispatch', () => {
     const registry = new ProviderRegistry();
     const provider: MessagingProvider = {
       name: 'whatsapp',
-      send: vi.fn().mockResolvedValue({ success: true, externalId: 'ext-123' }),
+      send: vi.fn().mockResolvedValue({ success: true, providerMessageId: 'ext-123' }),
     };
     registry.register(provider);
     const dispatcher = new MessageDispatcher(registry);
@@ -211,7 +211,7 @@ describe('MessageDispatcher.dispatch', () => {
 
     expect(provider.send).toHaveBeenCalledWith('+2348001234567', { type: 'text', text: 'Hello' });
     expect(result.success).toBe(true);
-    expect(result.externalId).toBe('ext-123');
+    expect(result.providerMessageId).toBe('ext-123');
   });
 
   it('throws when provider is not registered', async () => {
