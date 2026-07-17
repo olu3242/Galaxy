@@ -23,7 +23,13 @@ function makePool(responses: QueryResult[]): Pool {
   } as unknown as Pool;
 }
 
-function taskRow(overrides: Partial<{ status: string; assignee_id: string | null; completed_at: string | null }> = {}) {
+function taskRow(
+  overrides: Partial<{
+    status: string;
+    assignee_id: string | null;
+    completed_at: string | null;
+  }> = {},
+) {
   return {
     id: TASK_ID,
     organization_id: ORG,

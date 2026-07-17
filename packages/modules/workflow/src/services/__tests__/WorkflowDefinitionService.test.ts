@@ -22,7 +22,9 @@ function makePool(responses: QueryResult[]): Pool {
   } as unknown as Pool;
 }
 
-function wfRow(overrides: Partial<{ is_active: boolean; flow_type: string; automation_domain: string }> = {}) {
+function wfRow(
+  overrides: Partial<{ is_active: boolean; flow_type: string; automation_domain: string }> = {},
+) {
   return {
     id: WF_ID,
     organization_id: ORG,

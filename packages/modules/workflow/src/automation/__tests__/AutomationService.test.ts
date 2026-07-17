@@ -22,11 +22,13 @@ function makePool(responses: QueryResult[]): Pool {
   } as unknown as Pool;
 }
 
-function automationRow(overrides: Partial<{
-  trigger_event: string;
-  trigger_conditions: Record<string, unknown> | Record<string, unknown>[];
-  is_active: boolean;
-}> = {}) {
+function automationRow(
+  overrides: Partial<{
+    trigger_event: string;
+    trigger_conditions: Record<string, unknown> | Record<string, unknown>[];
+    is_active: boolean;
+  }> = {},
+) {
   return {
     id: AUTO_ID,
     organization_id: ORG,
@@ -100,9 +102,12 @@ describe('AutomationService.executeAutomation', () => {
   it('returns executionId and status completed', async () => {
     // setTenantContext + fetch automation + setTenantContext + create execution + setTenantContext + complete execution
     const pool = makePool([
-      ok([]), ok([automationRow()]),
-      ok([]), ok([executionRow()]),
-      ok([]), ok([{ ...executionRow(), status: 'completed' }]),
+      ok([]),
+      ok([automationRow()]),
+      ok([]),
+      ok([executionRow()]),
+      ok([]),
+      ok([{ ...executionRow(), status: 'completed' }]),
     ]);
     const svc = new AutomationService(pool);
     const result = await svc.executeAutomation(ORG, AUTO_ID, {}, CORR_ID);
@@ -113,15 +118,16 @@ describe('AutomationService.executeAutomation', () => {
   it('throws when automation not found', async () => {
     const pool = makePool([ok([]), ok([])]);
     const svc = new AutomationService(pool);
-    await expect(
-      svc.executeAutomation(ORG, 'nonexistent', {}, CORR_ID),
-    ).rejects.toThrow();
+    await expect(svc.executeAutomation(ORG, 'nonexistent', {}, CORR_ID)).rejects.toThrow();
   });
 });
 
 describe('AutomationService.listAutomations', () => {
   it('returns all automations for org', async () => {
-    const rows = [automationRow(), { ...automationRow(), id: '00000000-0000-0000-0000-000000000099' }];
+    const rows = [
+      automationRow(),
+      { ...automationRow(), id: '00000000-0000-0000-0000-000000000099' },
+    ];
     const pool = makePool([ok([]), ok(rows)]);
     const svc = new AutomationService(pool);
     const result = await svc.listAutomations(ORG);
