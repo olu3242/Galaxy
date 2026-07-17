@@ -712,6 +712,9 @@ importers:
       eslint:
         specifier: ^9.0.0
         version: 9.39.4(jiti@1.21.7)
+      vitest:
+        specifier: ^2.0.0
+        version: 2.1.9(@types/node@20.19.42)
 
   packages/modules/governance:
     dependencies:
