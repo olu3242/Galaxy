@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import type { Pool, QueryResult } from 'pg';
+import type { EventPublisher } from '@galaxy/events';
 import { RoleService } from '../RoleService.js';
 
 const ORG = '00000000-0000-0000-0000-000000000001';
@@ -99,7 +100,8 @@ describe('RoleService.createRole', () => {
 
   it('publishes role.created event when publisher provided', async () => {
     const pool = makePool([ok([]), ok([roleRow()])]);
-    const publisher = { publish: vi.fn().mockResolvedValue(undefined) };
+    const publishFn = vi.fn().mockResolvedValue(undefined);
+    const publisher = { publish: publishFn } as unknown as EventPublisher;
     const svc = new RoleService(pool, publisher);
     await svc.createRole({
       organizationId: ORG,
@@ -108,8 +110,8 @@ describe('RoleService.createRole', () => {
       correlationId: CORRELATION,
       actorId: ACTOR,
     });
-    expect(publisher.publish).toHaveBeenCalledOnce();
-    const event = publisher.publish.mock.calls[0]?.[0] as { type: string };
+    expect(publishFn).toHaveBeenCalledOnce();
+    const event = publishFn.mock.calls[0]?.[0] as { type: string };
     expect(event.type).toBe('role.created');
   });
 
