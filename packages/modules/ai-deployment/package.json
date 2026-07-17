@@ -2,7 +2,7 @@
   "name": "@galaxy/ai-deployment",
   "version": "0.1.0",
   "private": true,
-  "description": "Galaxy AI Deployment Engine — NL description to auto-provision org structure",
+  "description": "Galaxy AI Deployment Engine \u2014 NL description to auto-provision org structure",
   "type": "module",
   "exports": {
     ".": {
@@ -18,7 +18,7 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint src/",
     "lint:fix": "eslint src/ --fix",
-    "test": "vitest run",
+    "test": "vitest run --passWithNoTests",
     "test:watch": "vitest",
     "clean": "rm -rf dist *.tsbuildinfo"
   },

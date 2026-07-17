@@ -6,10 +6,24 @@
     "composite": true,
     "declaration": true,
     "declarationMap": true,
-    "tsBuildInfoFile": "tsconfig.tsbuildinfo",
-    "types": ["node"]
+    "types": [
+      "node"
+    ],
+    "tsBuildInfoFile": "tsconfig.tsbuildinfo"
   },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist"],
-  "references": [{ "path": "../../../packages/types" }, { "path": "../../../packages/utils" }]
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ],
+  "references": [
+    {
+      "path": "../../../packages/types"
+    },
+    {
+      "path": "../../../packages/utils"
+    }
+  ]
 }

@@ -6,9 +6,16 @@
     "composite": true,
     "declaration": true,
     "declarationMap": true,
-    "tsBuildInfoFile": "tsconfig.tsbuildinfo",
-    "types": ["node"]
+    "types": [
+      "node"
+    ],
+    "tsBuildInfoFile": "tsconfig.tsbuildinfo"
   },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist"]
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
 }

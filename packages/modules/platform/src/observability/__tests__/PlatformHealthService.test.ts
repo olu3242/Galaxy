@@ -68,7 +68,7 @@ describe('PlatformHealthService', () => {
       const svc = new PlatformHealthService(pool);
       const result = await svc.listSnapshots(5);
       expect(result[0]?.id).toBe('snap-1');
-      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls;
+      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as [string, unknown[]][];
       expect((calls[0]?.[1] ?? [])[0]).toBe(5);
     });
   });
