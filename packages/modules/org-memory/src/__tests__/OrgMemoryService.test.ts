@@ -140,8 +140,8 @@ describe('OrgMemoryService.getMemoryStats', () => {
     const svc = new OrgMemoryService(pool);
     const stats = await svc.getMemoryStats(ORG);
     expect(stats.total).toBe(5);
-    expect(stats.byType['decision']).toBe(3);
-    expect(stats.byType['pattern']).toBe(2);
+    expect(stats.byType.decision).toBe(3);
+    expect(stats.byType.pattern).toBe(2);
     expect(stats.invalidCount).toBe(1);
     // avg = (0.8*3 + 0.6*2) / 5 = (2.4+1.2)/5 = 0.72
     expect(stats.averageConfidence).toBeCloseTo(0.72);

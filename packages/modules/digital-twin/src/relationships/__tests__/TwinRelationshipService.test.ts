@@ -88,11 +88,12 @@ describe('TwinRelationshipService', () => {
       const pool = makePool([ok([]), ok([])]);
       const svc = new TwinRelationshipService(pool);
       await svc.deleteRelationship('org-1', 'rel-1');
-      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls;
+      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as [string, unknown[]][];
       const deleteCall = calls[1];
       expect(deleteCall?.[0]).toContain('DELETE FROM twin_relationships');
-      expect((deleteCall?.[1] ?? [])[0]).toBe('org-1');
-      expect((deleteCall?.[1] ?? [])[1]).toBe('rel-1');
+      const params = deleteCall?.[1] ?? [];
+      expect(params[0]).toBe('org-1');
+      expect(params[1]).toBe('rel-1');
     });
   });
 });

@@ -111,9 +111,9 @@ describe('IndustryBenchmarkService', () => {
       const svc = new IndustryBenchmarkService(pool);
       await svc.getOrgPercentile(ORG, INDUSTRY, SIZE);
       const calls = vi.mocked(pool.query).mock.calls;
-      const contribCall = calls[1];
       const expectedPeriod = new Date().toISOString().slice(0, 7);
-      expect((contribCall?.[1] ?? [])[1]).toBe(expectedPeriod);
+      // calls[1] is the contributions query; its second element is the params array
+      expect(calls[1]?.[1]).toEqual([ORG, expectedPeriod]);
     });
   });
 

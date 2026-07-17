@@ -146,8 +146,8 @@ describe('HealingEngineService', () => {
       const pool = makePool([ok([]), ok(statusRows), ok(levelRows)]);
       const svc = new HealingEngineService(pool);
       const stats = await svc.getHealingStats(ORG);
-      expect(stats['byStatus']).toEqual({ healed: 10, failed: 3 });
-      expect(stats['byLevel']).toEqual({ workflow: 8, queue: 5 });
+      expect(stats.byStatus).toEqual({ healed: 10, failed: 3 });
+      expect(stats.byLevel).toEqual({ workflow: 8, queue: 5 });
     });
 
     it('sets tenant context as first query', async () => {

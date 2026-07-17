@@ -92,18 +92,20 @@ describe('TwinSnapshotService', () => {
       const pool = makePool([ok([]), ok([])]);
       const svc = new TwinSnapshotService(pool);
       await svc.getSnapshots('org-1');
-      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls;
+      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as [string, unknown[]][];
       const selectCall = calls[1];
-      expect((selectCall?.[1] ?? [])[1]).toBe(20);
+      const params = selectCall?.[1] ?? [];
+      expect(params[1]).toBe(20);
     });
 
     it('uses provided limit', async () => {
       const pool = makePool([ok([]), ok([])]);
       const svc = new TwinSnapshotService(pool);
       await svc.getSnapshots('org-1', 5);
-      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls;
+      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as [string, unknown[]][];
       const selectCall = calls[1];
-      expect((selectCall?.[1] ?? [])[1]).toBe(5);
+      const params = selectCall?.[1] ?? [];
+      expect(params[1]).toBe(5);
     });
   });
 });

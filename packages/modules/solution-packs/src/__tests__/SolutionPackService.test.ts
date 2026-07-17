@@ -28,7 +28,11 @@ function makePackRow(overrides: Partial<SolutionPackRow> = {}): SolutionPackRow 
     description: 'A starter pack',
     version: '1.0.0',
     is_published: true,
-    pack_data: { includedWorkflows: ['wf-1'], includedKnowledgeTemplates: [], recommendedAgents: [] },
+    pack_data: {
+      includedWorkflows: ['wf-1'],
+      includedKnowledgeTemplates: [],
+      recommendedAgents: [],
+    },
     created_at: '2026-07-01T00:00:00.000Z',
     ...overrides,
   };
@@ -57,7 +61,11 @@ describe('SolutionPackService', () => {
         industry: 'fintech',
         description: 'A starter pack',
         version: '1.0.0',
-        packData: { includedWorkflows: ['wf-1'], includedKnowledgeTemplates: [], recommendedAgents: [] },
+        packData: {
+          includedWorkflows: ['wf-1'],
+          includedKnowledgeTemplates: [],
+          recommendedAgents: [],
+        },
       });
       expect(pack.id).toBe('pack-1');
       expect(pack.isPublished).toBe(false);
@@ -73,7 +81,11 @@ describe('SolutionPackService', () => {
           industry: 'retail',
           description: 'D',
           version: '1.0.0',
-          packData: { includedWorkflows: [], includedKnowledgeTemplates: [], recommendedAgents: [] },
+          packData: {
+            includedWorkflows: [],
+            includedKnowledgeTemplates: [],
+            recommendedAgents: [],
+          },
         }),
       ).rejects.toThrow('Failed to create');
     });

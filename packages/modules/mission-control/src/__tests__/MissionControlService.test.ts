@@ -147,32 +147,37 @@ describe('MissionControlService.getDigitalTwinSnapshot', () => {
 
 describe('MissionControlService.getDashboard', () => {
   it('returns all four snapshots in one call', async () => {
-    // getDashboard calls all 4 getX methods in parallel
-    // Each method issues its own setTenant + queries
-    // getOperationalSnapshot: 1 setTenant + 4 queries = 5
-    // getLearningSnapshot: 1 setTenant + 1 query = 2
-    // getGuardianSnapshot: 1 setTenant + 2 queries = 3
-    // getDigitalTwinSnapshot: 1 setTenant + 3 queries = 4
-    // Total = 14 calls, order follows Promise.all execution
+    // getDashboard calls all 4 getX methods in Promise.all.
+    // Each method begins with setTenant (await), so all 4 setTenants fire
+    // before any data queries resume. Execution order:
+    //   call 0: operational setTenant
+    //   call 1: learning setTenant
+    //   call 2: guardian setTenant
+    //   call 3: digitalTwin setTenant
+    // Then each method's internal Promise.all fires in order of microtask resolution:
+    //   calls 4-7: operational 4 data queries
+    //   call 8: learning 1 data query
+    //   calls 9-10: guardian 2 data queries
+    //   calls 11-13: digitalTwin 3 data queries
     const pool = makePool([
-      // operational: setTenant + 4 counts
-      ok([]),
-      ok([{ count: '1' }]),
-      ok([{ count: '2' }]),
-      ok([{ count: '0' }]),
-      ok([{ score: 70 }]),
-      // learning: setTenant + insights
-      ok([]),
-      ok([{ total: '5', applied: '2' }]),
-      // guardian: setTenant + incidents + alerts
-      ok([]),
-      ok([]),
-      ok([{ count: '0' }]),
-      // digital twin: setTenant + nodes + rels + snapshot
-      ok([]),
-      ok([{ count: '10' }]),
-      ok([{ count: '20' }]),
-      ok([]),
+      ok([]), // 0: operational setTenant
+      ok([]), // 1: learning setTenant
+      ok([]), // 2: guardian setTenant
+      ok([]), // 3: digitalTwin setTenant
+      // operational 4 parallel queries
+      ok([{ count: '1' }]), // 4: workflows
+      ok([{ count: '2' }]), // 5: conversations
+      ok([{ count: '0' }]), // 6: agents
+      ok([{ score: 70 }]), // 7: health
+      // learning 1 query
+      ok([{ total: '5', applied: '2' }]), // 8
+      // guardian 2 parallel queries
+      ok([]), // 9: incidents
+      ok([{ count: '0' }]), // 10: risk alerts
+      // digitalTwin 3 parallel queries
+      ok([{ count: '10' }]), // 11: nodes
+      ok([{ count: '20' }]), // 12: relationships
+      ok([]), // 13: snapshots
     ]);
     const svc = new MissionControlService(pool);
     const dashboard = await svc.getDashboard(ORG);

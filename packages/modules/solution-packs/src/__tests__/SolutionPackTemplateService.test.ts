@@ -20,7 +20,9 @@ function makePool(responses: QueryResult[]): Pool {
 
 const ORG = 'org-templates';
 
-function makeTemplateRow(overrides: Partial<SolutionPackTemplateRow> = {}): SolutionPackTemplateRow {
+function makeTemplateRow(
+  overrides: Partial<SolutionPackTemplateRow> = {},
+): SolutionPackTemplateRow {
   return {
     id: 'tmpl-1',
     organization_id: ORG,
@@ -91,14 +93,23 @@ describe('SolutionPackTemplateService', () => {
       const pool = makePool([ok([]), ok([])]);
       const svc = new SolutionPackTemplateService(pool);
       await expect(
-        svc.createTemplate({ organizationId: ORG, name: 'X', description: 'D', steps: {}, category: 'X' }),
+        svc.createTemplate({
+          organizationId: ORG,
+          name: 'X',
+          description: 'D',
+          steps: {},
+          category: 'X',
+        }),
       ).rejects.toThrow('Failed to create');
     });
   });
 
   describe('listTemplates', () => {
     it('sets tenant context and returns templates', async () => {
-      const rows = [makeTemplateRow(), makeTemplateRow({ id: 'tmpl-2', organization_id: null, is_system: true })];
+      const rows = [
+        makeTemplateRow(),
+        makeTemplateRow({ id: 'tmpl-2', organization_id: null, is_system: true }),
+      ];
       const pool = makePool([ok([]), ok(rows)]);
       const svc = new SolutionPackTemplateService(pool);
       const templates = await svc.listTemplates(ORG);

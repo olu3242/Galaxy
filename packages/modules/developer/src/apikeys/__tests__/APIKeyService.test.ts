@@ -145,19 +145,52 @@ describe('APIKeyService', () => {
   describe('hasScope', () => {
     it('returns true when key has exact scope', () => {
       const svc = new APIKeyService(makePool([]));
-      const key = { ...baseRow, scopes: ['read', 'write'] } as Parameters<typeof svc.hasScope>[0];
+      const key = {
+        id: 'k',
+        organizationId: 'org-1',
+        name: 'k',
+        prefix: 'gx_',
+        hashedSecret: 'h',
+        scopes: ['read', 'write'],
+        status: 'active' as const,
+        createdBy: 'u',
+        createdAt: '',
+        updatedAt: '',
+      };
       expect(svc.hasScope(key, 'read')).toBe(true);
     });
 
     it('returns true when key has wildcard scope', () => {
       const svc = new APIKeyService(makePool([]));
-      const key = { ...baseRow, scopes: ['*'] } as Parameters<typeof svc.hasScope>[0];
+      const key = {
+        id: 'k',
+        organizationId: 'org-1',
+        name: 'k',
+        prefix: 'gx_',
+        hashedSecret: 'h',
+        scopes: ['*'],
+        status: 'active' as const,
+        createdBy: 'u',
+        createdAt: '',
+        updatedAt: '',
+      };
       expect(svc.hasScope(key, 'delete')).toBe(true);
     });
 
     it('returns false when scope not present', () => {
       const svc = new APIKeyService(makePool([]));
-      const key = { ...baseRow, scopes: ['read'] } as Parameters<typeof svc.hasScope>[0];
+      const key = {
+        id: 'k',
+        organizationId: 'org-1',
+        name: 'k',
+        prefix: 'gx_',
+        hashedSecret: 'h',
+        scopes: ['read'],
+        status: 'active' as const,
+        createdBy: 'u',
+        createdAt: '',
+        updatedAt: '',
+      };
       expect(svc.hasScope(key, 'write')).toBe(false);
     });
   });

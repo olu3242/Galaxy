@@ -111,7 +111,7 @@ describe('SLABreachPredictorService', () => {
       const pool = makePool([ok([]), ok(rows)]);
       const svc = new SLABreachPredictorService(pool);
       const result = await svc.computeBreachProbability(ORG);
-      expect(result[0]?.factors['status']).toBe('in_progress');
+      expect(result[0]?.factors.status).toBe('in_progress');
     });
   });
 });

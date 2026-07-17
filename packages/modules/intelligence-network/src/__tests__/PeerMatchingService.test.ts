@@ -95,9 +95,7 @@ describe('PeerMatchingService', () => {
 
     it('includes improvement percentage and recommendation text', async () => {
       const contribs = [{ metric_key: 'metric', metric_value: '0.5' }];
-      const benchmarks = [
-        { metric_key: 'metric', p50: '0.75', p75: '1.0', cohort_size: '20' },
-      ];
+      const benchmarks = [{ metric_key: 'metric', p50: '0.75', p75: '1.0', cohort_size: '20' }];
       const pool = makePool([ok([]), ok(contribs), ok(benchmarks)]);
       const svc = new PeerMatchingService(pool);
       const recs = await svc.getRecommendations('org-1', 'tech', 'small');
