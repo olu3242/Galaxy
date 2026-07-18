@@ -2,7 +2,7 @@
   "name": "@galaxy/ai-deployment",
   "version": "0.1.0",
   "private": true,
-  "description": "Galaxy AI Deployment Engine \u2014 NL description to auto-provision org structure",
+  "description": "Galaxy AI Deployment Engine — NL description to auto-provision org structure",
   "type": "module",
   "exports": {
     ".": {

@@ -2,7 +2,7 @@
   "name": "@galaxy/partner",
   "version": "0.1.0",
   "private": true,
-  "description": "Galaxy Partner Portal \u2014 partner registration, publisher portal, deal management",
+  "description": "Galaxy Partner Portal — partner registration, publisher portal, deal management",
   "type": "module",
   "exports": {
     ".": {
