@@ -51,7 +51,7 @@ describe('PaymentService', () => {
     it('defaults currency to usd', async () => {
       const pool = makePool([ok([]), ok([paymentRow])]);
       const svc = new PaymentService(pool);
-      const calls = vi.mocked(pool.query).mock.calls as [string, unknown[]][];
+      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
       await svc.recordPayment({
         organizationId: 'org-1',
         invoiceId: 'inv-1',
@@ -64,7 +64,7 @@ describe('PaymentService', () => {
     it('sets externalId to null when not provided', async () => {
       const pool = makePool([ok([]), ok([{ ...paymentRow, external_id: null }])]);
       const svc = new PaymentService(pool);
-      const calls = vi.mocked(pool.query).mock.calls as [string, unknown[]][];
+      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
       await svc.recordPayment({
         organizationId: 'org-1',
         invoiceId: 'inv-1',
@@ -83,7 +83,7 @@ describe('PaymentService', () => {
         amountCents: 5000,
         paymentMethod: 'card',
       });
-      const calls = vi.mocked(pool.query).mock.calls as [string, unknown[]][];
+      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
       expect(calls[0]?.[0]).toContain('set_config');
       expect(calls[0]?.[1]).toContain('org-1');
     });
@@ -122,7 +122,7 @@ describe('PaymentService', () => {
       const pool = makePool([ok([]), ok([paymentRow])]);
       const svc = new PaymentService(pool);
       await svc.listPayments({ organizationId: 'org-1', limit: 10, offset: 5 });
-      const calls = vi.mocked(pool.query).mock.calls as [string, unknown[]][];
+      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
       const params = calls[1]?.[1] as unknown[];
       expect(params).toContain(10);
       expect(params).toContain(5);
@@ -132,7 +132,7 @@ describe('PaymentService', () => {
       const pool = makePool([ok([]), ok([paymentRow])]);
       const svc = new PaymentService(pool);
       await svc.listPayments({ organizationId: 'org-1' });
-      const calls = vi.mocked(pool.query).mock.calls as [string, unknown[]][];
+      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
       const sql = calls[1]?.[0] as string;
       expect(sql).not.toContain('LIMIT');
       expect(sql).not.toContain('OFFSET');

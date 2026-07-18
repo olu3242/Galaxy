@@ -51,7 +51,7 @@ describe('InvoiceService', () => {
         periodEnd: '2024-01-31',
         dueDate: '2024-02-15',
       });
-      const calls = vi.mocked(pool.query).mock.calls as [string, unknown[]][];
+      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
       expect(calls[0]?.[0]).toContain('set_config');
       expect(calls[0]?.[1]).toContain('org-1');
     });
@@ -108,7 +108,7 @@ describe('InvoiceService', () => {
         periodEnd: '2024-01-31',
         dueDate: '2024-02-15',
       });
-      const calls = vi.mocked(pool.query).mock.calls as [string, unknown[]][];
+      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
       expect(calls[1]?.[1]).toContain('2024-01-01');
       expect(calls[1]?.[1]).toContain('2024-01-31');
     });
@@ -127,7 +127,7 @@ describe('InvoiceService', () => {
       const pool = makePool([ok([]), ok([paidInvoiceRow])]);
       const svc = new InvoiceService(pool);
       await svc.markPaid('org-1', 'inv-1');
-      const calls = vi.mocked(pool.query).mock.calls as [string, unknown[]][];
+      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
       expect(calls[0]?.[0]).toContain('set_config');
     });
 
@@ -141,7 +141,7 @@ describe('InvoiceService', () => {
       const pool = makePool([ok([]), ok([paidInvoiceRow])]);
       const svc = new InvoiceService(pool);
       await svc.markPaid('org-1', 'inv-1');
-      const calls = vi.mocked(pool.query).mock.calls as [string, unknown[]][];
+      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
       expect(calls[1]?.[1]).toContain('inv-1');
       expect(calls[1]?.[1]).toContain('org-1');
     });
@@ -167,7 +167,7 @@ describe('InvoiceService', () => {
       const pool = makePool([ok([]), ok([])]);
       const svc = new InvoiceService(pool);
       await svc.listByOrg('org-1', 5, 10);
-      const calls = vi.mocked(pool.query).mock.calls as [string, unknown[]][];
+      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
       expect(calls[1]?.[1]).toContain(5);
       expect(calls[1]?.[1]).toContain(10);
     });
@@ -176,7 +176,7 @@ describe('InvoiceService', () => {
       const pool = makePool([ok([]), ok([])]);
       const svc = new InvoiceService(pool);
       await svc.listByOrg('org-1');
-      const calls = vi.mocked(pool.query).mock.calls as [string, unknown[]][];
+      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
       expect(calls[1]?.[1]).toContain(20);
       expect(calls[1]?.[1]).toContain(0);
     });
@@ -201,7 +201,7 @@ describe('InvoiceService', () => {
       const pool = makePool([ok([]), ok([invoiceRow])]);
       const svc = new InvoiceService(pool);
       await svc.getInvoice('org-1', 'inv-1');
-      const calls = vi.mocked(pool.query).mock.calls as [string, unknown[]][];
+      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
       expect(calls[1]?.[1]).toContain('inv-1');
       expect(calls[1]?.[1]).toContain('org-1');
     });

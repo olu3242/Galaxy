@@ -81,7 +81,7 @@ describe('WhatsAppProvider.send — happy path', () => {
     expect(result.sentAt).toBeDefined();
 
     const calls = vi.mocked(fetch).mock.calls as [string, RequestInit][];
-    const [url, init] = calls[0];
+    const [url, init] = calls[0]!;
     expect(url).toContain(PHONE_NUMBER_ID);
     expect(url).toContain('/messages');
     expect((init.headers as Record<string, string>)['Authorization']).toBe(
@@ -103,7 +103,7 @@ describe('WhatsAppProvider.send — happy path', () => {
     await provider.send(TO, { type: 'image', mediaUrl: 'https://cdn.example.com/img.jpg' });
 
     const calls = vi.mocked(fetch).mock.calls as [string, RequestInit][];
-    const body = JSON.parse(calls[0][1].body as string) as {
+    const body = JSON.parse(calls[0]![1].body as string) as {
       type: string;
       image: { link: string };
     };
@@ -116,7 +116,7 @@ describe('WhatsAppProvider.send — happy path', () => {
     await provider.send(TO, { type: 'audio', mediaUrl: 'https://cdn.example.com/audio.ogg' });
 
     const calls = vi.mocked(fetch).mock.calls as [string, RequestInit][];
-    const body = JSON.parse(calls[0][1].body as string) as {
+    const body = JSON.parse(calls[0]![1].body as string) as {
       type: string;
       audio: { link: string };
     };
@@ -129,7 +129,7 @@ describe('WhatsAppProvider.send — happy path', () => {
     await provider.send(TO, { type: 'file', mediaUrl: 'https://cdn.example.com/doc.pdf' });
 
     const calls = vi.mocked(fetch).mock.calls as [string, RequestInit][];
-    const body = JSON.parse(calls[0][1].body as string) as {
+    const body = JSON.parse(calls[0]![1].body as string) as {
       type: string;
       document: { link: string };
     };
@@ -146,7 +146,7 @@ describe('WhatsAppProvider.send — happy path', () => {
     });
 
     const calls = vi.mocked(fetch).mock.calls as [string, RequestInit][];
-    const body = JSON.parse(calls[0][1].body as string) as {
+    const body = JSON.parse(calls[0]![1].body as string) as {
       type: string;
       template: {
         name: string;
@@ -157,7 +157,7 @@ describe('WhatsAppProvider.send — happy path', () => {
     expect(body.type).toBe('template');
     expect(body.template.name).toBe('order_confirmation');
     expect(body.template.language.code).toBe('en_US');
-    expect(body.template.components[0].parameters).toEqual(
+    expect(body.template.components[0]!.parameters).toEqual(
       expect.arrayContaining([
         { type: 'text', text: '12345' },
         { type: 'text', text: '500' },
@@ -170,7 +170,7 @@ describe('WhatsAppProvider.send — happy path', () => {
     await provider.send(TO, { type: 'template', templateName: 'welcome' });
 
     const calls = vi.mocked(fetch).mock.calls as [string, RequestInit][];
-    const body = JSON.parse(calls[0][1].body as string) as {
+    const body = JSON.parse(calls[0]![1].body as string) as {
       template: { components: unknown[] };
     };
     expect(body.template.components).toEqual([]);
@@ -182,7 +182,7 @@ describe('WhatsAppProvider.send — happy path', () => {
     await provider.send(TO, { type: 'interactive', interactive });
 
     const calls = vi.mocked(fetch).mock.calls as [string, RequestInit][];
-    const body = JSON.parse(calls[0][1].body as string) as {
+    const body = JSON.parse(calls[0]![1].body as string) as {
       type: string;
       interactive: unknown;
     };
@@ -195,7 +195,7 @@ describe('WhatsAppProvider.send — happy path', () => {
     await provider.send(TO, { type: 'video' as 'text' });
 
     const calls = vi.mocked(fetch).mock.calls as [string, RequestInit][];
-    const body = JSON.parse(calls[0][1].body as string) as { type: string };
+    const body = JSON.parse(calls[0]![1].body as string) as { type: string };
     expect(body.type).toBe('text');
   });
 

@@ -35,8 +35,8 @@ describe('ConfigurationService', () => {
       expect(result).not.toBeNull();
       expect(result!.id).toBe('cfg-1');
       expect(result!.scope).toBe('workflow');
-      const calls = vi.mocked(pool.query).mock.calls as [string, unknown[]][];
-      expect(calls[0][0]).toContain('set_config');
+      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
+      expect(calls[0]![0]).toContain('set_config');
     });
 
     it('returns null when not found', async () => {
@@ -50,10 +50,10 @@ describe('ConfigurationService', () => {
       const pool = makePool([ok([]), ok([])]);
       const svc = new ConfigurationService(pool);
       await svc.getConfig('org-1', 'security', 'mfa_required');
-      const calls = vi.mocked(pool.query).mock.calls as [string, unknown[]][];
-      expect(calls[1][1]).toContain('org-1');
-      expect(calls[1][1]).toContain('security');
-      expect(calls[1][1]).toContain('mfa_required');
+      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
+      expect(calls[1]![1]).toContain('org-1');
+      expect(calls[1]![1]).toContain('security');
+      expect(calls[1]![1]).toContain('mfa_required');
     });
   });
 
@@ -63,8 +63,8 @@ describe('ConfigurationService', () => {
       const svc = new ConfigurationService(pool);
       const result = await svc.setConfig('org-1', 'workflow', 'max_steps', 10, 'admin-1');
       expect(result.key).toBe('max_steps');
-      const calls = vi.mocked(pool.query).mock.calls as [string, unknown[]][];
-      expect(calls[0][0]).toContain('set_config');
+      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
+      expect(calls[0]![0]).toContain('set_config');
     });
 
     it('throws when INSERT returns no row', async () => {
@@ -96,16 +96,16 @@ describe('ConfigurationService', () => {
       const pool = makePool([ok([]), ok([])]);
       const svc = new ConfigurationService(pool);
       await svc.listConfigs('org-1', 'security');
-      const calls = vi.mocked(pool.query).mock.calls as [string, unknown[]][];
-      expect(calls[1][1]).toContain('security');
+      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
+      expect(calls[1]![1]).toContain('security');
     });
 
     it('does not pass scope when undefined', async () => {
       const pool = makePool([ok([]), ok([])]);
       const svc = new ConfigurationService(pool);
       await svc.listConfigs('org-1');
-      const calls = vi.mocked(pool.query).mock.calls as [string, unknown[]][];
-      expect(calls[1][1]).toHaveLength(1);
+      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
+      expect(calls[1]![1]).toHaveLength(1);
     });
   });
 

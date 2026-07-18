@@ -50,7 +50,10 @@ describe('PartnerService.registerPartner', () => {
     });
     expect(result.name).toBe('Acme Partners');
     expect(result.status).toBe('pending');
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as [string, unknown[]][];
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [
+      string,
+      unknown[],
+    ][];
     expect(calls[0]?.[0]).toBe('SELECT set_config($1, $2, true)');
     expect(calls[1]?.[0]).toContain("'pending'");
   });
@@ -96,7 +99,10 @@ describe('PartnerService.listPartners', () => {
     const svc = new PartnerService(pool);
     const result = await svc.listPartners(ORG);
     expect(result).toHaveLength(2);
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as [string][];
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [
+      string,
+      unknown[],
+    ][];
     expect(calls[1]?.[0]).not.toContain('WHERE');
   });
 
@@ -104,7 +110,10 @@ describe('PartnerService.listPartners', () => {
     const pool = makePool([ok([]), ok([makeRow({ status: 'approved' })])]);
     const svc = new PartnerService(pool);
     await svc.listPartners(ORG, { status: 'approved' });
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as [string, unknown[]][];
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [
+      string,
+      unknown[],
+    ][];
     expect(calls[1]?.[0]).toContain('WHERE');
     expect(calls[1]?.[0]).toContain('status = $');
     expect(calls[1]?.[1]).toContain('approved');
@@ -119,7 +128,10 @@ describe('PartnerService.approvePartner', () => {
     const result = await svc.approvePartner(ORG, PARTNER_ID, 'admin-1');
     expect(result?.status).toBe('approved');
     expect(result?.approvedBy).toBe('admin-1');
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as [string][];
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [
+      string,
+      unknown[],
+    ][];
     expect(calls[1]?.[0]).toContain("'approved'");
   });
 
@@ -148,7 +160,10 @@ describe('PartnerService.updatePartnerProfile', () => {
     const svc = new PartnerService(pool);
     const result = await svc.updatePartnerProfile(ORG, PARTNER_ID, { name: 'New Name' });
     expect(result?.name).toBe('New Name');
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as [string, unknown[]][];
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [
+      string,
+      unknown[],
+    ][];
     expect(calls[1]?.[0]).toContain('name = $');
   });
 

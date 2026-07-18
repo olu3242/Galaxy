@@ -177,7 +177,10 @@ describe('MessageService.send', () => {
       content: 'Hello!',
       correlationId: CORR,
     });
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as [string, string[]][];
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [
+      string,
+      unknown[],
+    ][];
     const [sql, params] = calls[0] ?? ['', []];
     expect(sql).toBe('SELECT set_config($1, $2, true)');
     expect(params[1]).toBe(ORG);
@@ -239,7 +242,10 @@ describe('MessageService.softDelete', () => {
     const pool = makePool([ok([]), ok([])]);
     const svc = new MessageService(pool, makeEventPublisher(), makeAuditService());
     await svc.softDelete(ORG, MSG_ID, SENDER, CORR);
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as [string, string[]][];
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [
+      string,
+      unknown[],
+    ][];
     const updateParams = calls[1]?.[1] ?? [];
     expect(updateParams).toContain(MSG_ID);
     expect(updateParams).toContain(ORG);

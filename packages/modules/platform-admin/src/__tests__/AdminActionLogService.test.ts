@@ -54,9 +54,9 @@ describe('AdminActionLogService', () => {
         actionType: 'update_system_config',
         payload: {},
       });
-      const calls = vi.mocked(pool.query).mock.calls as [string, unknown[]][];
-      expect(calls[0][1]![2]).toBeNull();
-      expect(calls[0][1]![4]).toBeNull();
+      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
+      expect(calls[0]![1]![2]).toBeNull();
+      expect(calls[0]![1]![4]).toBeNull();
     });
 
     it('throws when INSERT returns no row', async () => {
@@ -88,8 +88,8 @@ describe('AdminActionLogService', () => {
       const pool = makePool([ok([])]);
       const svc = new AdminActionLogService(pool);
       await svc.listActions({ adminId: 'admin-1' });
-      const calls = vi.mocked(pool.query).mock.calls as [string, unknown[]][];
-      expect(calls[0][1]).toContain('admin-1');
+      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
+      expect(calls[0]![1]).toContain('admin-1');
     });
 
     it('passes all filters correctly', async () => {
@@ -102,8 +102,8 @@ describe('AdminActionLogService', () => {
         limit: 5,
         offset: 10,
       });
-      const calls = vi.mocked(pool.query).mock.calls as [string, unknown[]][];
-      const params = calls[0][1] as unknown[];
+      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
+      const params = calls[0]![1] as unknown[];
       expect(params).toContain('admin-1');
       expect(params).toContain('suspend_tenant');
       expect(params).toContain('org-1');
@@ -132,8 +132,8 @@ describe('AdminActionLogService', () => {
       const pool = makePool([ok([])]);
       const svc = new AdminActionLogService(pool);
       await svc.getAction('act-42');
-      const calls = vi.mocked(pool.query).mock.calls as [string, unknown[]][];
-      expect(calls[0][1]).toContain('act-42');
+      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
+      expect(calls[0]![1]).toContain('act-42');
     });
   });
 });

@@ -51,7 +51,7 @@ describe('PlanLimitsService', () => {
       const pool = makePool([ok([]), ok([planLimitsRow])]);
       const svc = new PlanLimitsService(pool);
       await svc.getPlanLimits('org-1');
-      const calls = vi.mocked(pool.query).mock.calls as [string, unknown[]][];
+      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
       expect(calls[0]?.[0]).toContain('set_config');
       expect(calls[0]?.[1]).toContain('org-1');
     });
@@ -141,7 +141,7 @@ describe('PlanLimitsService', () => {
       const pool = makePool([ok([]), ok([]), ok([planLimitsRow]), ok([{ total: '0' }])]);
       const svc = new PlanLimitsService(pool);
       await svc.checkApiCallLimit('org-1', 'sub-42');
-      const calls = vi.mocked(pool.query).mock.calls as [string, unknown[]][];
+      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
       const lastCall = calls[calls.length - 1];
       expect(lastCall?.[1]).toContain('sub-42');
     });

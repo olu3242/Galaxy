@@ -50,17 +50,17 @@ describe('TenantAdminService', () => {
       const pool = makePool([ok([])]);
       const svc = new TenantAdminService(pool);
       await svc.listAllTenants({ status: 'suspended' });
-      const calls = vi.mocked(pool.query).mock.calls as [string, unknown[]][];
-      expect(calls[0][1]).toContain('suspended');
+      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
+      expect(calls[0]![1]).toContain('suspended');
     });
 
     it('passes limit and offset', async () => {
       const pool = makePool([ok([])]);
       const svc = new TenantAdminService(pool);
       await svc.listAllTenants({ limit: 10, offset: 5 });
-      const calls = vi.mocked(pool.query).mock.calls as [string, unknown[]][];
-      expect(calls[0][1]).toContain(10);
-      expect(calls[0][1]).toContain(5);
+      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
+      expect(calls[0]![1]).toContain(10);
+      expect(calls[0]![1]).toContain(5);
     });
   });
 
@@ -84,8 +84,8 @@ describe('TenantAdminService', () => {
       const pool = makePool([ok([])]);
       const svc = new TenantAdminService(pool);
       await svc.getTenant('org-42');
-      const calls = vi.mocked(pool.query).mock.calls as [string, unknown[]][];
-      expect(calls[0][1]).toContain('org-42');
+      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
+      expect(calls[0]![1]).toContain('org-42');
     });
   });
 
@@ -118,8 +118,8 @@ describe('TenantAdminService', () => {
       const pool = makePool([ok([])]);
       const svc = new TenantAdminService(pool);
       await svc.suspendTenant('org-1');
-      const calls = vi.mocked(pool.query).mock.calls as [string, unknown[]][];
-      expect(calls[0][1]).toContain('org-1');
+      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
+      expect(calls[0]![1]).toContain('org-1');
     });
   });
 
@@ -185,7 +185,7 @@ describe('TenantAdminService', () => {
       ]);
       const svc = new TenantAdminService(pool);
       await svc.getTenantUsageSummary('org-99');
-      const calls = vi.mocked(pool.query).mock.calls as [string, unknown[]][];
+      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
       for (const call of calls) {
         expect(call[1]).toContain('org-99');
       }

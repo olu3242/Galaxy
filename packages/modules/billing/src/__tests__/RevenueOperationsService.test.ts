@@ -98,7 +98,7 @@ describe('RevenueOperationsService', () => {
       ]);
       const svc = new RevenueOperationsService(pool);
       await svc.getRevenueMetrics({ start: '2024-01-01', end: '2024-01-31' });
-      const calls = vi.mocked(pool.query).mock.calls as [string, unknown[]][];
+      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
       expect(calls[1]?.[1]).toContain('2024-01-01');
       expect(calls[1]?.[1]).toContain('2024-01-31');
     });

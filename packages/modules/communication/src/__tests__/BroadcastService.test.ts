@@ -144,7 +144,10 @@ describe('BroadcastService.create', () => {
       sentBy: ACTOR,
       correlationId: CORR,
     });
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as [string, string[]][];
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [
+      string,
+      unknown[],
+    ][];
     const [sql, params] = calls[0] ?? ['', []];
     expect(sql).toBe('SELECT set_config($1, $2, true)');
     expect(params[1]).toBe(ORG);

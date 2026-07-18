@@ -45,8 +45,8 @@ describe('SystemConfigService', () => {
       const pool = makePool([ok([configRow])]);
       const svc = new SystemConfigService(pool);
       await svc.upsertConfig({ key: 'x', value: 1, updatedBy: 'admin-1' });
-      const calls = vi.mocked(pool.query).mock.calls as [string, unknown[]][];
-      expect(calls[0][1]![2]).toBeNull();
+      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
+      expect(calls[0]![1]![2]).toBeNull();
     });
 
     it('throws when INSERT returns no row', async () => {
@@ -78,8 +78,8 @@ describe('SystemConfigService', () => {
       const pool = makePool([ok([])]);
       const svc = new SystemConfigService(pool);
       await svc.getConfig('my_key');
-      const calls = vi.mocked(pool.query).mock.calls as [string, unknown[]][];
-      expect(calls[0][1]).toContain('my_key');
+      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
+      expect(calls[0]![1]).toContain('my_key');
     });
   });
 

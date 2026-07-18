@@ -46,7 +46,10 @@ describe('PermissionService.createPermission', () => {
       resource: 'workflow',
       action: 'create',
     });
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as [string, string[]][];
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [
+      string,
+      unknown[],
+    ][];
     expect(calls[0]?.[0]).toBe('SELECT set_config($1, $2, true)');
     expect(calls[0]?.[1]).toEqual(['app.current_tenant', ORG]);
   });
@@ -92,7 +95,10 @@ describe('PermissionService.createPermission', () => {
       resource: 'x',
       action: 'y',
     });
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as [string, unknown[]][];
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [
+      string,
+      unknown[],
+    ][];
     for (const [sql] of calls) {
       expect(sql).not.toContain(ORG);
     }
@@ -104,7 +110,10 @@ describe('PermissionService.assignPermissionToRole', () => {
     const pool = makePool([ok([]), ok([])]);
     const svc = new PermissionService(pool);
     await svc.assignPermissionToRole(ORG, ROLE_ID, PERM_ID);
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as [string, unknown[]][];
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [
+      string,
+      unknown[],
+    ][];
     const insertParams = calls[1]?.[1] ?? [];
     expect(insertParams).toContain(ORG);
     expect(insertParams).toContain(ROLE_ID);
@@ -115,7 +124,10 @@ describe('PermissionService.assignPermissionToRole', () => {
     const pool = makePool([ok([]), ok([])]);
     const svc = new PermissionService(pool);
     await svc.assignPermissionToRole(ORG, ROLE_ID, PERM_ID);
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as [string, string[]][];
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [
+      string,
+      unknown[],
+    ][];
     expect(calls[0]?.[0]).toBe('SELECT set_config($1, $2, true)');
   });
 });
@@ -156,7 +168,10 @@ describe('PermissionService.checkPermission', () => {
     const pool = makePool([ok([]), ok([{ count: '0' }])]);
     const svc = new PermissionService(pool);
     await svc.checkPermission(ORG, MEMBER_ID, 'report', 'export');
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as [string, unknown[]][];
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [
+      string,
+      unknown[],
+    ][];
     const params = calls[1]?.[1] ?? [];
     expect(params).toContain('report');
     expect(params).toContain('export');

@@ -84,8 +84,8 @@ describe('DigitalTwin', () => {
       expect(snapshot.agentActivity.completedLast24h).toBe(5);
       expect(snapshot.agentActivity.failedLast24h).toBe(1);
 
-      const calls = vi.mocked(pool.query).mock.calls as [string, unknown[]][];
-      expect(calls[0][0]).toContain('set_config');
+      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
+      expect(calls[0]![0]).toContain('set_config');
     });
 
     it('handles empty result sets with zero defaults', async () => {

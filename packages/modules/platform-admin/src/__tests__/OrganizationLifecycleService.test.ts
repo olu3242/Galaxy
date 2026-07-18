@@ -26,8 +26,8 @@ describe('OrganizationLifecycleService', () => {
       const svc = new OrganizationLifecycleService(pool);
       const state = await svc.getLifecycleState('org-1');
       expect(state.organizationId).toBe('org-1');
-      const calls = vi.mocked(pool.query).mock.calls as [string, unknown[]][];
-      expect(calls[0][0]).toContain('set_config');
+      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
+      expect(calls[0]![0]).toContain('set_config');
     });
 
     it('returns onboarding stage when no members', async () => {
@@ -90,9 +90,9 @@ describe('OrganizationLifecycleService', () => {
       const pool = makePool([ok([]), ok([])]);
       const svc = new OrganizationLifecycleService(pool);
       await svc.startOnboarding('org-1');
-      const calls = vi.mocked(pool.query).mock.calls as [string, unknown[]][];
-      expect(calls[0][0]).toContain('set_config');
-      expect(calls[1][1]).toContain('org-1');
+      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
+      expect(calls[0]![0]).toContain('set_config');
+      expect(calls[1]![1]).toContain('org-1');
     });
   });
 
@@ -101,9 +101,9 @@ describe('OrganizationLifecycleService', () => {
       const pool = makePool([ok([]), ok([])]);
       const svc = new OrganizationLifecycleService(pool);
       await svc.completeOnboarding('org-1');
-      const calls = vi.mocked(pool.query).mock.calls as [string, unknown[]][];
-      expect(calls[0][0]).toContain('set_config');
-      const sql = calls[1][0] as string;
+      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
+      expect(calls[0]![0]).toContain('set_config');
+      const sql = calls[1]![0] as string;
       expect(sql).toContain('onboarding_completed');
     });
   });
@@ -113,9 +113,9 @@ describe('OrganizationLifecycleService', () => {
       const pool = makePool([ok([]), ok([])]);
       const svc = new OrganizationLifecycleService(pool);
       await svc.triggerOffboarding('org-1', 'contract ended');
-      const calls = vi.mocked(pool.query).mock.calls as [string, unknown[]][];
-      expect(calls[0][0]).toContain('set_config');
-      expect(calls[1][1]).toContain('org-1');
+      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
+      expect(calls[0]![0]).toContain('set_config');
+      expect(calls[1]![1]).toContain('org-1');
     });
   });
 });

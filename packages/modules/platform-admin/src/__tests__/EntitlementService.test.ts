@@ -56,8 +56,8 @@ describe('EntitlementService', () => {
       const pool = makePool([ok([])]);
       const svc = new EntitlementService(pool);
       await svc.getEntitlementsForPlan('enterprise');
-      const calls = vi.mocked(pool.query).mock.calls as [string, unknown[]][];
-      expect(calls[0][1]).toContain('enterprise');
+      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
+      expect(calls[0]![1]).toContain('enterprise');
     });
   });
 
@@ -109,8 +109,8 @@ describe('EntitlementService', () => {
       const result = await svc.getOrgOverride('org-1', 'advanced_analytics');
       expect(result).not.toBeNull();
       expect(result!.isEnabled).toBe(false);
-      const calls = vi.mocked(pool.query).mock.calls as [string, unknown[]][];
-      expect(calls[0][0]).toContain('set_config');
+      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
+      expect(calls[0]![0]).toContain('set_config');
     });
 
     it('returns null when no override exists', async () => {
@@ -127,8 +127,8 @@ describe('EntitlementService', () => {
       const svc = new EntitlementService(pool);
       const result = await svc.setOrgOverride('org-1', 'advanced_analytics', false, 'trial ended');
       expect(result.overrideReason).toBe('trial ended');
-      const calls = vi.mocked(pool.query).mock.calls as [string, unknown[]][];
-      expect(calls[0][0]).toContain('set_config');
+      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
+      expect(calls[0]![0]).toContain('set_config');
     });
 
     it('throws when INSERT returns no row', async () => {

@@ -47,7 +47,7 @@ describe('TrialService', () => {
       const pool = makePool([ok([]), ok([trialRow]), ok([])]);
       const svc = new TrialService(pool);
       await svc.startTrial('org-1', 'plan-1');
-      const calls = vi.mocked(pool.query).mock.calls as [string, unknown[]][];
+      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
       expect(calls[0]?.[0]).toContain('set_config');
       expect(calls[0]?.[1]).toContain('org-1');
     });
@@ -67,7 +67,7 @@ describe('TrialService', () => {
       const pool = makePool([ok([]), ok([trialRow]), ok([])]);
       const svc = new TrialService(pool);
       await svc.startTrial('org-1', 'plan-1');
-      const calls = vi.mocked(pool.query).mock.calls as [string, unknown[]][];
+      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
       const insertParams = calls[1]?.[1] as unknown[];
       const trialStart = new Date(insertParams[2] as string);
       const trialEnd = new Date(insertParams[3] as string);
@@ -79,7 +79,7 @@ describe('TrialService', () => {
       const pool = makePool([ok([]), ok([trialRow]), ok([])]);
       const svc = new TrialService(pool);
       await svc.startTrial('org-1', 'plan-1', 30);
-      const calls = vi.mocked(pool.query).mock.calls as [string, unknown[]][];
+      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
       const insertParams = calls[1]?.[1] as unknown[];
       const trialStart = new Date(insertParams[2] as string);
       const trialEnd = new Date(insertParams[3] as string);
@@ -97,7 +97,7 @@ describe('TrialService', () => {
       const pool = makePool([ok([]), ok([trialRow]), ok([])]);
       const svc = new TrialService(pool);
       await svc.startTrial('org-1', 'plan-1');
-      const calls = vi.mocked(pool.query).mock.calls as [string, unknown[]][];
+      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
       expect(calls[2]?.[0]).toContain('INSERT INTO subscriptions');
     });
   });
@@ -107,7 +107,7 @@ describe('TrialService', () => {
       const pool = makePool([ok([]), ok([trialRow])]);
       const svc = new TrialService(pool);
       await svc.getTrialStatus('org-1');
-      const calls = vi.mocked(pool.query).mock.calls as [string, unknown[]][];
+      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
       expect(calls[0]?.[0]).toContain('set_config');
     });
 
@@ -130,7 +130,7 @@ describe('TrialService', () => {
       const pool = makePool([ok([]), ok([trialRow])]);
       const svc = new TrialService(pool);
       await svc.getTrialStatus('org-42');
-      const calls = vi.mocked(pool.query).mock.calls as [string, unknown[]][];
+      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
       expect(calls[1]?.[1]).toContain('org-42');
     });
   });
@@ -140,7 +140,7 @@ describe('TrialService', () => {
       const pool = makePool([ok([]), ok([]), ok([subRow])]);
       const svc = new TrialService(pool);
       await svc.convertTrialToPaid('org-1', 'plan-1');
-      const calls = vi.mocked(pool.query).mock.calls as [string, unknown[]][];
+      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
       expect(calls[0]?.[0]).toContain('set_config');
     });
 
@@ -148,7 +148,7 @@ describe('TrialService', () => {
       const pool = makePool([ok([]), ok([]), ok([subRow])]);
       const svc = new TrialService(pool);
       await svc.convertTrialToPaid('org-1', 'plan-1');
-      const calls = vi.mocked(pool.query).mock.calls as [string, unknown[]][];
+      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
       expect(calls[1]?.[0]).toContain('is_converted = true');
     });
 
@@ -172,7 +172,7 @@ describe('TrialService', () => {
       const pool = makePool([ok([]), ok([]), ok([subRow])]);
       const svc = new TrialService(pool);
       await svc.convertTrialToPaid('org-1', 'plan-1');
-      const calls = vi.mocked(pool.query).mock.calls as [string, unknown[]][];
+      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
       expect(calls[2]?.[0]).toContain("status = 'active'");
     });
   });

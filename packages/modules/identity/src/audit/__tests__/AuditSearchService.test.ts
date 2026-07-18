@@ -40,7 +40,7 @@ describe('AuditSearchService (Postgres fallback — no esUrl)', () => {
     const svc = new AuditSearchService(pool);
     await svc.search({ organizationId: ORG });
 
-    const calls = vi.mocked(pool.query).mock.calls as [string, unknown[]][];
+    const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
     expect(calls[0]?.[0]).toContain('set_config');
     expect(calls[0]?.[1]).toContain('app.current_tenant');
     expect(calls[0]?.[1]).toContain(ORG);
@@ -82,7 +82,7 @@ describe('AuditSearchService (Postgres fallback — no esUrl)', () => {
     const pool = makePool([ok([]), ok([{ count: '0' }]), ok([])]);
     const svc = new AuditSearchService(pool);
     await svc.search({ organizationId: ORG, actorType: 'agent' });
-    const calls = vi.mocked(pool.query).mock.calls as [string, unknown[]][];
+    const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
     // count query is index 1
     const countSql = calls[1]?.[0] ?? '';
     expect(countSql).toContain('actor_type');
@@ -96,7 +96,7 @@ describe('AuditSearchService (Postgres fallback — no esUrl)', () => {
     const pool = makePool([ok([]), ok([{ count: '0' }]), ok([])]);
     const svc = new AuditSearchService(pool);
     await svc.search({ organizationId: ORG, action: 'role.assigned' });
-    const calls = vi.mocked(pool.query).mock.calls as [string, unknown[]][];
+    const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
     const countParams = calls[1]?.[1] as unknown[];
     expect(countParams).toContain('role.assigned');
   });
@@ -109,7 +109,7 @@ describe('AuditSearchService (Postgres fallback — no esUrl)', () => {
       from: '2026-01-01',
       to: '2026-12-31',
     });
-    const calls = vi.mocked(pool.query).mock.calls as [string, unknown[]][];
+    const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
     const countSql = calls[1]?.[0] ?? '';
     expect(countSql).toContain('created_at >=');
     expect(countSql).toContain('created_at <=');

@@ -43,7 +43,7 @@ describe('SubscriptionGovernanceService', () => {
       const pool = makePool([ok([]), ok([])]);
       const svc = new SubscriptionGovernanceService(pool);
       await svc.enforceRenewal('org-1');
-      const calls = vi.mocked(pool.query).mock.calls as [string, unknown[]][];
+      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
       expect(calls[0]?.[0]).toContain('set_config');
       expect(calls[0]?.[1]).toContain('org-1');
     });
@@ -87,7 +87,7 @@ describe('SubscriptionGovernanceService', () => {
       const pool = makePool([ok([]), ok([{ tier: 'enterprise' }])]);
       const svc = new SubscriptionGovernanceService(pool);
       await svc.validateEnterpriseAccess('org-1', 'sso');
-      const calls = vi.mocked(pool.query).mock.calls as [string, unknown[]][];
+      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
       expect(calls[0]?.[0]).toContain('set_config');
     });
 
@@ -123,7 +123,7 @@ describe('SubscriptionGovernanceService', () => {
       const pool = makePool([ok([]), ok([{ tier: 'enterprise' }])]);
       const svc = new SubscriptionGovernanceService(pool);
       await svc.validateEnterpriseAccess('org-42', 'sso');
-      const calls = vi.mocked(pool.query).mock.calls as [string, unknown[]][];
+      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
       expect(calls[1]?.[1]).toContain('org-42');
     });
   });

@@ -53,9 +53,9 @@ describe('SupportService', () => {
       expect(result.id).toBe('ticket-1');
       expect(result.status).toBe('open');
       expect(result.priority).toBe('medium');
-      const calls = vi.mocked(pool.query).mock.calls as [string, unknown[]][];
-      expect(calls[0][0]).toContain('set_config');
-      expect(calls[0][1]).toContain('org-1');
+      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
+      expect(calls[0]![0]).toContain('set_config');
+      expect(calls[0]![1]).toContain('org-1');
     });
 
     it('uses provided priority', async () => {
@@ -69,8 +69,8 @@ describe('SupportService', () => {
         priority: 'high',
       });
       expect(result.priority).toBe('high');
-      const calls = vi.mocked(pool.query).mock.calls as [string, unknown[]][];
-      expect(calls[1][1]).toContain('high');
+      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
+      expect(calls[1]![1]).toContain('high');
     });
 
     it('throws when INSERT returns no row', async () => {
@@ -107,8 +107,8 @@ describe('SupportService', () => {
       const pool = makePool([ok([])]);
       const svc = new SupportService(pool);
       await svc.listTickets({ organizationId: 'org-1', status: 'open' });
-      const calls = vi.mocked(pool.query).mock.calls as [string, unknown[]][];
-      const params = calls[0][1] as unknown[];
+      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
+      const params = calls[0]![1] as unknown[];
       expect(params).toContain('org-1');
       expect(params).toContain('open');
     });
@@ -136,9 +136,9 @@ describe('SupportService', () => {
       const pool = makePool([ok([ticketRow])]);
       const svc = new SupportService(pool);
       await svc.updateStatus('ticket-1', 'in_progress');
-      const calls = vi.mocked(pool.query).mock.calls as [string, unknown[]][];
-      expect(calls[0][1]).toContain('ticket-1');
-      expect(calls[0][1]).toContain('in_progress');
+      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
+      expect(calls[0]![1]).toContain('ticket-1');
+      expect(calls[0]![1]).toContain('in_progress');
     });
   });
 
@@ -156,8 +156,8 @@ describe('SupportService', () => {
       const pool = makePool([ok([{ ...noteRow, is_internal: false }])]);
       const svc = new SupportService(pool);
       await svc.addNote('ticket-1', 'admin-1', 'Public note');
-      const calls = vi.mocked(pool.query).mock.calls as [string, unknown[]][];
-      expect(calls[0][1]).toContain(false);
+      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
+      expect(calls[0]![1]).toContain(false);
     });
 
     it('throws when INSERT returns no row', async () => {
@@ -189,8 +189,8 @@ describe('SupportService', () => {
       const pool = makePool([ok([])]);
       const svc = new SupportService(pool);
       await svc.getNotes('ticket-99');
-      const calls = vi.mocked(pool.query).mock.calls as [string, unknown[]][];
-      expect(calls[0][1]).toContain('ticket-99');
+      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
+      expect(calls[0]![1]).toContain('ticket-99');
     });
   });
 });

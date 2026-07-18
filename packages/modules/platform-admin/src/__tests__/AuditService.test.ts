@@ -54,8 +54,8 @@ describe('AuditService', () => {
       const pool = makePool([ok([{ ...auditRow, organization_id: null, ip_address: null }])]);
       const svc = new AuditService(pool);
       await svc.log({ actorType: 'system', actorId: 'sys', action: 'boot' });
-      const calls = vi.mocked(pool.query).mock.calls as [string, unknown[]][];
-      const params = calls[0][1] as unknown[];
+      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
+      const params = calls[0]![1] as unknown[];
       expect(params[0]).toBeNull(); // organizationId
       expect(params[7]).toBeNull(); // ipAddress
     });
@@ -89,16 +89,16 @@ describe('AuditService', () => {
       const pool = makePool([ok([])]);
       const svc = new AuditService(pool);
       await svc.queryLogs({ organizationId: 'org-1' });
-      const calls = vi.mocked(pool.query).mock.calls as [string, unknown[]][];
-      expect(calls[0][1]).toContain('org-1');
+      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
+      expect(calls[0]![1]).toContain('org-1');
     });
 
     it('passes actorId and action filters', async () => {
       const pool = makePool([ok([])]);
       const svc = new AuditService(pool);
       await svc.queryLogs({ actorId: 'user-1', action: 'workflow.submitted' });
-      const calls = vi.mocked(pool.query).mock.calls as [string, unknown[]][];
-      const params = calls[0][1] as unknown[];
+      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
+      const params = calls[0]![1] as unknown[];
       expect(params).toContain('user-1');
       expect(params).toContain('workflow.submitted');
     });
@@ -107,8 +107,8 @@ describe('AuditService', () => {
       const pool = makePool([ok([])]);
       const svc = new AuditService(pool);
       await svc.queryLogs({ limit: 5, offset: 15 });
-      const calls = vi.mocked(pool.query).mock.calls as [string, unknown[]][];
-      const params = calls[0][1] as unknown[];
+      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
+      const params = calls[0]![1] as unknown[];
       expect(params).toContain(5);
       expect(params).toContain(15);
     });

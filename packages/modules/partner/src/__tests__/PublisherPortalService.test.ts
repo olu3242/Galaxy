@@ -40,7 +40,10 @@ describe('PublisherPortalService.onboardPublisher', () => {
       email: 'pub@acme.com',
     });
     expect(result.publisherId).toBe('pub-1');
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as [string][];
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [
+      string,
+      unknown[],
+    ][];
     expect(calls[1]?.[0]).toContain('ON CONFLICT');
   });
 
@@ -104,7 +107,10 @@ describe('PublisherPortalService.createPayout', () => {
     const result = await svc.createPayout(ORG, 500, '2024-06');
     expect(result.status).toBe('pending');
     expect(result.amount).toBe(500);
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as [string][];
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [
+      string,
+      unknown[],
+    ][];
     expect(calls[1]?.[0]).toContain("'pending'");
   });
 

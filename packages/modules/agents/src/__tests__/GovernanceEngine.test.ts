@@ -33,9 +33,9 @@ describe('GovernanceEngine', () => {
       expect(result.allowed).toBe(true);
       expect(result.reason).toContain('manager');
 
-      const calls = vi.mocked(pool.query).mock.calls as [string, unknown[]][];
-      expect(calls[0][1]).toEqual(['app.current_tenant', ORG]);
-      expect(calls[1][1]).toEqual([ORG, ACTOR_ID]);
+      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
+      expect(calls[0]![1]).toEqual(['app.current_tenant', ORG]);
+      expect(calls[1]![1]).toEqual([ORG, ACTOR_ID]);
     });
 
     it('allows member to read workflows', async () => {

@@ -54,12 +54,12 @@ describe('AgentFactory', () => {
       expect(agent.agentType).toBe('alice');
       expect(agent.isActive).toBe(true);
 
-      const calls = vi.mocked(pool.query).mock.calls as [string, unknown[]][];
+      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
       // first call is set_config
-      expect(calls[0][0]).toContain('set_config');
-      expect(calls[0][1]).toEqual(['app.current_tenant', ORG]);
+      expect(calls[0]![0]).toContain('set_config');
+      expect(calls[0]![1]).toEqual(['app.current_tenant', ORG]);
       // second call is INSERT
-      expect(calls[1][0]).toContain('INSERT INTO agent_configs');
+      expect(calls[1]![0]).toContain('INSERT INTO agent_configs');
     });
 
     it('uses nameOverride when provided', async () => {
@@ -73,8 +73,8 @@ describe('AgentFactory', () => {
         nameOverride: 'Custom Alice',
       });
 
-      const calls = vi.mocked(pool.query).mock.calls as [string, unknown[]][];
-      const insertParams = calls[1][1] as unknown[];
+      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
+      const insertParams = calls[1]![1] as unknown[];
       expect(insertParams[1]).toBe('Custom Alice');
       expect(agent.name).toBe('Custom Alice');
     });
@@ -90,8 +90,8 @@ describe('AgentFactory', () => {
         configOverride: { customSetting: true },
       });
 
-      const calls = vi.mocked(pool.query).mock.calls as [string, unknown[]][];
-      const insertParams = calls[1][1] as unknown[];
+      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
+      const insertParams = calls[1]![1] as unknown[];
       const configStr = insertParams[5] as string;
       const config = JSON.parse(configStr) as Record<string, unknown>;
       expect(config.customSetting).toBe(true);

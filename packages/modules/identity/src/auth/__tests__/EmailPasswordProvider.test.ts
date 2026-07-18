@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import type { Pool, QueryResult } from 'pg';
 import { EmailPasswordProvider } from '../EmailPasswordProvider.js';
+import type { EmailPasswordCredentials } from '../AuthProvider.js';
 import { hashPassword } from '../crypto.js';
 
 function ok<T extends object>(rows: T[]): QueryResult<T> {
@@ -63,7 +64,7 @@ describe('EmailPasswordProvider', () => {
       type: 'email_password',
       email: EMAIL,
       password: PASSWORD,
-    });
+    } as EmailPasswordCredentials);
     expect(result.success).toBe(false);
     expect(result.error).toBe('Invalid credentials');
   });
@@ -76,7 +77,7 @@ describe('EmailPasswordProvider', () => {
       type: 'email_password',
       email: EMAIL,
       password: PASSWORD,
-    });
+    } as EmailPasswordCredentials);
     expect(result.success).toBe(false);
     expect(result.error).toBe('Invalid credentials');
   });
@@ -89,7 +90,7 @@ describe('EmailPasswordProvider', () => {
       type: 'email_password',
       email: EMAIL,
       password: PASSWORD,
-    });
+    } as EmailPasswordCredentials);
     expect(result.success).toBe(true);
     expect(result.userId).toBe('user-abc');
   });
@@ -102,7 +103,7 @@ describe('EmailPasswordProvider', () => {
       type: 'email_password',
       email: EMAIL,
       password: PASSWORD,
-    });
+    } as EmailPasswordCredentials);
     expect(result.success).toBe(false);
     expect(result.error).toBe('Account suspended');
   });
@@ -114,8 +115,8 @@ describe('EmailPasswordProvider', () => {
       type: 'email_password',
       email: EMAIL,
       password: PASSWORD,
-    });
-    const calls = vi.mocked(pool.query).mock.calls as [string, unknown[]][];
+    } as EmailPasswordCredentials);
+    const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
     expect(calls[0]?.[0]).not.toContain(EMAIL);
     expect(calls[0]?.[1]).toContain(EMAIL);
   });

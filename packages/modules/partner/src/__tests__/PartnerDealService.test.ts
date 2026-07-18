@@ -52,7 +52,10 @@ describe('PartnerDealService.registerDeal', () => {
     });
     expect(result.dealValue).toBe(10000);
     expect(result.commissionRate).toBe(0.08);
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as [string, unknown[]][];
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [
+      string,
+      unknown[],
+    ][];
     // call 0 setTenant, call 1 insert
     const insertParams = calls[1]?.[1] ?? [];
     expect(insertParams).toContain(0.08);
@@ -71,7 +74,10 @@ describe('PartnerDealService.registerDeal', () => {
       dealValue: 10000,
       notes: '',
     });
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as [string, unknown[]][];
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [
+      string,
+      unknown[],
+    ][];
     expect(calls[1]?.[1]).toContain(0.05);
   });
 
@@ -126,7 +132,10 @@ describe('PartnerDealService.updateDealStage', () => {
     const svc = new PartnerDealService(pool);
     const result = await svc.updateDealStage(ORG, DEAL_ID, 'qualified');
     expect(result?.stage).toBe('qualified');
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as [string, unknown[]][];
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [
+      string,
+      unknown[],
+    ][];
     expect(calls[1]?.[0]).toContain('SET stage = $2');
   });
 
@@ -142,7 +151,10 @@ describe('PartnerDealService.updateDealStage', () => {
     const pool = makePool([ok([]), ok([row]), ok([])]);
     const svc = new PartnerDealService(pool);
     await svc.updateDealStage(ORG, DEAL_ID, 'closed_won');
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as [string][];
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [
+      string,
+      unknown[],
+    ][];
     expect(calls[2]?.[0]).toContain('INSERT INTO partner_commissions');
   });
 });

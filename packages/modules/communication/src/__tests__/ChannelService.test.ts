@@ -159,7 +159,10 @@ describe('ChannelService.create', () => {
       createdBy: ACTOR,
       correlationId: CORR,
     });
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as [string, string[]][];
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [
+      string,
+      unknown[],
+    ][];
     const [sql, params] = calls[0] ?? ['', []];
     expect(sql).toBe('SELECT set_config($1, $2, true)');
     expect(params[1]).toBe(ORG);
@@ -221,7 +224,10 @@ describe('ChannelService.delete', () => {
     const pool = makePool([ok([]), ok([])]);
     const svc = new ChannelService(pool, makeEventPublisher(), makeAuditService());
     await svc.delete(ORG, CHANNEL_ID, ACTOR, CORR);
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as [string, string[]][];
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [
+      string,
+      unknown[],
+    ][];
     const updateParams = calls[1]?.[1] ?? [];
     expect(updateParams).toContain(CHANNEL_ID);
     expect(updateParams).toContain(ORG);
@@ -258,7 +264,10 @@ describe('ChannelService.addMember', () => {
       actorId: ACTOR,
       correlationId: CORR,
     });
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as [string, string[]][];
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [
+      string,
+      unknown[],
+    ][];
     const insertParams = calls[1]?.[1] ?? [];
     expect(insertParams).toContain('member');
   });
@@ -271,7 +280,10 @@ describe('ChannelService.removeMember', () => {
     const pool = makePool([ok([]), ok([])]);
     const svc = new ChannelService(pool, makeEventPublisher(), makeAuditService());
     await svc.removeMember(ORG, CHANNEL_ID, MEMBER_ID);
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as [string, string[]][];
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [
+      string,
+      unknown[],
+    ][];
     const deleteParams = calls[1]?.[1] ?? [];
     expect(deleteParams).toContain(CHANNEL_ID);
     expect(deleteParams).toContain(MEMBER_ID);

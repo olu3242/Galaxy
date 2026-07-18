@@ -43,9 +43,9 @@ describe('FeatureFlagService', () => {
       const pool = makePool([ok([{ ...flagRow, is_enabled: false }])]);
       const svc = new FeatureFlagService(pool);
       await svc.createFlag({ key: 'my_flag' });
-      const calls = vi.mocked(pool.query).mock.calls as [string, unknown[]][];
-      expect(calls[0][1]![2]).toBe(false);
-      expect(calls[0][1]![3]).toBe('global');
+      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
+      expect(calls[0]![1]![2]).toBe(false);
+      expect(calls[0]![1]![3]).toBe('global');
     });
 
     it('throws when INSERT returns no row', async () => {
@@ -102,8 +102,8 @@ describe('FeatureFlagService', () => {
       const pool = makePool([ok([])]);
       const svc = new FeatureFlagService(pool);
       await svc.listFlags({ scope: 'tenant', targetTenantId: 'org-1' });
-      const calls = vi.mocked(pool.query).mock.calls as [string, unknown[]][];
-      const params = calls[0][1] as unknown[];
+      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
+      const params = calls[0]![1] as unknown[];
       expect(params).toContain('tenant');
       expect(params).toContain('org-1');
     });
