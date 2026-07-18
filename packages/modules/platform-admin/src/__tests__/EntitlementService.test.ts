@@ -145,7 +145,11 @@ describe('EntitlementService', () => {
       // getOrgOverride: set_config + SELECT -> overrideRow (is_enabled=false)
       const pool = makePool([ok([]), ok([overrideRow])]);
       const svc = new EntitlementService(pool);
-      const result = await svc.isFeatureEnabledForOrg('org-1', 'advanced_analytics', 'professional');
+      const result = await svc.isFeatureEnabledForOrg(
+        'org-1',
+        'advanced_analytics',
+        'professional',
+      );
       expect(result).toBe(false);
     });
 
@@ -153,7 +157,11 @@ describe('EntitlementService', () => {
       // getOrgOverride: set_config + SELECT (empty) then isFeatureEntitled: SELECT
       const pool = makePool([ok([]), ok([]), ok([entitlementRow])]);
       const svc = new EntitlementService(pool);
-      const result = await svc.isFeatureEnabledForOrg('org-1', 'advanced_analytics', 'professional');
+      const result = await svc.isFeatureEnabledForOrg(
+        'org-1',
+        'advanced_analytics',
+        'professional',
+      );
       expect(result).toBe(true);
     });
   });
