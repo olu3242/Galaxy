@@ -22,6 +22,25 @@ export type {
 } from './orchestrator/MultiAgentOrchestrator.js';
 export { DigitalTwin } from './twin/DigitalTwin.js';
 export type { DigitalTwinSnapshot } from './twin/DigitalTwin.js';
+export { AliceCopilot } from './copilots/AliceCopilot.js';
+export { AgentBus, agentBus } from './bus/index.js';
+export type { AgentMessage, AgentBusSubscription } from './bus/index.js';
+export { ConsensusEngine } from './consensus/index.js';
+export type {
+  VoteValue,
+  ConsensusVote,
+  ConsensusProposal,
+  ConsensusResult,
+} from './consensus/index.js';
+export { DAGPlanner } from './planner/index.js';
+export type { DAGTask, DAGNode, DAGPlan, DAGExecutionResult } from './planner/index.js';
+export { AgentHealthMonitor } from './healing/index.js';
+export type {
+  HealthStatus,
+  AgentHealthRecord,
+  HealthCheckResult,
+  HealingAction,
+} from './healing/index.js';
 export {
   ALL_MANIFESTS,
   ALICE_MANIFEST,

@@ -1,0 +1,179 @@
+version: '3.9'
+
+# Galaxy Loop OS — Production Docker Compose
+#
+# Usage:
+#   docker compose -f infrastructure/docker/docker-compose.prod.yml up -d
+#
+# All secrets are provided via environment variables — never hardcode values.
+# Set these in your CI/CD environment or AWS Secrets Manager.
+#
+# Required environment variables (set before running):
+#   DATABASE_URL, REDIS_URL, JWT_SECRET,
+#   WHATSAPP_APP_SECRET, WHATSAPP_ACCESS_TOKEN, WHATSAPP_PHONE_NUMBER_ID,
+#   ANTHROPIC_API_KEY, WHATSAPP_VERIFY_TOKEN
+
+services:
+  # ──────────────────────────────────────────────────────────────────────────
+  # PostgreSQL 16 — primary database with pgvector extension
+  # In production, prefer a managed RDS instance. This service is provided
+  # for self-hosted deployments.
+  # ──────────────────────────────────────────────────────────────────────────
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: galaxy_postgres_prod
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-galaxy}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+      POSTGRES_DB: ${POSTGRES_DB:-galaxy_prod}
+    volumes:
+      - galaxy_postgres_data_prod:/var/lib/postgresql/data
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-galaxy}']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - galaxy_internal
+    # No ports exposed externally in production — API connects via internal network
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # Redis 7 — job queue, cache, session store
+  # ──────────────────────────────────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: galaxy_redis_prod
+    restart: always
+    command: >
+      redis-server
+      --save 60 1
+      --loglevel warning
+      --requirepass ${REDIS_PASSWORD:?REDIS_PASSWORD is required}
+      --maxmemory 512mb
+      --maxmemory-policy allkeys-lru
+    volumes:
+      - galaxy_redis_data_prod:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', '-a', '${REDIS_PASSWORD}', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - galaxy_internal
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # Galaxy API — Fastify REST + WebSocket
+  # ──────────────────────────────────────────────────────────────────────────
+  api:
+    image: galaxy/api:${IMAGE_TAG:-latest}
+    container_name: galaxy_api_prod
+    restart: always
+    environment:
+      NODE_ENV: production
+      PORT: '3001'
+      DATABASE_URL: ${DATABASE_URL:?DATABASE_URL is required}
+      REDIS_URL: ${REDIS_URL:?REDIS_URL is required}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
+      WHATSAPP_APP_SECRET: ${WHATSAPP_APP_SECRET:?WHATSAPP_APP_SECRET is required}
+      WHATSAPP_ACCESS_TOKEN: ${WHATSAPP_ACCESS_TOKEN:?WHATSAPP_ACCESS_TOKEN is required}
+      WHATSAPP_PHONE_NUMBER_ID: ${WHATSAPP_PHONE_NUMBER_ID:?WHATSAPP_PHONE_NUMBER_ID is required}
+      WHATSAPP_VERIFY_TOKEN: ${WHATSAPP_VERIFY_TOKEN:?WHATSAPP_VERIFY_TOKEN is required}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:?ANTHROPIC_API_KEY is required}
+    ports:
+      - '3001:3001'
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - galaxy_internal
+      - galaxy_public
+    healthcheck:
+      test: ['CMD-SHELL', 'curl -f http://localhost:3001/health || exit 1']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # Galaxy Worker — BullMQ background job processor
+  # ──────────────────────────────────────────────────────────────────────────
+  worker:
+    image: galaxy/worker:${IMAGE_TAG:-latest}
+    container_name: galaxy_worker_prod
+    restart: always
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: ${DATABASE_URL:?DATABASE_URL is required}
+      REDIS_URL: ${REDIS_URL:?REDIS_URL is required}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:?ANTHROPIC_API_KEY is required}
+      WHATSAPP_ACCESS_TOKEN: ${WHATSAPP_ACCESS_TOKEN:?WHATSAPP_ACCESS_TOKEN is required}
+      WHATSAPP_PHONE_NUMBER_ID: ${WHATSAPP_PHONE_NUMBER_ID:?WHATSAPP_PHONE_NUMBER_ID is required}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - galaxy_internal
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # Galaxy Web — Next.js Mission Control dashboard
+  # ──────────────────────────────────────────────────────────────────────────
+  web:
+    image: galaxy/web:${IMAGE_TAG:-latest}
+    container_name: galaxy_web_prod
+    restart: always
+    environment:
+      NODE_ENV: production
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:?NEXT_PUBLIC_API_URL is required}
+    ports:
+      - '3000:3000'
+    depends_on:
+      - api
+    networks:
+      - galaxy_public
+    healthcheck:
+      test: ['CMD-SHELL', 'curl -f http://localhost:3000/ || exit 1']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+
+networks:
+  galaxy_internal:
+    driver: bridge
+    internal: true
+  galaxy_public:
+    driver: bridge
+
+volumes:
+  galaxy_postgres_data_prod:
+    driver: local
+  galaxy_redis_data_prod:
+    driver: local
