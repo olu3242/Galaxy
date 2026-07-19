@@ -55,7 +55,7 @@ describe('AgentActionService', () => {
       expect(action.errorMessage).toBeUndefined();
       expect(action.completedAt).toBeUndefined();
 
-      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as [string, unknown[]][];
+      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [string, unknown[]][];
       expect(calls).toHaveLength(2);
       expect(calls[0]?.[0]).toContain('set_config');
       expect(calls[1]?.[0]).toContain('INSERT');
@@ -148,7 +148,7 @@ describe('AgentActionService', () => {
       const svc = new AgentActionService(pool);
       await svc.getActions(ORG_ID, AGENT_ID, 10);
 
-      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as [string, unknown[]][];
+      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [string, unknown[]][];
       expect((calls[1]?.[1] ?? [])[2]).toBe(10);
     });
 

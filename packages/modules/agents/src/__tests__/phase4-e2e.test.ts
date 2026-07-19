@@ -788,8 +788,8 @@ describe('AgentRuntime', () => {
     ).rejects.toThrow('context engine failure');
 
     const query = errorPool.query as ReturnType<typeof vi.fn>;
-    const calls = query.mock.calls as unknown as [string, unknown[]][];
-    const failureUpdate = calls.find(([sql]) => sql.includes("status = 'failed'"));
+    const calls = query.mock.calls;
+    const failureUpdate = calls.find((call) => (call[0] as string).includes("status = 'failed'"));
     expect(failureUpdate).toBeDefined();
   });
 
@@ -894,8 +894,8 @@ describe('Cross-tenant isolation — set_config called before every query', () =
     await service.listAgents('tenant-B');
 
     const query = pool.query as ReturnType<typeof vi.fn>;
-    const calls = query.mock.calls as unknown as [string, unknown[]][];
-    const configs = calls.filter(([sql]) => sql.includes('set_config'));
+    const calls = query.mock.calls;
+    const configs = calls.filter((call) => (call[0] as string).includes('set_config'));
     // each call is [sql, [key, value]] — tenant is the second param element
     expect((configs[0]?.[1] as string[])[1]).toBe('tenant-A');
     expect((configs[1]?.[1] as string[])[1]).toBe('tenant-B');
@@ -918,11 +918,8 @@ describe('Cross-tenant isolation — set_config called before every query', () =
     expect(r1.allowed).toBe(true);
     expect(r2.allowed).toBe(false);
 
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [
-      string,
-      unknown[],
-    ][];
-    const configCalls = calls.filter(([sql]) => sql.includes('set_config'));
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls;
+    const configCalls = calls.filter((call) => (call[0] as string).includes('set_config'));
     expect((configCalls[0]?.[1] as string[])[1]).toBe('org-A');
     expect((configCalls[1]?.[1] as string[])[1]).toBe('org-B');
   });

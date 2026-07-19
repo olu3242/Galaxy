@@ -42,7 +42,7 @@ describe('OrgDiscoveryService.startSession', () => {
     expect(result.id).toBe(SESSION_ID);
     expect(result.totalSteps).toBe(DISCOVERY_QUESTIONS.length);
     expect(result.currentStep).toBe(0);
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as [string, unknown[]][];
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [string, unknown[]][];
     expect(calls[0]?.[0]).toBe('SELECT set_config($1, $2, true)');
     expect(calls[1]?.[1]).toContain(DISCOVERY_QUESTIONS.length);
   });

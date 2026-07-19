@@ -30,8 +30,8 @@ describe('PlatformHealthService', () => {
       expect(report.overallStatus).toBe('healthy');
       expect(report.healthScore).toBe(100);
       expect(report.checks).toHaveLength(2);
-      expect(report.checks[0]!.name).toBe('database');
-      expect(report.checks[1]!.name).toBe('tenant_health');
+      expect(report.checks[0]?.name).toBe('database');
+      expect(report.checks[1]?.name).toBe('tenant_health');
     });
 
     it('returns degraded status when many tenants are suspended', async () => {
@@ -42,7 +42,7 @@ describe('PlatformHealthService', () => {
       const svc = new PlatformHealthService(pool);
       const report = await svc.runHealthChecks();
       expect(report.overallStatus).toBe('degraded');
-      expect(report.checks[1]!.status).toBe('degraded');
+      expect(report.checks[1]?.status).toBe('degraded');
     });
 
     it('returns unhealthy status when db check throws', async () => {
@@ -55,8 +55,8 @@ describe('PlatformHealthService', () => {
       const svc = new PlatformHealthService(pool);
       const report = await svc.runHealthChecks();
       expect(report.overallStatus).toBe('unhealthy');
-      expect(report.checks[0]!.status).toBe('unhealthy');
-      expect(report.checks[0]!.message).toBe('connection refused');
+      expect(report.checks[0]?.status).toBe('unhealthy');
+      expect(report.checks[0]?.message).toBe('connection refused');
     });
 
     it('returns unhealthy when tenant health check throws', async () => {
@@ -69,7 +69,7 @@ describe('PlatformHealthService', () => {
       const svc = new PlatformHealthService(pool);
       const report = await svc.runHealthChecks();
       expect(report.overallStatus).toBe('unhealthy');
-      expect(report.checks[1]!.status).toBe('unhealthy');
+      expect(report.checks[1]?.status).toBe('unhealthy');
     });
 
     it('includes slo metrics in report', async () => {
@@ -98,7 +98,7 @@ describe('PlatformHealthService', () => {
       const pool = makePool([ok([{ '?column?': 1 }]), ok([{ suspended: '0', total: '0' }])]);
       const svc = new PlatformHealthService(pool);
       const report = await svc.runHealthChecks();
-      expect(report.checks[1]!.status).toBe('healthy');
+      expect(report.checks[1]?.status).toBe('healthy');
     });
   });
 });

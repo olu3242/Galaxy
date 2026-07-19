@@ -45,7 +45,7 @@ describe('HealthMonitorService.computeOverallHealth', () => {
     const result = await svc.computeOverallHealth(ORG);
     expect(result.dimension).toBe('overall');
     // avg of 80+60 = 70
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as [string, unknown[]][];
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [string, unknown[]][];
     // recordScore insert should include 70 as the score
     expect(calls[3]?.[1]).toContain(70);
   });
@@ -69,7 +69,7 @@ describe('HealthMonitorService.computeOverallHealth', () => {
     const pool = makePool([ok([]), ok(rows), ok([]), ok([overallRow])]);
     const svc = new HealthMonitorService(pool);
     await svc.computeOverallHealth(ORG);
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as [string, unknown[]][];
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [string, unknown[]][];
     // Only communication (80) is included, avg = 80
     expect(calls[3]?.[1]).toContain(80);
   });

@@ -48,12 +48,9 @@ describe('RoleService.createRole', () => {
       correlationId: CORRELATION,
       actorId: ACTOR,
     });
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [
-      string,
-      unknown[],
-    ][];
-    expect(calls[0]?.[0]).toBe('SELECT set_config($1, $2, true)');
-    expect(calls[0]?.[1]).toEqual(['app.current_tenant', ORG]);
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls;
+    expect((calls[0] as [string, unknown[]])[0]).toBe('SELECT set_config($1, $2, true)');
+    expect((calls[0] as [string, unknown[]])[1]).toEqual(['app.current_tenant', ORG]);
   });
 
   it('returns mapped Role domain object', async () => {
@@ -114,8 +111,9 @@ describe('RoleService.createRole', () => {
       actorId: ACTOR,
     });
     expect(publishFn).toHaveBeenCalledOnce();
-    const event = publishFn.mock.calls[0]?.[0] as { type: string };
-    expect(event.type).toBe('role.created');
+    expect(publishFn).toHaveBeenCalledWith(
+      expect.objectContaining({ type: 'role.created' }),
+    );
   });
 
   it('does not throw when no publisher provided', async () => {

@@ -52,7 +52,7 @@ describe('KPIService.setKPI', () => {
       period: 'monthly',
       ownerId: OWNER_ID,
     });
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as [string, string[]][];
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [string, unknown[]][];
     expect(calls[0]?.[0]).toBe('SELECT set_config($1, $2, true)');
     expect(calls[0]?.[1]).toEqual(['app.current_tenant', ORG]);
   });
@@ -103,7 +103,7 @@ describe('KPIService.setKPI', () => {
       period: 'daily',
       ownerId: OWNER_ID,
     });
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as [string, unknown[]][];
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [string, unknown[]][];
     for (const [sql] of calls) {
       expect(sql).not.toContain(ORG);
     }

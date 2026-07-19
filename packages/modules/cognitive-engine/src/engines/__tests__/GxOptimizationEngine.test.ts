@@ -25,7 +25,7 @@ describe('GxOptimizationEngine.detectBottlenecks', () => {
     const pool = makePool([ok([]), ok([])]);
     const engine = new GxOptimizationEngine(pool);
     await engine.detectBottlenecks(AGENT, ORG);
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as [string, unknown[]][];
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [string, unknown[]][];
     expect(calls[0]?.[0]).toBe('SELECT set_config($1, $2, true)');
     expect(calls[0]?.[1]).toEqual(['app.current_tenant', ORG]);
   });
@@ -72,7 +72,7 @@ describe('GxOptimizationEngine.improveRouting', () => {
     const pool = makePool([ok([]), ok([])]);
     const engine = new GxOptimizationEngine(pool);
     await engine.improveRouting(ORG, 'query_information', { agentId: 'agent-fast' });
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as [string, unknown[]][];
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [string, unknown[]][];
     expect(calls[0]?.[0]).toBe('SELECT set_config($1, $2, true)');
     expect(calls[1]?.[0]).toContain('INSERT INTO optimization_routing_overrides');
   });

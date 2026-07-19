@@ -43,7 +43,7 @@ describe('DeploymentPlanService.createPlan', () => {
     expect(result.id).toBe(PLAN_ID);
     expect(result.status).toBe('pending');
     expect(result.industryHint).toBeUndefined();
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as [string, unknown[]][];
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [string, unknown[]][];
     expect(calls[0]?.[0]).toBe('SELECT set_config($1, $2, true)');
     expect(calls[1]?.[0]).toContain('INSERT INTO deployment_plans');
   });
@@ -54,7 +54,7 @@ describe('DeploymentPlanService.createPlan', () => {
     const svc = new DeploymentPlanService(pool);
     const result = await svc.createPlan(ORG, 'Fintech setup', 'fintech');
     expect(result.industryHint).toBe('fintech');
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as [string, unknown[]][];
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [string, unknown[]][];
     expect(calls[1]?.[1]).toContain('fintech');
   });
 
@@ -103,7 +103,7 @@ describe('DeploymentPlanService.listPlans', () => {
     const svc = new DeploymentPlanService(pool);
     const result = await svc.listPlans(ORG);
     expect(result).toHaveLength(2);
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as [string, unknown[]][];
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [string, unknown[]][];
     expect(calls[1]?.[0]).toContain('ORDER BY dp.created_at DESC');
     expect(calls[1]?.[1]).toContain(50);
   });
@@ -112,7 +112,7 @@ describe('DeploymentPlanService.listPlans', () => {
     const pool = makePool([ok([]), ok([])]);
     const svc = new DeploymentPlanService(pool);
     await svc.listPlans(ORG, 10);
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as [string, unknown[]][];
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [string, unknown[]][];
     expect(calls[1]?.[1]).toContain(10);
   });
 });
@@ -168,7 +168,7 @@ describe('DeploymentPlanService.analyzePlan', () => {
     const result = await svc.analyzePlan(ORG, PLAN_ID);
     expect(result.status).toBe('complete');
 
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as [string, unknown[]][];
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [string, unknown[]][];
     // Verify status progression
     expect(calls[1]?.[0]).toContain("'analyzing'");
     expect(calls[3]?.[0]).toContain("'provisioning'");

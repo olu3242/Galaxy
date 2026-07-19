@@ -28,9 +28,9 @@ describe('CustomerHealthService', () => {
       ]);
       const svc = new CustomerHealthService(pool);
       await svc.computeHealth('org-1');
-      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
-      expect(calls[0]?.[0]).toContain('set_config');
-      expect(calls[0]?.[1]).toContain('org-1');
+      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls;
+      expect((calls[0] as [string, unknown[]])[0]).toContain('set_config');
+      expect((calls[0] as [string, unknown[]])[1]).toContain('org-1');
     });
 
     it('returns health with correct organizationId', async () => {

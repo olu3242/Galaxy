@@ -110,7 +110,7 @@ describe('PolicyRuleService', () => {
         .catch(() => undefined);
 
       const mock = pool.query as ReturnType<typeof vi.fn>;
-      const calls = mock.mock.calls as [string, unknown[]][];
+      const calls = mock.mock.calls as unknown as [string, unknown[]][];
       for (const [sql] of calls) {
         expect(sql).not.toContain(maliciousField);
       }

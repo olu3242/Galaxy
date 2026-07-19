@@ -182,7 +182,7 @@ describe('LoopOptimizationService.generateRecommendations', () => {
     const pool = makePool([ok([]), ok([]), ok([])]);
     const svc = new LoopOptimizationService(pool);
     await svc.generateRecommendations(ORG);
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as [string, string[]][];
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [string, unknown[]][];
     const [sql, params] = calls[0] ?? ['', []];
     expect(sql).toBe('SELECT set_config($1, $2, true)');
     expect(params[1]).toBe(ORG);
@@ -204,7 +204,7 @@ describe('LoopOptimizationService.listRecommendations', () => {
     const pool = makePool([ok([]), ok([recRow({ status: 'pending' })])]);
     const svc = new LoopOptimizationService(pool);
     await svc.listRecommendations(ORG, 'pending');
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as [string, unknown[]][];
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [string, unknown[]][];
     const selectParams = calls[1]?.[1] ?? [];
     expect(selectParams).toContain('pending');
   });
@@ -240,7 +240,7 @@ describe('LoopOptimizationService.applyRecommendation', () => {
     const pool = makePool([ok([]), ok([recRow({ status: 'applied' })])]);
     const svc = new LoopOptimizationService(pool);
     await svc.applyRecommendation(ORG, REC_ID);
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as [string, string[]][];
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [string, unknown[]][];
     const updateParams = calls[1]?.[1] ?? [];
     expect(updateParams).toContain(ORG);
     expect(updateParams).toContain(REC_ID);

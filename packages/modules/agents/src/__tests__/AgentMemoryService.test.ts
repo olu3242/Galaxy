@@ -52,10 +52,10 @@ describe('AgentMemoryService', () => {
       expect(result.relevanceScore).toBe(0.95);
       expect(result.expiresAt).toBeUndefined();
 
-      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
+      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls;
       // first call sets tenant context
-      expect(calls[0]![0]).toContain('set_config');
-      expect(calls[0]![1]).toEqual(['app.current_tenant', ORG]);
+      expect((calls[0] as [string, unknown[]])[0]).toContain('set_config');
+      expect((calls[0] as [string, unknown[]])[1]).toEqual(['app.current_tenant', ORG]);
     });
 
     it('passes relevanceScore and expiresAt options', async () => {
@@ -74,8 +74,8 @@ describe('AgentMemoryService', () => {
 
       expect(result.expiresAt).toBe('2027-01-01T00:00:00.000Z');
 
-      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
-      const upsertParams = calls[1]![1] as unknown[];
+      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls;
+      const upsertParams = (calls[1] as [string, unknown[]])[1];
       expect(upsertParams[5]).toBe(0.7);
       expect(upsertParams[6]).toBe('2027-01-01T00:00:00.000Z');
     });
@@ -100,8 +100,8 @@ describe('AgentMemoryService', () => {
       expect(results).toHaveLength(1);
       expect(results[0]?.id).toBe('mem-1');
 
-      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
-      const selectParams = calls[1]![1] as unknown[];
+      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls;
+      const selectParams = (calls[1] as [string, unknown[]])[1];
       expect(selectParams[0]).toBe(ORG);
       expect(selectParams[1]).toBe(AGENT_ID);
       // no type filter, limit is 3rd param
@@ -114,8 +114,8 @@ describe('AgentMemoryService', () => {
 
       await svc.recall(ORG, AGENT_ID, 'episodic', 10);
 
-      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
-      const selectParams = calls[1]![1] as unknown[];
+      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls;
+      const selectParams = (calls[1] as [string, unknown[]])[1];
       expect(selectParams[2]).toBe('episodic');
       expect(selectParams[3]).toBe(10);
     });
@@ -136,9 +136,9 @@ describe('AgentMemoryService', () => {
 
       await svc.forget(ORG, AGENT_ID, 'episodic', 'last_action');
 
-      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
-      expect(calls[1]![0]).toContain('DELETE FROM agent_memory');
-      expect(calls[1]![1]).toEqual([ORG, AGENT_ID, 'episodic', 'last_action']);
+      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls;
+      expect((calls[1] as [string, unknown[]])[0]).toContain('DELETE FROM agent_memory');
+      expect((calls[1] as [string, unknown[]])[1]).toEqual([ORG, AGENT_ID, 'episodic', 'last_action']);
     });
   });
 

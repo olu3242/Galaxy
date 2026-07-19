@@ -39,7 +39,7 @@ describe('MetricsService', () => {
       const svc = new MetricsService(pool);
       const metrics = await svc.getPlatformMetrics();
       const totalOrgs = metrics.find((m) => m.key === 'total_orgs');
-      expect(totalOrgs!.value).toBe(5);
+      expect(totalOrgs?.value).toBe(5);
     });
 
     it('handles missing row with zero values', async () => {
@@ -76,8 +76,8 @@ describe('MetricsService', () => {
       expect(metrics.workflowCount).toBe(5);
       expect(metrics.activeWorkflows).toBe(3);
       expect(metrics.auditLogCount).toBe(100);
-      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
-      expect(calls[0]![0]).toContain('set_config');
+      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls;
+      expect((calls[0] as [string, unknown[]])[0]).toContain('set_config');
     });
 
     it('handles missing row with zero values', async () => {
@@ -95,8 +95,8 @@ describe('MetricsService', () => {
       ]);
       const svc = new MetricsService(pool);
       await svc.getTenantMetrics('org-99');
-      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
-      expect(calls[1]![1]).toContain('org-99');
+      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls;
+      expect((calls[1] as [string, unknown[]])[1]).toContain('org-99');
     });
   });
 });

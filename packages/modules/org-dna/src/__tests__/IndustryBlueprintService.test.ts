@@ -71,7 +71,7 @@ describe('IndustryBlueprintService.listBlueprints', () => {
     const svc = new IndustryBlueprintService(pool);
     const results = await svc.listBlueprints();
     expect(results).toHaveLength(2);
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as [string][];
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [string, unknown[]][];
     expect(calls[0]?.[0]).toContain('ORDER BY industry ASC');
   });
 });
@@ -105,7 +105,7 @@ describe('IndustryBlueprintService.applyBlueprint', () => {
     const result = await svc.applyBlueprint(ORG, 'fintech');
     expect(result.industryBlueprint).toBe('fintech');
 
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as [string, unknown[]][];
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [string, unknown[]][];
     // The upsert call (call 4) should include the industry in identity_profile
     const upsertParams = calls[4]?.[1] ?? [];
     expect(JSON.stringify(upsertParams)).toContain('fintech');

@@ -51,7 +51,7 @@ describe('AgentRegistryService', () => {
       expect(agent.lastRunAt).toBeUndefined();
       expect(agent.nextRunAt).toBeUndefined();
 
-      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as [string, unknown[]][];
+      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [string, unknown[]][];
       expect(calls).toHaveLength(2);
       // first call: set_config
       expect(calls[0]?.[0]).toContain('set_config');
@@ -91,7 +91,7 @@ describe('AgentRegistryService', () => {
       const agent = await svc.getAgent(ORG_ID, AGENT_ID);
 
       expect(agent.id).toBe(AGENT_ID);
-      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as [string, unknown[]][];
+      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [string, unknown[]][];
       expect((calls[1]?.[1] ?? [])[1]).toBe(AGENT_ID);
     });
 
@@ -131,7 +131,7 @@ describe('AgentRegistryService', () => {
       const agent = await svc.updateAgentStatus(ORG_ID, AGENT_ID, 'running');
 
       expect(agent.status).toBe('running');
-      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as [string, unknown[]][];
+      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [string, unknown[]][];
       expect(calls[1]?.[0]).toContain('UPDATE');
       expect((calls[1]?.[1] ?? [])[2]).toBe('running');
     });
@@ -153,7 +153,7 @@ describe('AgentRegistryService', () => {
       const agent = await svc.updateAgentMetrics(ORG_ID, AGENT_ID, { runs: 5 });
 
       expect(agent.metrics).toEqual({ runs: 5 });
-      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as [string, unknown[]][];
+      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [string, unknown[]][];
       expect(calls[1]?.[0]).toContain('UPDATE');
     });
 

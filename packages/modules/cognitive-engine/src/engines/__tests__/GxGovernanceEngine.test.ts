@@ -35,7 +35,7 @@ describe('GxGovernanceEngine.evaluate', () => {
     const pool = makePool([ok([]), ok([])]);
     const engine = new GxGovernanceEngine(pool);
     await engine.evaluate(baseInput);
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as [string, unknown[]][];
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [string, unknown[]][];
     expect(calls[0]?.[0]).toBe('SELECT set_config($1, $2, true)');
     expect(calls[0]?.[1]).toEqual(['app.current_tenant', ORG]);
   });
@@ -96,7 +96,7 @@ describe('GxGovernanceEngine.logDecision', () => {
       },
       'corr-1',
     );
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as [string, unknown[]][];
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [string, unknown[]][];
     expect(calls[0]?.[0]).toBe('SELECT set_config($1, $2, true)');
     expect(calls[1]?.[0]).toContain('INSERT INTO agent_governance_log');
   });

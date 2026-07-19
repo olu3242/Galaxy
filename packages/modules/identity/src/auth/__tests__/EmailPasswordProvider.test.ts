@@ -116,8 +116,8 @@ describe('EmailPasswordProvider', () => {
       email: EMAIL,
       password: PASSWORD,
     } as EmailPasswordCredentials);
-    const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
-    expect(calls[0]?.[0]).not.toContain(EMAIL);
-    expect(calls[0]?.[1]).toContain(EMAIL);
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls;
+    expect((calls[0] as [string, unknown[]])[0]).not.toContain(EMAIL);
+    expect((calls[0] as [string, unknown[]])[1]).toContain(EMAIL);
   });
 });

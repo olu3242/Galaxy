@@ -40,16 +40,16 @@ describe('PlanService', () => {
       const plans = await svc.listPlans();
       expect(plans).toHaveLength(1);
       expect(plans[0]?.id).toBe('plan-1');
-      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
-      expect(calls[0]?.[0]).toContain('is_active = true');
+      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls;
+      expect((calls[0] as [string, unknown[]])[0]).toContain('is_active = true');
     });
 
     it('includes inactive plans when activeOnly is false', async () => {
       const pool = makePool([ok([planRow])]);
       const svc = new PlanService(pool);
       await svc.listPlans(false);
-      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
-      expect(calls[0]?.[0]).not.toContain('is_active');
+      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls;
+      expect((calls[0] as [string, unknown[]])[0]).not.toContain('is_active');
     });
 
     it('maps plan limits correctly', async () => {
@@ -89,8 +89,8 @@ describe('PlanService', () => {
       const pool = makePool([ok([planRow])]);
       const svc = new PlanService(pool);
       await svc.getPlan('plan-1');
-      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
-      expect(calls[0]?.[1]).toContain('plan-1');
+      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls;
+      expect((calls[0] as [string, unknown[]])[1]).toContain('plan-1');
     });
   });
 
@@ -153,9 +153,9 @@ describe('PlanService', () => {
       const svc = new PlanService(pool);
       const plan = await svc.updatePlan('plan-1', {});
       expect(plan?.id).toBe('plan-1');
-      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
+      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls;
       // Should SELECT not UPDATE
-      expect(calls[0]?.[0]).toContain('SELECT');
+      expect((calls[0] as [string, unknown[]])[0]).toContain('SELECT');
     });
   });
 
@@ -184,8 +184,8 @@ describe('PlanService', () => {
       ]);
       const svc = new PlanService(pool);
       await svc.deactivatePlan('plan-42');
-      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
-      expect(calls[0]?.[1]).toContain('plan-42');
+      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls;
+      expect((calls[0] as [string, unknown[]])[1]).toContain('plan-42');
     });
   });
 });

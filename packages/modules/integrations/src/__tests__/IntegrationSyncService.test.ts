@@ -79,7 +79,7 @@ describe('IntegrationSyncService.triggerSync', () => {
       connectorId: CONNECTOR_ID,
       direction: 'outbound',
     });
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as [string, string[]][];
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [string, unknown[]][];
     const [sql, params] = calls[0] ?? ['', []];
     expect(sql).toBe('SELECT set_config($1, $2, true)');
     expect(params[1]).toBe(ORG);
@@ -101,7 +101,7 @@ describe('IntegrationSyncService.triggerSync', () => {
       connectorId: CONNECTOR_ID,
       direction: 'bidirectional',
     });
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as [string, unknown[]][];
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [string, unknown[]][];
     const params = calls[1]?.[1] ?? [];
     expect(params).toContain('bidirectional');
     expect(params).toContain(ORG);
@@ -135,7 +135,7 @@ describe('IntegrationSyncService.completeSyncLog', () => {
     const pool = makePool([ok([]), ok([completed]), ok([])]);
     const svc = new IntegrationSyncService(pool);
     await svc.completeSyncLog(ORG, SYNC_LOG_ID, 10, 0);
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as [string, unknown[]][];
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [string, unknown[]][];
     // Third call updates connector
     const [sql] = calls[2] ?? [''];
     expect(sql).toMatch(/UPDATE integration_connectors/i);
@@ -166,7 +166,7 @@ describe('IntegrationSyncService.listSyncLogs', () => {
     const pool = makePool([ok([]), ok([])]);
     const svc = new IntegrationSyncService(pool);
     await svc.listSyncLogs(ORG, CONNECTOR_ID, 25, 50);
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as [string, unknown[]][];
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [string, unknown[]][];
     const params = calls[1]?.[1] ?? [];
     expect(params).toContain(25);
     expect(params).toContain(50);

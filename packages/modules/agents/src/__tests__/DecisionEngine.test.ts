@@ -73,8 +73,8 @@ describe('DecisionEngine', () => {
       expect(rules[0]?.id).toBe(RULE_ID);
       expect(rules[0]?.name).toBe('Auto-approve low risk');
 
-      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
-      expect(calls[0]![1]).toEqual(['app.current_tenant', ORG]);
+      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls;
+      expect((calls[0] as [string, unknown[]])[1]).toEqual(['app.current_tenant', ORG]);
     });
 
     it('filters by automationDomain when provided', async () => {
@@ -83,8 +83,8 @@ describe('DecisionEngine', () => {
 
       await engine.loadRules(ORG, 'operations');
 
-      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
-      expect(calls[1]![1]).toContain('operations');
+      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls;
+      expect((calls[1] as [string, unknown[]])[1]).toContain('operations');
     });
 
     it('returns empty array when no rules', async () => {
@@ -193,8 +193,8 @@ describe('DecisionEngine', () => {
       expect(result.requiresHumanOverride).toBe(false);
       expect(result.executionId).toBeUndefined();
 
-      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
-      expect(calls[1]![0]).toContain('INSERT INTO decisions');
+      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls;
+      expect((calls[1] as [string, unknown[]])[0]).toContain('INSERT INTO decisions');
     });
 
     it('sets requiresHumanOverride when confidence < 60', async () => {
@@ -299,8 +299,8 @@ describe('DecisionEngine', () => {
         limit: 10,
       });
 
-      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
-      const params = calls[1]![1] as unknown[];
+      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls;
+      const params = (calls[1] as [string, unknown[]])[1];
       expect(params).toContain(AGENT_ID);
       expect(params).toContain(true);
       expect(params).toContain(10);

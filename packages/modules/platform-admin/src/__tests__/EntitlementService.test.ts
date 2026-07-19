@@ -41,8 +41,8 @@ describe('EntitlementService', () => {
       const svc = new EntitlementService(pool);
       const results = await svc.getEntitlementsForPlan('professional');
       expect(results).toHaveLength(1);
-      expect(results[0]!.planTier).toBe('professional');
-      expect(results[0]!.featureKey).toBe('advanced_analytics');
+      expect(results[0]?.planTier).toBe('professional');
+      expect(results[0]?.featureKey).toBe('advanced_analytics');
     });
 
     it('returns empty array when no entitlements', async () => {
@@ -56,8 +56,8 @@ describe('EntitlementService', () => {
       const pool = makePool([ok([])]);
       const svc = new EntitlementService(pool);
       await svc.getEntitlementsForPlan('enterprise');
-      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
-      expect(calls[0]![1]).toContain('enterprise');
+      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls;
+      expect((calls[0] as [string, unknown[]])[1]).toContain('enterprise');
     });
   });
 
@@ -108,9 +108,9 @@ describe('EntitlementService', () => {
       const svc = new EntitlementService(pool);
       const result = await svc.getOrgOverride('org-1', 'advanced_analytics');
       expect(result).not.toBeNull();
-      expect(result!.isEnabled).toBe(false);
-      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
-      expect(calls[0]![0]).toContain('set_config');
+      expect(result?.isEnabled).toBe(false);
+      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls;
+      expect((calls[0] as [string, unknown[]])[0]).toContain('set_config');
     });
 
     it('returns null when no override exists', async () => {
@@ -127,8 +127,8 @@ describe('EntitlementService', () => {
       const svc = new EntitlementService(pool);
       const result = await svc.setOrgOverride('org-1', 'advanced_analytics', false, 'trial ended');
       expect(result.overrideReason).toBe('trial ended');
-      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
-      expect(calls[0]![0]).toContain('set_config');
+      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls;
+      expect((calls[0] as [string, unknown[]])[0]).toContain('set_config');
     });
 
     it('throws when INSERT returns no row', async () => {

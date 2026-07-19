@@ -56,7 +56,7 @@ const execRow = {
 // We mock the module to prevent real implementations from running.
 vi.mock('@galaxy/cognitive-engine', () => {
   const noop = () => ({});
-  const asyncNoop = async () => ({});
+  const asyncNoop = () => ({});
   class FakeEngine {
     enrich = asyncNoop;
     analyze = () => ({
@@ -70,8 +70,8 @@ vi.mock('@galaxy/cognitive-engine', () => {
     executePlan = asyncNoop;
     verify = () => ({ status: 'passed', confidenceScore: 0.9, requiresHumanReview: false });
     recordOutcome = asyncNoop;
-    detectBottlenecks = async () => {};
-    evaluate = async () => ({ humanApprovalRequired: false, reason: 'ok', riskLevel: 'low' });
+    detectBottlenecks = () => ({ bottlenecks: [] });
+    evaluate = () => ({ humanApprovalRequired: false, reason: 'ok', riskLevel: 'low' });
   }
   return {
     GxContextEngine: FakeEngine,
@@ -106,9 +106,9 @@ describe('AgentRuntime', () => {
       expect(result?.startedAt).toBe(NOW);
       expect(result?.completedAt).toBe(NOW);
 
-      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
-      expect(calls[0]![1]).toEqual(['app.current_tenant', ORG]);
-      expect(calls[1]![1]).toEqual([ORG, EXEC_ID]);
+      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls;
+      expect((calls[0] as [string, unknown[]])[1]).toEqual(['app.current_tenant', ORG]);
+      expect((calls[1] as [string, unknown[]])[1]).toEqual([ORG, EXEC_ID]);
     });
 
     it('returns null when execution not found', async () => {
@@ -136,8 +136,8 @@ describe('AgentRuntime', () => {
 
       await runtime.listExecutions(ORG, { agentId: AGENT_ID, status: 'completed', limit: 5 });
 
-      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
-      const params = calls[1]![1] as unknown[];
+      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls;
+      const params = (calls[1] as [string, unknown[]])[1];
       expect(params).toContain(AGENT_ID);
       expect(params).toContain('completed');
       expect(params).toContain(5);
@@ -167,9 +167,9 @@ describe('AgentRuntime', () => {
       expect(result.humanApprovedBy).toBe(ACTOR_ID);
       expect(result.requiresHumanApproval).toBe(false);
 
-      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
-      expect(calls[1]![0]).toContain('UPDATE agent_executions');
-      expect(calls[1]![1]).toEqual([ORG, EXEC_ID, ACTOR_ID]);
+      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls;
+      expect((calls[1] as [string, unknown[]])[0]).toContain('UPDATE agent_executions');
+      expect((calls[1] as [string, unknown[]])[1]).toEqual([ORG, EXEC_ID, ACTOR_ID]);
     });
 
     it('throws when execution not found', async () => {

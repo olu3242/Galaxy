@@ -137,8 +137,8 @@ describe('RiskScoringEngine', () => {
       expect(result.riskScore).toBe(15);
       expect(result.riskLevel).toBe('low');
 
-      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
-      expect(calls[1]![0]).toContain('INSERT INTO risk_assessments');
+      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls;
+      expect((calls[1] as [string, unknown[]])[0]).toContain('INSERT INTO risk_assessments');
     });
 
     it('sets recommendedAction for critical risk', async () => {
@@ -206,8 +206,8 @@ describe('RiskScoringEngine', () => {
 
       await engine.listAssessments(ORG, { riskLevel: 'high', limit: 5 });
 
-      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
-      const params = calls[1]![1] as unknown[];
+      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls;
+      const params = (calls[1] as [string, unknown[]])[1];
       expect(params).toContain('high');
       expect(params).toContain(5);
     });

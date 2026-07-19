@@ -19,7 +19,7 @@ function makeFetchOk(status: number, headers: Record<string, string> = {}): type
     },
     json: vi.fn().mockResolvedValue({}),
     text: vi.fn().mockResolvedValue(''),
-  }) as unknown as typeof fetch;
+  });
 }
 
 function makeFetchError(status: number, body: unknown = {}): typeof fetch {
@@ -29,7 +29,7 @@ function makeFetchError(status: number, body: unknown = {}): typeof fetch {
     headers: { get: () => null },
     json: vi.fn().mockResolvedValue(body),
     text: vi.fn().mockResolvedValue(JSON.stringify(body)),
-  }) as unknown as typeof fetch;
+  });
 }
 
 const PROVIDER_OPTS = {
@@ -60,11 +60,11 @@ describe('SendGridProvider.send', () => {
     const provider = new SendGridProvider(PROVIDER_OPTS);
     await provider.send('user@example.com', { type: 'text', text: 'Test message' });
 
-    const calls = vi.mocked(fetch).mock.calls as [string, RequestInit][];
-    const [url, init] = calls[0]!;
+    const calls = (fetch as ReturnType<typeof vi.fn>).mock.calls;
+    const [url, init] = (calls[0] as [string, RequestInit]);
 
     expect(url).toBe('https://api.sendgrid.com/v3/mail/send');
-    expect((init.headers as Record<string, string>)['Authorization']).toBe('Bearer SG.test-key');
+    expect((init.headers as Record<string, string>).Authorization).toBe('Bearer SG.test-key');
     expect((init.headers as Record<string, string>)['Content-Type']).toBe('application/json');
 
     const body = JSON.parse(init.body as string) as {
@@ -73,11 +73,11 @@ describe('SendGridProvider.send', () => {
       content: { type: string; value: string }[];
     };
 
-    expect(body.personalizations[0]!.to[0]!.email).toBe('user@example.com');
+    expect(body.personalizations[0]?.to[0]?.email).toBe('user@example.com');
     expect(body.from.email).toBe('noreply@galaxy.io');
     expect(body.from.name).toBe('Galaxy');
-    expect(body.content[0]!.type).toBe('text/plain');
-    expect(body.content[0]!.value).toBe('Test message');
+    expect(body.content[0]?.type).toBe('text/plain');
+    expect(body.content[0]?.value).toBe('Test message');
   });
 
   it('uses templateName as subject when present', async () => {
@@ -88,8 +88,8 @@ describe('SendGridProvider.send', () => {
       text: 'Welcome!',
     });
 
-    const calls = vi.mocked(fetch).mock.calls as [string, RequestInit][];
-    const body = JSON.parse(calls[0]![1].body as string) as { subject: string };
+    const calls = (fetch as ReturnType<typeof vi.fn>).mock.calls;
+    const body = JSON.parse((calls[0] as [string, RequestInit])[1].body as string) as { subject: string };
     expect(body.subject).toBe('welcome_email');
   });
 
@@ -97,8 +97,8 @@ describe('SendGridProvider.send', () => {
     const provider = new SendGridProvider(PROVIDER_OPTS);
     await provider.send('user@example.com', { type: 'text', text: 'Hi' });
 
-    const calls = vi.mocked(fetch).mock.calls as [string, RequestInit][];
-    const body = JSON.parse(calls[0]![1].body as string) as { subject: string };
+    const calls = (fetch as ReturnType<typeof vi.fn>).mock.calls;
+    const body = JSON.parse((calls[0] as [string, RequestInit])[1].body as string) as { subject: string };
     expect(body.subject).toBe('Galaxy Notification');
   });
 
@@ -107,8 +107,8 @@ describe('SendGridProvider.send', () => {
     const html = '<p>Hello <b>World</b></p>';
     await provider.send('user@example.com', { type: 'text', text: html });
 
-    const calls = vi.mocked(fetch).mock.calls as [string, RequestInit][];
-    const body = JSON.parse(calls[0]![1].body as string) as {
+    const calls = (fetch as ReturnType<typeof vi.fn>).mock.calls;
+    const body = JSON.parse((calls[0] as [string, RequestInit])[1].body as string) as {
       content: { type: string; value: string }[];
     };
     const types = body.content.map((c) => c.type);
@@ -120,12 +120,12 @@ describe('SendGridProvider.send', () => {
     const provider = new SendGridProvider(PROVIDER_OPTS);
     await provider.send('user@example.com', { type: 'text', text: 'Plain text only' });
 
-    const calls = vi.mocked(fetch).mock.calls as [string, RequestInit][];
-    const body = JSON.parse(calls[0]![1].body as string) as {
+    const calls = (fetch as ReturnType<typeof vi.fn>).mock.calls;
+    const body = JSON.parse((calls[0] as [string, RequestInit])[1].body as string) as {
       content: { type: string; value: string }[];
     };
     expect(body.content).toHaveLength(1);
-    expect(body.content[0]!.type).toBe('text/plain');
+    expect(body.content[0]?.type).toBe('text/plain');
   });
 
   it('omits providerMessageId when x-message-id header is absent', async () => {
@@ -179,8 +179,8 @@ describe('SendGridProvider.send', () => {
     const provider = new SendGridProvider({ apiKey: 'SG.x', fromEmail: 'a@b.com' });
     await provider.send('user@example.com', { type: 'text', text: 'Hi' });
 
-    const calls = vi.mocked(fetch).mock.calls as [string, RequestInit][];
-    const body = JSON.parse(calls[0]![1].body as string) as { from: { name?: string } };
+    const calls = (fetch as ReturnType<typeof vi.fn>).mock.calls;
+    const body = JSON.parse((calls[0] as [string, RequestInit])[1].body as string) as { from: { name?: string } };
     expect(body.from.name).toBeUndefined();
   });
 

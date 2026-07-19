@@ -49,9 +49,8 @@ describe('AuditEventPublisher.publishAuditRecorded', () => {
     const publisher = makePublisher();
     const aep = new AuditEventPublisher(publisher);
     await aep.publishAuditRecorded(entry, 'corr-111');
-    const published = (publisher.publish as ReturnType<typeof vi.fn>).mock.calls[0]?.[0] as {
-      type: string;
-    };
+    const mockCalls = (publisher.publish as ReturnType<typeof vi.fn>).mock.calls;
+    const published = (mockCalls[0] as [{ type: string }])[0];
     expect(published.type).toBe('audit.recorded');
   });
 
@@ -59,9 +58,8 @@ describe('AuditEventPublisher.publishAuditRecorded', () => {
     const publisher = makePublisher();
     const aep = new AuditEventPublisher(publisher);
     await aep.publishAuditRecorded(entry, 'corr-111');
-    const published = (publisher.publish as ReturnType<typeof vi.fn>).mock.calls[0]?.[0] as {
-      tenantId: string;
-    };
+    const mockCalls2 = (publisher.publish as ReturnType<typeof vi.fn>).mock.calls;
+    const published = (mockCalls2[0] as [{ tenantId: string }])[0];
     expect(published.tenantId).toBe(entry.organizationId);
   });
 

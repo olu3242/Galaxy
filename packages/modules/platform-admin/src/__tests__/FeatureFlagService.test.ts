@@ -43,9 +43,9 @@ describe('FeatureFlagService', () => {
       const pool = makePool([ok([{ ...flagRow, is_enabled: false }])]);
       const svc = new FeatureFlagService(pool);
       await svc.createFlag({ key: 'my_flag' });
-      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
-      expect(calls[0]![1]![2]).toBe(false);
-      expect(calls[0]![1]![3]).toBe('global');
+      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls;
+      expect((calls[0] as [string, unknown[]])[1][2]).toBe(false);
+      expect((calls[0] as [string, unknown[]])[1][3]).toBe('global');
     });
 
     it('throws when INSERT returns no row', async () => {
@@ -63,7 +63,7 @@ describe('FeatureFlagService', () => {
       const svc = new FeatureFlagService(pool);
       const result = await svc.getFlag('new_ui');
       expect(result).not.toBeNull();
-      expect(result!.key).toBe('new_ui');
+      expect(result?.key).toBe('new_ui');
     });
 
     it('returns tenant-specific flag when tenantId provided and found', async () => {
@@ -71,7 +71,7 @@ describe('FeatureFlagService', () => {
       const pool = makePool([ok([tenantFlag])]);
       const svc = new FeatureFlagService(pool);
       const result = await svc.getFlag('new_ui', 'org-1');
-      expect(result!.targetTenantId).toBe('org-1');
+      expect(result?.targetTenantId).toBe('org-1');
     });
 
     it('falls back to global flag when tenant-specific not found', async () => {
@@ -79,7 +79,7 @@ describe('FeatureFlagService', () => {
       const svc = new FeatureFlagService(pool);
       const result = await svc.getFlag('new_ui', 'org-1');
       expect(result).not.toBeNull();
-      expect(result!.targetTenantId).toBeNull();
+      expect(result?.targetTenantId).toBeNull();
     });
 
     it('returns null when flag not found globally', async () => {
@@ -102,8 +102,8 @@ describe('FeatureFlagService', () => {
       const pool = makePool([ok([])]);
       const svc = new FeatureFlagService(pool);
       await svc.listFlags({ scope: 'tenant', targetTenantId: 'org-1' });
-      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
-      const params = calls[0]![1] as unknown[];
+      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls;
+      const params = (calls[0] as [string, unknown[]])[1];
       expect(params).toContain('tenant');
       expect(params).toContain('org-1');
     });
@@ -114,7 +114,7 @@ describe('FeatureFlagService', () => {
       const pool = makePool([ok([{ ...flagRow, is_enabled: false }])]);
       const svc = new FeatureFlagService(pool);
       const result = await svc.toggleFlag('flag-1', false);
-      expect(result!.isEnabled).toBe(false);
+      expect(result?.isEnabled).toBe(false);
     });
 
     it('returns null when flag not found', async () => {

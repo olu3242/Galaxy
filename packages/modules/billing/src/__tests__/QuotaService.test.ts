@@ -30,9 +30,9 @@ describe('QuotaService', () => {
       const pool = makePool([ok([]), ok([limitsRow]), ok([{ total: '100' }])]);
       const svc = new QuotaService(pool);
       await svc.checkQuota('org-1', 'api_call');
-      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
-      expect(calls[0]?.[0]).toContain('set_config');
-      expect(calls[0]?.[1]).toContain('org-1');
+      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls;
+      expect((calls[0] as [string, unknown[]])[0]).toContain('set_config');
+      expect((calls[0] as [string, unknown[]])[1]).toContain('org-1');
     });
 
     it('returns correct quota check for api_call', async () => {
@@ -79,16 +79,16 @@ describe('QuotaService', () => {
       ]);
       const svc = new QuotaService(pool);
       await svc.checkQuota('org-1', 'api_call');
-      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
+      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls;
       expect(calls).toHaveLength(4);
-      expect(calls[3]?.[0]).toContain('INSERT INTO usage_alerts');
+      expect((calls[3] as [string, unknown[]])[0]).toContain('INSERT INTO usage_alerts');
     });
 
     it('does not raise alert when usage is below 80%', async () => {
       const pool = makePool([ok([]), ok([limitsRow]), ok([{ total: '100' }])]);
       const svc = new QuotaService(pool);
       await svc.checkQuota('org-1', 'api_call');
-      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
+      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls;
       expect(calls).toHaveLength(3);
     });
 
@@ -111,9 +111,9 @@ describe('QuotaService', () => {
       const svc = new QuotaService(pool);
       const period = { start: '2024-01-01', end: '2024-01-31' };
       await svc.checkQuota('org-1', 'api_call', period);
-      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
-      expect(calls[2]?.[1]).toContain('2024-01-01');
-      expect(calls[2]?.[1]).toContain('2024-01-31');
+      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls;
+      expect((calls[2] as [string, unknown[]])[1]).toContain('2024-01-01');
+      expect((calls[2] as [string, unknown[]])[1]).toContain('2024-01-31');
     });
   });
 
@@ -122,9 +122,9 @@ describe('QuotaService', () => {
       const pool = makePool([ok([]), ok([])]);
       const svc = new QuotaService(pool);
       await svc.getAlerts('org-1');
-      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
-      expect(calls[0]?.[0]).toContain('set_config');
-      expect(calls[0]?.[1]).toContain('org-1');
+      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls;
+      expect((calls[0] as [string, unknown[]])[0]).toContain('set_config');
+      expect((calls[0] as [string, unknown[]])[1]).toContain('org-1');
     });
 
     it('returns mapped alerts', async () => {
@@ -158,8 +158,8 @@ describe('QuotaService', () => {
       const pool = makePool([ok([]), ok([])]);
       const svc = new QuotaService(pool);
       await svc.getAlerts('org-42');
-      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
-      expect(calls[1]?.[1]).toContain('org-42');
+      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls;
+      expect((calls[1] as [string, unknown[]])[1]).toContain('org-42');
     });
   });
 });

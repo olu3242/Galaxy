@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import type { Pool, QueryResult } from 'pg';
 import { AuditSearchService } from '../AuditSearchService.js';
 
@@ -40,10 +40,10 @@ describe('AuditSearchService (Postgres fallback — no esUrl)', () => {
     const svc = new AuditSearchService(pool);
     await svc.search({ organizationId: ORG });
 
-    const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
-    expect(calls[0]?.[0]).toContain('set_config');
-    expect(calls[0]?.[1]).toContain('app.current_tenant');
-    expect(calls[0]?.[1]).toContain(ORG);
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls;
+    expect((calls[0] as [string, unknown[]])[0]).toContain('set_config');
+    expect((calls[0] as [string, unknown[]])[1]).toContain('app.current_tenant');
+    expect((calls[0] as [string, unknown[]])[1]).toContain(ORG);
   });
 
   it('returns source "postgres"', async () => {
@@ -82,13 +82,13 @@ describe('AuditSearchService (Postgres fallback — no esUrl)', () => {
     const pool = makePool([ok([]), ok([{ count: '0' }]), ok([])]);
     const svc = new AuditSearchService(pool);
     await svc.search({ organizationId: ORG, actorType: 'agent' });
-    const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls;
     // count query is index 1
-    const countSql = calls[1]?.[0] ?? '';
+    const countSql = (calls[1] as [string, unknown[]])[0];
     expect(countSql).toContain('actor_type');
     // orgId should not appear in SQL string
     expect(countSql).not.toContain(ORG);
-    const countParams = calls[1]?.[1] as unknown[];
+    const countParams = (calls[1] as [string, unknown[]])[1];
     expect(countParams).toContain('agent');
   });
 
@@ -96,8 +96,8 @@ describe('AuditSearchService (Postgres fallback — no esUrl)', () => {
     const pool = makePool([ok([]), ok([{ count: '0' }]), ok([])]);
     const svc = new AuditSearchService(pool);
     await svc.search({ organizationId: ORG, action: 'role.assigned' });
-    const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
-    const countParams = calls[1]?.[1] as unknown[];
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls;
+    const countParams = (calls[1] as [string, unknown[]])[1];
     expect(countParams).toContain('role.assigned');
   });
 
@@ -109,8 +109,8 @@ describe('AuditSearchService (Postgres fallback — no esUrl)', () => {
       from: '2026-01-01',
       to: '2026-12-31',
     });
-    const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
-    const countSql = calls[1]?.[0] ?? '';
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls;
+    const countSql = (calls[1] as [string, unknown[]])[0];
     expect(countSql).toContain('created_at >=');
     expect(countSql).toContain('created_at <=');
   });

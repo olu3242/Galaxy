@@ -70,7 +70,7 @@ describe('AgentContextEngine', () => {
       expect(snapshot.executionId).toBe('exec-1');
 
       // The INSERT params should include 'exec-1'
-      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
+      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls;
       const insertCall = calls.find((c) =>
         (c[0] as string).includes('INSERT INTO agent_context_snapshots'),
       );
@@ -84,7 +84,7 @@ describe('AgentContextEngine', () => {
 
       await engine.buildContext(ORG, AGENT_ID, undefined, { automationDomains: ['finance'] });
 
-      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
+      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls;
       // The workflow query params should contain ['finance']
       const wfCall = calls.find(
         (c) => (c[0] as string).includes('FROM workflow_runs') && (c[0] as string).includes('ANY('),

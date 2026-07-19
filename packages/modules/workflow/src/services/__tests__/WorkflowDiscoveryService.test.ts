@@ -79,7 +79,7 @@ describe('WorkflowDiscoveryService.discoverWorkflow', () => {
     const pool = makePool([ok([]), ok([])]);
     const svc = new WorkflowDiscoveryService(pool);
     await svc.discoverWorkflow(ORG, 'task', 'task');
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as [string, unknown[]][];
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [string, unknown[]][];
     const searchParams = calls[1]?.[1] ?? [];
     expect(searchParams).toContain('task');
   });
@@ -96,7 +96,7 @@ describe('WorkflowDiscoveryService.recordIntentDetection', () => {
       detectedIntent: 'onboard_member',
       requiresHumanReview: false,
     });
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as [string, string[]][];
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [string, unknown[]][];
     expect(calls[0]?.[0]).toBe('SELECT set_config($1, $2, true)');
     expect(calls[0]?.[1]).toEqual(['app.current_tenant', ORG]);
   });
@@ -142,7 +142,7 @@ describe('WorkflowDiscoveryService.recordIntentDetection', () => {
       requiresHumanReview: false,
       confidenceScore: 0.95,
     });
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as [string, unknown[]][];
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [string, unknown[]][];
     const params = calls[1]?.[1] ?? [];
     expect(params).toContain(0.95);
   });

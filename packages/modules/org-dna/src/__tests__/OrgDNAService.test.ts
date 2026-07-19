@@ -42,7 +42,7 @@ describe('OrgDNAService.upsertDNA', () => {
     const result = await svc.upsertDNA(ORG, { name: 'Acme' }, {}, {}, {});
     expect(result.organizationId).toBe(ORG);
     expect(result.identityProfile).toEqual({ name: 'Acme' });
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as [string, unknown[]][];
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [string, unknown[]][];
     expect(calls[0]?.[0]).toBe('SELECT set_config($1, $2, true)');
     expect(calls[1]?.[0]).toContain('ON CONFLICT');
   });
@@ -53,7 +53,7 @@ describe('OrgDNAService.upsertDNA', () => {
     const svc = new OrgDNAService(pool);
     const result = await svc.upsertDNA(ORG, {}, {}, {}, {}, 'fintech');
     expect(result.industryBlueprint).toBe('fintech');
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as [string, unknown[]][];
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [string, unknown[]][];
     expect(calls[1]?.[1]).toContain('fintech');
   });
 
@@ -89,7 +89,7 @@ describe('OrgDNAService.updateDNAField', () => {
     const svc = new OrgDNAService(pool);
     const result = await svc.updateDNAField(ORG, 'identityProfile', { updated: true });
     expect(result.identityProfile).toEqual({ updated: true });
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as [string, unknown[]][];
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [string, unknown[]][];
     expect(calls[1]?.[0]).toContain('identity_profile');
   });
 
@@ -124,7 +124,7 @@ describe('OrgDNAService.computeCompleteness', () => {
     const score = await svc.computeCompleteness(ORG);
     // 3/5 filled = 60
     expect(score).toBe(60);
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as [string, unknown[]][];
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [string, unknown[]][];
     expect(calls[2]?.[1]).toContain(60);
   });
 

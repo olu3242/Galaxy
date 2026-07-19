@@ -54,9 +54,9 @@ describe('AdminActionLogService', () => {
         actionType: 'update_system_config',
         payload: {},
       });
-      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
-      expect(calls[0]![1]![2]).toBeNull();
-      expect(calls[0]![1]![4]).toBeNull();
+      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls;
+      expect((calls[0] as [string, unknown[]])[1][2]).toBeNull();
+      expect((calls[0] as [string, unknown[]])[1][4]).toBeNull();
     });
 
     it('throws when INSERT returns no row', async () => {
@@ -74,7 +74,7 @@ describe('AdminActionLogService', () => {
       const svc = new AdminActionLogService(pool);
       const results = await svc.listActions();
       expect(results).toHaveLength(1);
-      expect(results[0]!.id).toBe('act-1');
+      expect(results[0]?.id).toBe('act-1');
     });
 
     it('returns empty array when no results', async () => {
@@ -88,8 +88,8 @@ describe('AdminActionLogService', () => {
       const pool = makePool([ok([])]);
       const svc = new AdminActionLogService(pool);
       await svc.listActions({ adminId: 'admin-1' });
-      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
-      expect(calls[0]![1]).toContain('admin-1');
+      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls;
+      expect((calls[0] as [string, unknown[]])[1]).toContain('admin-1');
     });
 
     it('passes all filters correctly', async () => {
@@ -102,8 +102,8 @@ describe('AdminActionLogService', () => {
         limit: 5,
         offset: 10,
       });
-      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
-      const params = calls[0]![1] as unknown[];
+      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls;
+      const params = (calls[0] as [string, unknown[]])[1];
       expect(params).toContain('admin-1');
       expect(params).toContain('suspend_tenant');
       expect(params).toContain('org-1');
@@ -118,7 +118,7 @@ describe('AdminActionLogService', () => {
       const svc = new AdminActionLogService(pool);
       const result = await svc.getAction('act-1');
       expect(result).not.toBeNull();
-      expect(result!.id).toBe('act-1');
+      expect(result?.id).toBe('act-1');
     });
 
     it('returns null when not found', async () => {
@@ -132,8 +132,8 @@ describe('AdminActionLogService', () => {
       const pool = makePool([ok([])]);
       const svc = new AdminActionLogService(pool);
       await svc.getAction('act-42');
-      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
-      expect(calls[0]![1]).toContain('act-42');
+      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls;
+      expect((calls[0] as [string, unknown[]])[1]).toContain('act-42');
     });
   });
 });

@@ -45,8 +45,8 @@ describe('SystemConfigService', () => {
       const pool = makePool([ok([configRow])]);
       const svc = new SystemConfigService(pool);
       await svc.upsertConfig({ key: 'x', value: 1, updatedBy: 'admin-1' });
-      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
-      expect(calls[0]![1]![2]).toBeNull();
+      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls;
+      expect((calls[0] as [string, unknown[]])[1][2]).toBeNull();
     });
 
     it('throws when INSERT returns no row', async () => {
@@ -64,7 +64,7 @@ describe('SystemConfigService', () => {
       const svc = new SystemConfigService(pool);
       const result = await svc.getConfig('maintenance_mode');
       expect(result).not.toBeNull();
-      expect(result!.key).toBe('maintenance_mode');
+      expect(result?.key).toBe('maintenance_mode');
     });
 
     it('returns null when not found', async () => {
@@ -78,8 +78,8 @@ describe('SystemConfigService', () => {
       const pool = makePool([ok([])]);
       const svc = new SystemConfigService(pool);
       await svc.getConfig('my_key');
-      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
-      expect(calls[0]![1]).toContain('my_key');
+      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls;
+      expect((calls[0] as [string, unknown[]])[1]).toContain('my_key');
     });
   });
 
@@ -105,7 +105,7 @@ describe('SystemConfigService', () => {
       const svc = new SystemConfigService(pool);
       const results = await svc.listConfigs();
       expect(results).toHaveLength(1);
-      expect(results[0]!.key).toBe('maintenance_mode');
+      expect(results[0]?.key).toBe('maintenance_mode');
     });
 
     it('returns empty array when no configs', async () => {

@@ -53,17 +53,17 @@ describe('PlatformAdminService', () => {
       const pool = makePool([ok([orgRow])]);
       const svc = new PlatformAdminService(pool);
       await svc.getOrgDirectory({ status: 'active' });
-      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
-      expect(calls[0]![1]).toContain('active');
+      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls;
+      expect((calls[0] as [string, unknown[]])[1]).toContain('active');
     });
 
     it('passes limit and offset', async () => {
       const pool = makePool([ok([])]);
       const svc = new PlatformAdminService(pool);
       await svc.getOrgDirectory({ limit: 10, offset: 20 });
-      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
-      expect(calls[0]![1]).toContain(10);
-      expect(calls[0]![1]).toContain(20);
+      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls;
+      expect((calls[0] as [string, unknown[]])[1]).toContain(10);
+      expect((calls[0] as [string, unknown[]])[1]).toContain(20);
     });
 
     it('throws if pool.query rejects', async () => {
@@ -105,8 +105,8 @@ describe('PlatformAdminService', () => {
       const pool = makePool([ok([])]);
       const svc = new PlatformAdminService(pool);
       await svc.getUserDirectory({ organizationId: 'org-1' });
-      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
-      expect(calls[0]![1]).toContain('org-1');
+      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls;
+      expect((calls[0] as [string, unknown[]])[1]).toContain('org-1');
     });
   });
 

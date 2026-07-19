@@ -147,7 +147,7 @@ describe('IdentityService.provisionOrganization', () => {
 
   it('adds owner member without roleId when org:owner role is absent', async () => {
     vi.mocked(RoleService.prototype.provisionDefaultRoles).mockResolvedValue([
-      fakeRoles[1]!, // only member role
+      ...fakeRoles.slice(1), // only member role
     ]);
 
     const svc = new IdentityService(mockPool);
@@ -158,9 +158,9 @@ describe('IdentityService.provisionOrganization', () => {
       ownerUserId: 'user-abc',
     });
 
-    const call = (MembershipService.prototype.addMember as ReturnType<typeof vi.fn>).mock
-      .calls[0]?.[0] as Record<string, unknown>;
-    expect(call['roleId']).toBeUndefined();
+    const mockCalls = (MembershipService.prototype.addMember as ReturnType<typeof vi.fn>).mock.calls;
+    const call = (mockCalls[0] as [Record<string, unknown>])[0];
+    expect(call.roleId).toBeUndefined();
   });
 
   it('generates a correlationId when not provided', async () => {

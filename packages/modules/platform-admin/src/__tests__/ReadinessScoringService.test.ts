@@ -32,8 +32,8 @@ describe('ReadinessScoringService', () => {
       ]);
       const svc = new ReadinessScoringService(pool);
       await svc.computeScore('org-1');
-      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
-      expect(calls[0]![0]).toContain('set_config');
+      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls;
+      expect((calls[0] as [string, unknown[]])[0]).toContain('set_config');
     });
 
     it('returns org-1 and computed breakdown', async () => {
@@ -116,8 +116,8 @@ describe('ReadinessScoringService', () => {
       ]);
       const svc = new ReadinessScoringService(pool);
       await svc.computeScore('org-99');
-      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
-      expect(calls[1]![1]).toContain('org-99');
+      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls;
+      expect((calls[1] as [string, unknown[]])[1]).toContain('org-99');
     });
   });
 });

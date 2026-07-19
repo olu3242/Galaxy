@@ -92,8 +92,8 @@ describe('CommercialService', () => {
       const pool = makePool([ok([policyRow])]);
       const svc = new CommercialService(pool);
       await svc.getBillingPolicy('grace_period_days');
-      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
-      expect(calls[0]?.[1]).toContain('grace_period_days');
+      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls;
+      expect((calls[0] as [string, unknown[]])[1]).toContain('grace_period_days');
     });
   });
 
@@ -117,8 +117,8 @@ describe('CommercialService', () => {
       const pool = makePool([ok([policyRow])]);
       const svc = new CommercialService(pool);
       await svc.setBillingPolicy('grace_period_days', 7);
-      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
-      expect(calls[0]?.[1]?.[2]).toBeNull();
+      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls;
+      expect((calls[0] as [string, unknown[]])[1][2]).toBeNull();
     });
   });
 });

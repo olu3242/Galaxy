@@ -61,9 +61,9 @@ describe('AgentRegistryService', () => {
       expect(result.agentType).toBe('operations_copilot');
       expect(result.isActive).toBe(true);
 
-      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
-      expect(calls[0]![0]).toContain('set_config');
-      expect(calls[0]![1]).toEqual(['app.current_tenant', ORG]);
+      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls;
+      expect((calls[0] as [string, unknown[]])[0]).toContain('set_config');
+      expect((calls[0] as [string, unknown[]])[1]).toEqual(['app.current_tenant', ORG]);
     });
 
     it('omits description when not provided', async () => {
@@ -110,8 +110,8 @@ describe('AgentRegistryService', () => {
       expect(result).not.toBeNull();
       expect(result?.id).toBe(AGENT_ID);
 
-      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
-      expect(calls[1]![1]).toEqual([ORG, AGENT_ID]);
+      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls;
+      expect((calls[1] as [string, unknown[]])[1]).toEqual([ORG, AGENT_ID]);
     });
 
     it('returns null when agent not found', async () => {
@@ -140,8 +140,8 @@ describe('AgentRegistryService', () => {
 
       await svc.listAgents(ORG, { agentType: 'operations_copilot' });
 
-      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
-      const params = calls[1]![1] as unknown[];
+      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls;
+      const params = (calls[1] as [string, unknown[]])[1];
       expect(params).toContain('operations_copilot');
     });
 
@@ -151,8 +151,8 @@ describe('AgentRegistryService', () => {
 
       await svc.listAgents(ORG, { isActive: true });
 
-      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
-      const params = calls[1]![1] as unknown[];
+      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls;
+      const params = (calls[1] as [string, unknown[]])[1];
       expect(params).toContain(true);
     });
 
@@ -175,9 +175,9 @@ describe('AgentRegistryService', () => {
 
       expect(result.isActive).toBe(false);
 
-      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
-      expect(calls[1]![0]).toContain('UPDATE agents');
-      expect(calls[1]![1]).toEqual([ORG, AGENT_ID]);
+      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls;
+      expect((calls[1] as [string, unknown[]])[0]).toContain('UPDATE agents');
+      expect((calls[1] as [string, unknown[]])[1]).toEqual([ORG, AGENT_ID]);
     });
 
     it('throws when agent not found', async () => {

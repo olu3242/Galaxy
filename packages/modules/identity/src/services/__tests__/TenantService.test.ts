@@ -24,23 +24,17 @@ describe('TenantService.setTenantContext', () => {
     const pool = makePool([ok([])]);
     const svc = new TenantService(pool);
     await svc.setTenantContext(ORG);
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [
-      string,
-      unknown[],
-    ][];
-    expect(calls[0]?.[0]).toBe('SELECT set_config($1, $2, true)');
-    expect(calls[0]?.[1]).toEqual(['app.current_tenant', ORG]);
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls;
+    expect((calls[0] as [string, unknown[]])[0]).toBe('SELECT set_config($1, $2, true)');
+    expect((calls[0] as [string, unknown[]])[1]).toEqual(['app.current_tenant', ORG]);
   });
 
   it('uses parameterized query — no orgId interpolation', async () => {
     const pool = makePool([ok([])]);
     const svc = new TenantService(pool);
     await svc.setTenantContext(ORG);
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [
-      string,
-      unknown[],
-    ][];
-    expect(calls[0]?.[0]).not.toContain(ORG);
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls;
+    expect((calls[0] as [string, unknown[]])[0]).not.toContain(ORG);
   });
 });
 
@@ -90,12 +84,9 @@ describe('TenantService.assertOrganizationActive', () => {
     const pool = makePool([ok([{ status: 'active' }])]);
     const svc = new TenantService(pool);
     await svc.assertOrganizationActive(ORG);
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [
-      string,
-      unknown[],
-    ][];
-    expect(calls[0]?.[0]).not.toContain(ORG);
-    expect(calls[0]?.[1]).toContain(ORG);
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls;
+    expect((calls[0] as [string, unknown[]])[0]).not.toContain(ORG);
+    expect((calls[0] as [string, unknown[]])[1]).toContain(ORG);
   });
 });
 
@@ -109,11 +100,8 @@ describe('TenantService.withTenant', () => {
 
     expect(result).toBe('result');
     expect(fn).toHaveBeenCalledOnce();
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [
-      string,
-      unknown[],
-    ][];
-    expect(calls[0]?.[0]).toBe('SELECT set_config($1, $2, true)');
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls;
+    expect((calls[0] as [string, unknown[]])[0]).toBe('SELECT set_config($1, $2, true)');
   });
 
   it('propagates errors from the callback', async () => {

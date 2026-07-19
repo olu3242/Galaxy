@@ -35,7 +35,7 @@ describe('AuditService', () => {
       const pool = makePool([ok([]), ok([logRow])]);
       const svc = new AuditService(pool);
       await svc.queryLogs({ organizationId: 'org-1' });
-      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as [string, unknown[]][];
+      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [string, unknown[]][];
       expect(calls[0]?.[0]).toContain('set_config');
       expect((calls[0]?.[1] ?? [])[1]).toBe('org-1');
     });

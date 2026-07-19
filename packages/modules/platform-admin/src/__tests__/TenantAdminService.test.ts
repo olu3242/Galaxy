@@ -34,9 +34,9 @@ describe('TenantAdminService', () => {
       const svc = new TenantAdminService(pool);
       const results = await svc.listAllTenants();
       expect(results).toHaveLength(1);
-      expect(results[0]!.id).toBe('org-1');
-      expect(results[0]!.memberCount).toBe(10);
-      expect(results[0]!.workflowCount).toBe(5);
+      expect(results[0]?.id).toBe('org-1');
+      expect(results[0]?.memberCount).toBe(10);
+      expect(results[0]?.workflowCount).toBe(5);
     });
 
     it('returns empty array when no tenants', async () => {
@@ -50,17 +50,17 @@ describe('TenantAdminService', () => {
       const pool = makePool([ok([])]);
       const svc = new TenantAdminService(pool);
       await svc.listAllTenants({ status: 'suspended' });
-      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
-      expect(calls[0]![1]).toContain('suspended');
+      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls;
+      expect((calls[0] as [string, unknown[]])[1]).toContain('suspended');
     });
 
     it('passes limit and offset', async () => {
       const pool = makePool([ok([])]);
       const svc = new TenantAdminService(pool);
       await svc.listAllTenants({ limit: 10, offset: 5 });
-      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
-      expect(calls[0]![1]).toContain(10);
-      expect(calls[0]![1]).toContain(5);
+      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls;
+      expect((calls[0] as [string, unknown[]])[1]).toContain(10);
+      expect((calls[0] as [string, unknown[]])[1]).toContain(5);
     });
   });
 
@@ -70,7 +70,7 @@ describe('TenantAdminService', () => {
       const svc = new TenantAdminService(pool);
       const result = await svc.getTenant('org-1');
       expect(result).not.toBeNull();
-      expect(result!.id).toBe('org-1');
+      expect(result?.id).toBe('org-1');
     });
 
     it('returns null when not found', async () => {
@@ -84,8 +84,8 @@ describe('TenantAdminService', () => {
       const pool = makePool([ok([])]);
       const svc = new TenantAdminService(pool);
       await svc.getTenant('org-42');
-      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
-      expect(calls[0]![1]).toContain('org-42');
+      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls;
+      expect((calls[0] as [string, unknown[]])[1]).toContain('org-42');
     });
   });
 
@@ -103,8 +103,8 @@ describe('TenantAdminService', () => {
       const svc = new TenantAdminService(pool);
       const result = await svc.suspendTenant('org-1');
       expect(result).not.toBeNull();
-      expect(result!.status).toBe('suspended');
-      expect(result!.memberCount).toBe(0);
+      expect(result?.status).toBe('suspended');
+      expect(result?.memberCount).toBe(0);
     });
 
     it('returns null when tenant not found', async () => {
@@ -118,8 +118,8 @@ describe('TenantAdminService', () => {
       const pool = makePool([ok([])]);
       const svc = new TenantAdminService(pool);
       await svc.suspendTenant('org-1');
-      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
-      expect(calls[0]![1]).toContain('org-1');
+      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls;
+      expect((calls[0] as [string, unknown[]])[1]).toContain('org-1');
     });
   });
 
@@ -137,7 +137,7 @@ describe('TenantAdminService', () => {
       const svc = new TenantAdminService(pool);
       const result = await svc.reinstateTenant('org-1');
       expect(result).not.toBeNull();
-      expect(result!.status).toBe('active');
+      expect(result?.status).toBe('active');
     });
 
     it('returns null when tenant not found', async () => {
@@ -185,7 +185,7 @@ describe('TenantAdminService', () => {
       ]);
       const svc = new TenantAdminService(pool);
       await svc.getTenantUsageSummary('org-99');
-      const calls = vi.mocked(pool.query).mock.calls as unknown as [string, unknown[]][];
+      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls;
       for (const call of calls) {
         expect(call[1]).toContain('org-99');
       }

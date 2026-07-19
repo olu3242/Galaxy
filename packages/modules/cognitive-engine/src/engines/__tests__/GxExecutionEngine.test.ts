@@ -62,7 +62,7 @@ describe('GxExecutionEngine.executeTask', () => {
     const task = makeTask();
     const result = await engine.executeTask(task, makeCtx(pool));
     expect(result.success).toBe(true);
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as [string, unknown[]][];
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [string, unknown[]][];
     expect(calls[0]?.[0]).toBe('SELECT set_config($1, $2, true)');
   });
 

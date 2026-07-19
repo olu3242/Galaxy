@@ -20,7 +20,7 @@ function makeOkFetch(messageId = 'wamid.abc123'): typeof fetch {
     status: 200,
     json: vi.fn().mockResolvedValue({ messages: [{ id: messageId }] }),
     text: vi.fn().mockResolvedValue(''),
-  }) as unknown as typeof fetch;
+  });
 }
 
 function makeErrorFetch(status: number, body = 'Bad Request'): typeof fetch {
@@ -29,18 +29,18 @@ function makeErrorFetch(status: number, body = 'Bad Request'): typeof fetch {
     status,
     text: vi.fn().mockResolvedValue(body),
     json: vi.fn().mockResolvedValue({}),
-  }) as unknown as typeof fetch;
+  });
 }
 
 beforeEach(() => {
-  process.env['WHATSAPP_ACCESS_TOKEN'] = ACCESS_TOKEN;
-  process.env['WHATSAPP_PHONE_NUMBER_ID'] = PHONE_NUMBER_ID;
+  process.env.WHATSAPP_ACCESS_TOKEN = ACCESS_TOKEN;
+  process.env.WHATSAPP_PHONE_NUMBER_ID = PHONE_NUMBER_ID;
   vi.stubGlobal('fetch', makeOkFetch());
 });
 
 afterEach(() => {
-  delete process.env['WHATSAPP_ACCESS_TOKEN'];
-  delete process.env['WHATSAPP_PHONE_NUMBER_ID'];
+  delete process.env.WHATSAPP_ACCESS_TOKEN;
+  delete process.env.WHATSAPP_PHONE_NUMBER_ID;
   vi.unstubAllGlobals();
 });
 
@@ -51,7 +51,7 @@ describe('WhatsAppProvider', () => {
   });
 
   it('returns failure when WHATSAPP_ACCESS_TOKEN is not set', async () => {
-    delete process.env['WHATSAPP_ACCESS_TOKEN'];
+    delete process.env.WHATSAPP_ACCESS_TOKEN;
     const provider = new WhatsAppProvider();
     const result = await provider.send(TO, { type: 'text', text: 'Hello' });
 
@@ -61,7 +61,7 @@ describe('WhatsAppProvider', () => {
   });
 
   it('returns failure when WHATSAPP_PHONE_NUMBER_ID is not set', async () => {
-    delete process.env['WHATSAPP_PHONE_NUMBER_ID'];
+    delete process.env.WHATSAPP_PHONE_NUMBER_ID;
     const provider = new WhatsAppProvider();
     const result = await provider.send(TO, { type: 'text', text: 'Hello' });
 
@@ -80,11 +80,11 @@ describe('WhatsAppProvider.send — happy path', () => {
     expect(result.providerMessageId).toBe('wamid.abc123');
     expect(result.sentAt).toBeDefined();
 
-    const calls = vi.mocked(fetch).mock.calls as [string, RequestInit][];
-    const [url, init] = calls[0]!;
+    const calls = (fetch as ReturnType<typeof vi.fn>).mock.calls;
+    const [url, init] = calls[0] as [string, RequestInit];
     expect(url).toContain(PHONE_NUMBER_ID);
     expect(url).toContain('/messages');
-    expect((init.headers as Record<string, string>)['Authorization']).toBe(
+    expect((init.headers as Record<string, string>).Authorization).toBe(
       `Bearer ${ACCESS_TOKEN}`,
     );
 
@@ -102,8 +102,8 @@ describe('WhatsAppProvider.send — happy path', () => {
     const provider = new WhatsAppProvider();
     await provider.send(TO, { type: 'image', mediaUrl: 'https://cdn.example.com/img.jpg' });
 
-    const calls = vi.mocked(fetch).mock.calls as [string, RequestInit][];
-    const body = JSON.parse(calls[0]![1].body as string) as {
+    const calls = (fetch as ReturnType<typeof vi.fn>).mock.calls;
+    const body = JSON.parse((calls[0] as [string, RequestInit])[1].body as string) as {
       type: string;
       image: { link: string };
     };
@@ -115,8 +115,8 @@ describe('WhatsAppProvider.send — happy path', () => {
     const provider = new WhatsAppProvider();
     await provider.send(TO, { type: 'audio', mediaUrl: 'https://cdn.example.com/audio.ogg' });
 
-    const calls = vi.mocked(fetch).mock.calls as [string, RequestInit][];
-    const body = JSON.parse(calls[0]![1].body as string) as {
+    const calls = (fetch as ReturnType<typeof vi.fn>).mock.calls;
+    const body = JSON.parse((calls[0] as [string, RequestInit])[1].body as string) as {
       type: string;
       audio: { link: string };
     };
@@ -128,8 +128,8 @@ describe('WhatsAppProvider.send — happy path', () => {
     const provider = new WhatsAppProvider();
     await provider.send(TO, { type: 'file', mediaUrl: 'https://cdn.example.com/doc.pdf' });
 
-    const calls = vi.mocked(fetch).mock.calls as [string, RequestInit][];
-    const body = JSON.parse(calls[0]![1].body as string) as {
+    const calls = (fetch as ReturnType<typeof vi.fn>).mock.calls;
+    const body = JSON.parse((calls[0] as [string, RequestInit])[1].body as string) as {
       type: string;
       document: { link: string };
     };
@@ -145,8 +145,8 @@ describe('WhatsAppProvider.send — happy path', () => {
       templateVariables: { orderId: '12345', amount: '500' },
     });
 
-    const calls = vi.mocked(fetch).mock.calls as [string, RequestInit][];
-    const body = JSON.parse(calls[0]![1].body as string) as {
+    const calls = (fetch as ReturnType<typeof vi.fn>).mock.calls;
+    const body = JSON.parse((calls[0] as [string, RequestInit])[1].body as string) as {
       type: string;
       template: {
         name: string;
@@ -157,7 +157,7 @@ describe('WhatsAppProvider.send — happy path', () => {
     expect(body.type).toBe('template');
     expect(body.template.name).toBe('order_confirmation');
     expect(body.template.language.code).toBe('en_US');
-    expect(body.template.components[0]!.parameters).toEqual(
+    expect(body.template.components[0]?.parameters).toEqual(
       expect.arrayContaining([
         { type: 'text', text: '12345' },
         { type: 'text', text: '500' },
@@ -169,8 +169,8 @@ describe('WhatsAppProvider.send — happy path', () => {
     const provider = new WhatsAppProvider();
     await provider.send(TO, { type: 'template', templateName: 'welcome' });
 
-    const calls = vi.mocked(fetch).mock.calls as [string, RequestInit][];
-    const body = JSON.parse(calls[0]![1].body as string) as {
+    const calls = (fetch as ReturnType<typeof vi.fn>).mock.calls;
+    const body = JSON.parse((calls[0] as [string, RequestInit])[1].body as string) as {
       template: { components: unknown[] };
     };
     expect(body.template.components).toEqual([]);
@@ -181,8 +181,8 @@ describe('WhatsAppProvider.send — happy path', () => {
     const provider = new WhatsAppProvider();
     await provider.send(TO, { type: 'interactive', interactive });
 
-    const calls = vi.mocked(fetch).mock.calls as [string, RequestInit][];
-    const body = JSON.parse(calls[0]![1].body as string) as {
+    const calls = (fetch as ReturnType<typeof vi.fn>).mock.calls;
+    const body = JSON.parse((calls[0] as [string, RequestInit])[1].body as string) as {
       type: string;
       interactive: unknown;
     };
@@ -192,11 +192,13 @@ describe('WhatsAppProvider.send — happy path', () => {
 
   it('falls back to empty text message for unknown content type', async () => {
     const provider = new WhatsAppProvider();
-    await provider.send(TO, { type: 'video' as 'text' });
+    await provider.send(TO, { type: 'video' });
 
-    const calls = vi.mocked(fetch).mock.calls as [string, RequestInit][];
-    const body = JSON.parse(calls[0]![1].body as string) as { type: string };
-    expect(body.type).toBe('text');
+    const wasMocked = vi.mocked(fetch);
+    expect(wasMocked).toHaveBeenCalledWith(
+      expect.stringContaining('/messages'),
+      expect.objectContaining({ body: expect.stringContaining('"type":"text"') as unknown }),
+    );
   });
 
   it('returns success without providerMessageId when messages array is empty', async () => {

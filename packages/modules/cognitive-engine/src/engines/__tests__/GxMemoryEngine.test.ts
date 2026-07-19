@@ -61,7 +61,7 @@ describe('GxMemoryEngine.write', () => {
       key: 'k',
       value: {},
     });
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as [string, unknown[]][];
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [string, unknown[]][];
     expect(calls[0]?.[0]).toBe('SELECT set_config($1, $2, true)');
     expect(calls[0]?.[1]).toEqual(['app.current_tenant', ORG]);
   });
@@ -120,7 +120,7 @@ describe('GxMemoryEngine.read', () => {
     const pool = makePool([ok([]), ok([])]);
     const engine = new GxMemoryEngine(pool);
     await engine.read({ agentId: AGENT, organizationId: ORG });
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as [string, unknown[]][];
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [string, unknown[]][];
     expect(calls[0]?.[0]).toBe('SELECT set_config($1, $2, true)');
     expect(calls[0]?.[1]).toEqual(['app.current_tenant', ORG]);
   });
@@ -156,7 +156,7 @@ describe('GxMemoryEngine.forget', () => {
     const pool = makePool([ok([]), ok([])]);
     const engine = new GxMemoryEngine(pool);
     await engine.forget(AGENT, ORG, 'my-key', 'short_term');
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as [string, unknown[]][];
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [string, unknown[]][];
     expect(calls[0]?.[0]).toBe('SELECT set_config($1, $2, true)');
     expect(calls[1]?.[0]).toContain('DELETE FROM agent_memories');
   });
