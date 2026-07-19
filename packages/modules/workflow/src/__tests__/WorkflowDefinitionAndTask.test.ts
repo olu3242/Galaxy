@@ -41,8 +41,8 @@ function wfRow(overrides: Partial<{ is_active: boolean }> = {}) {
     description: null,
     version: 1,
     is_active: overrides.is_active ?? false,
-    automation_domain: 'hr',
-    flow_type: 'sequential',
+    automation_domain: 'task',
+    flow_type: 'automated',
     owner_id: null,
     department_id: null,
     sla_duration_hours: null,
@@ -95,9 +95,10 @@ describe('WorkflowDefinitionService.createWorkflow', () => {
     const result = await svc.createWorkflow({
       organizationId: ORG,
       name: 'Onboarding Workflow',
-      automationDomain: 'hr',
-      flowType: 'sequential',
+      automationDomain: 'task',
+      flowType: 'automated',
       createdBy: 'user-1',
+      correlationId: 'corr-1',
     });
 
     expect(result.id).toBe(WF_ID);
@@ -116,9 +117,10 @@ describe('WorkflowDefinitionService.createWorkflow', () => {
       svc.createWorkflow({
         organizationId: ORG,
         name: 'X',
-        automationDomain: 'hr',
-        flowType: 'sequential',
+        automationDomain: 'task',
+        flowType: 'automated',
         createdBy: 'u1',
+        correlationId: 'c1',
       }),
     ).rejects.toThrow('RETURNING returned no row');
   });
