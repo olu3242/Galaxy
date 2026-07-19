@@ -47,7 +47,10 @@ describe('OrgMemoryService.store', () => {
     });
     expect(result.memoryType).toBe('decision');
     expect(result.confidence).toBe(0.9);
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [string, unknown[]][];
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [
+      string,
+      unknown[],
+    ][];
     expect(calls[0]?.[0]).toBe('SELECT set_config($1, $2, true)');
     expect(calls[1]?.[0]).toContain('INSERT INTO org_memories');
   });
@@ -62,7 +65,10 @@ describe('OrgMemoryService.store', () => {
       content: 'We meet on Mondays',
       source: 'ops',
     });
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [string, unknown[]][];
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [
+      string,
+      unknown[],
+    ][];
     expect(calls[1]?.[1]).toContain(1);
   });
 
@@ -88,7 +94,10 @@ describe('OrgMemoryService.recall', () => {
     const pool = makePool([ok([]), ok([makeRow()])]);
     const svc = new OrgMemoryService(pool);
     await svc.recall(ORG, { type: 'decision' });
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [string, unknown[]][];
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [
+      string,
+      unknown[],
+    ][];
     expect(calls[1]?.[0]).toContain('memory_type = $2');
     expect(calls[1]?.[1]).toContain('decision');
   });
@@ -97,7 +106,10 @@ describe('OrgMemoryService.recall', () => {
     const pool = makePool([ok([]), ok([makeRow()])]);
     const svc = new OrgMemoryService(pool);
     await svc.recall(ORG, { tags: ['tech'] });
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [string, unknown[]][];
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [
+      string,
+      unknown[],
+    ][];
     expect(calls[1]?.[0]).toContain('relevance_tags &&');
     expect(calls[1]?.[1]).toContainEqual(['tech']);
   });
@@ -106,7 +118,10 @@ describe('OrgMemoryService.recall', () => {
     const pool = makePool([ok([]), ok([])]);
     const svc = new OrgMemoryService(pool);
     await svc.recall(ORG, { limit: 5 });
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [string, unknown[]][];
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [
+      string,
+      unknown[],
+    ][];
     expect(calls[1]?.[1]).toContain(5);
   });
 
@@ -114,7 +129,10 @@ describe('OrgMemoryService.recall', () => {
     const pool = makePool([ok([]), ok([])]);
     const svc = new OrgMemoryService(pool);
     await svc.recall(ORG, {});
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [string, unknown[]][];
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [
+      string,
+      unknown[],
+    ][];
     expect(calls[1]?.[0]).toContain('is_valid = TRUE');
   });
 });
@@ -124,7 +142,10 @@ describe('OrgMemoryService.invalidate', () => {
     const pool = makePool([ok([]), ok([])]);
     const svc = new OrgMemoryService(pool);
     await svc.invalidate(ORG, 'mem-1');
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [string, unknown[]][];
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [
+      string,
+      unknown[],
+    ][];
     expect(calls[1]?.[0]).toContain('is_valid = FALSE');
     expect(calls[1]?.[1]).toContain('mem-1');
   });

@@ -111,9 +111,7 @@ describe('RoleService.createRole', () => {
       actorId: ACTOR,
     });
     expect(publishFn).toHaveBeenCalledOnce();
-    expect(publishFn).toHaveBeenCalledWith(
-      expect.objectContaining({ type: 'role.created' }),
-    );
+    expect(publishFn).toHaveBeenCalledWith(expect.objectContaining({ type: 'role.created' }));
   });
 
   it('does not throw when no publisher provided', async () => {

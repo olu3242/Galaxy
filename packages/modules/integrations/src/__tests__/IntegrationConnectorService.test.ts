@@ -76,7 +76,10 @@ describe('IntegrationConnectorService.registerConnector', () => {
       config: {},
       credentials: {},
     });
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [string, unknown[]][];
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [
+      string,
+      unknown[],
+    ][];
     const [sql, params] = calls[0] ?? ['', []];
     expect(sql).toBe('SELECT set_config($1, $2, true)');
     expect(params[1]).toBe(ORG);
@@ -106,7 +109,10 @@ describe('IntegrationConnectorService.registerConnector', () => {
       config: { baseUrl: 'https://api.example.com' },
       credentials: { apiKey: 'secret' },
     });
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [string, unknown[]][];
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [
+      string,
+      unknown[],
+    ][];
     const [sql, params] = calls[1] ?? ['', []];
     expect(sql).toMatch(/INSERT INTO integration_connectors/i);
     expect(params[0]).toBe(ORG);
@@ -138,7 +144,10 @@ describe('IntegrationConnectorService.enableConnector', () => {
     const pool = makePool([ok([]), ok([connectorRow({ status: 'active' })])]);
     const svc = new IntegrationConnectorService(pool);
     await svc.enableConnector(ORG, CONNECTOR_ID);
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [string, unknown[]][];
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [
+      string,
+      unknown[],
+    ][];
     const updateParams = calls[1]?.[1] ?? [];
     expect(updateParams).toContain(CONNECTOR_ID);
     expect(updateParams).toContain(ORG);
@@ -185,7 +194,10 @@ describe('IntegrationConnectorService.listConnectors', () => {
     const pool = makePool([ok([]), ok([connectorRow({ connector_type: 'webhook' })])]);
     const svc = new IntegrationConnectorService(pool);
     await svc.listConnectors(ORG);
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [string, unknown[]][];
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [
+      string,
+      unknown[],
+    ][];
     const params = calls[1]?.[1] ?? [];
     expect(params).toContain(ORG);
   });

@@ -45,7 +45,10 @@ describe('OrgLanguageService.addTerm', () => {
     );
     expect(result.term).toBe('sprint');
     expect(result.organizationId).toBe(ORG);
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [string, unknown[]][];
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [
+      string,
+      unknown[],
+    ][];
     expect(calls[0]?.[0]).toBe('SELECT set_config($1, $2, true)');
     expect(calls[1]?.[0]).toContain('INSERT INTO org_language_entries');
   });
@@ -100,7 +103,10 @@ describe('OrgLanguageService.deleteTerm', () => {
     const pool = makePool([ok([]), ok([])]);
     const svc = new OrgLanguageService(pool);
     await svc.deleteTerm(ORG, 'lang-1');
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [string, unknown[]][];
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [
+      string,
+      unknown[],
+    ][];
     expect(calls[1]?.[0]).toContain('DELETE FROM org_language_entries');
     expect(calls[1]?.[1]).toContain('lang-1');
   });

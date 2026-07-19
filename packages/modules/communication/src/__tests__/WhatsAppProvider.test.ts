@@ -84,9 +84,7 @@ describe('WhatsAppProvider.send — happy path', () => {
     const [url, init] = calls[0] as [string, RequestInit];
     expect(url).toContain(PHONE_NUMBER_ID);
     expect(url).toContain('/messages');
-    expect((init.headers as Record<string, string>).Authorization).toBe(
-      `Bearer ${ACCESS_TOKEN}`,
-    );
+    expect((init.headers as Record<string, string>).Authorization).toBe(`Bearer ${ACCESS_TOKEN}`);
 
     const body = JSON.parse(init.body as string) as {
       type: string;

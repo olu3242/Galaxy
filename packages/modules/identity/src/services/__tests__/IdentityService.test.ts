@@ -158,7 +158,8 @@ describe('IdentityService.provisionOrganization', () => {
       ownerUserId: 'user-abc',
     });
 
-    const mockCalls = (MembershipService.prototype.addMember as ReturnType<typeof vi.fn>).mock.calls;
+    const mockCalls = (MembershipService.prototype.addMember as ReturnType<typeof vi.fn>).mock
+      .calls;
     const call = (mockCalls[0] as [Record<string, unknown>])[0];
     expect(call.roleId).toBeUndefined();
   });

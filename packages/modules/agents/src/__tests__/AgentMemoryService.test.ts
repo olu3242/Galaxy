@@ -138,7 +138,12 @@ describe('AgentMemoryService', () => {
 
       const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls;
       expect((calls[1] as [string, unknown[]])[0]).toContain('DELETE FROM agent_memory');
-      expect((calls[1] as [string, unknown[]])[1]).toEqual([ORG, AGENT_ID, 'episodic', 'last_action']);
+      expect((calls[1] as [string, unknown[]])[1]).toEqual([
+        ORG,
+        AGENT_ID,
+        'episodic',
+        'last_action',
+      ]);
     });
   });
 

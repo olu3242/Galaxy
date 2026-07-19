@@ -58,7 +58,10 @@ describe('AgentInsightService', () => {
       expect(insight.confidence).toBe(0.85);
       expect(insight.appliedAt).toBeUndefined();
 
-      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [string, unknown[]][];
+      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [
+        string,
+        unknown[],
+      ][];
       expect(calls).toHaveLength(2);
       expect(calls[0]?.[0]).toContain('set_config');
       expect(calls[1]?.[0]).toContain('INSERT');
@@ -93,7 +96,10 @@ describe('AgentInsightService', () => {
       expect(insights).toHaveLength(1);
       expect(insights[0]?.id).toBe(INSIGHT_ID);
 
-      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [string, unknown[]][];
+      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [
+        string,
+        unknown[],
+      ][];
       // Query should only have $1 and $2 (orgId + limit), no agent filter
       expect((calls[1]?.[1] ?? []).length).toBe(2);
     });
@@ -104,7 +110,10 @@ describe('AgentInsightService', () => {
       const svc = new AgentInsightService(pool);
       await svc.getInsights(ORG_ID, AGENT_ID);
 
-      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [string, unknown[]][];
+      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [
+        string,
+        unknown[],
+      ][];
       // Params: orgId, agentId, limit
       expect((calls[1]?.[1] ?? []).length).toBe(3);
       expect((calls[1]?.[1] ?? [])[1]).toBe(AGENT_ID);
@@ -115,7 +124,10 @@ describe('AgentInsightService', () => {
       const svc = new AgentInsightService(pool);
       await svc.getInsights(ORG_ID, undefined, 5);
 
-      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [string, unknown[]][];
+      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [
+        string,
+        unknown[],
+      ][];
       const params = calls[1]?.[1] ?? [];
       expect(params[params.length - 1]).toBe(5);
     });
@@ -129,7 +141,10 @@ describe('AgentInsightService', () => {
       const insight = await svc.applyInsight(ORG_ID, INSIGHT_ID);
 
       expect(insight.appliedAt).toBeInstanceOf(Date);
-      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [string, unknown[]][];
+      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [
+        string,
+        unknown[],
+      ][];
       expect(calls[1]?.[0]).toContain('applied_at');
       expect((calls[1]?.[1] ?? [])[1]).toBe(INSIGHT_ID);
     });

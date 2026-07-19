@@ -49,7 +49,10 @@ describe('OrganizationRegistryService', () => {
       const pool = makePool([ok([])]);
       const svc = new OrganizationRegistryService(pool);
       await svc.searchOrganizations('test', 5);
-      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [string, unknown[]][];
+      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [
+        string,
+        unknown[],
+      ][];
       const params = calls[0]?.[1] ?? [];
       expect(params[0]).toBe('%test%');
       expect(params[1]).toBe(5);

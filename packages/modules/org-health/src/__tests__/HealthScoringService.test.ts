@@ -38,7 +38,10 @@ describe('HealthScoringService.recordScore', () => {
     const result = await svc.recordScore(ORG, 'communication', 80, {}, ['Do more standups']);
     expect(result.score).toBe(80);
     expect(result.dimension).toBe('communication');
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [string, unknown[]][];
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [
+      string,
+      unknown[],
+    ][];
     expect(calls[0]?.[0]).toBe('SELECT set_config($1, $2, true)');
     // status should be 'healthy' for score 80
     expect(calls[1]?.[1]).toContain('healthy');
@@ -49,7 +52,10 @@ describe('HealthScoringService.recordScore', () => {
     const pool = makePool([ok([]), ok([row])]);
     const svc = new HealthScoringService(pool);
     await svc.recordScore(ORG, 'team', 55, {}, []);
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [string, unknown[]][];
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [
+      string,
+      unknown[],
+    ][];
     expect(calls[1]?.[1]).toContain('at_risk');
   });
 
@@ -58,7 +64,10 @@ describe('HealthScoringService.recordScore', () => {
     const pool = makePool([ok([]), ok([row])]);
     const svc = new HealthScoringService(pool);
     await svc.recordScore(ORG, 'workflow', 30, {}, []);
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [string, unknown[]][];
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [
+      string,
+      unknown[],
+    ][];
     expect(calls[1]?.[1]).toContain('critical');
   });
 

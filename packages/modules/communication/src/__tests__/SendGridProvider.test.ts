@@ -61,7 +61,7 @@ describe('SendGridProvider.send', () => {
     await provider.send('user@example.com', { type: 'text', text: 'Test message' });
 
     const calls = (fetch as ReturnType<typeof vi.fn>).mock.calls;
-    const [url, init] = (calls[0] as [string, RequestInit]);
+    const [url, init] = calls[0] as [string, RequestInit];
 
     expect(url).toBe('https://api.sendgrid.com/v3/mail/send');
     expect((init.headers as Record<string, string>).Authorization).toBe('Bearer SG.test-key');
@@ -89,7 +89,9 @@ describe('SendGridProvider.send', () => {
     });
 
     const calls = (fetch as ReturnType<typeof vi.fn>).mock.calls;
-    const body = JSON.parse((calls[0] as [string, RequestInit])[1].body as string) as { subject: string };
+    const body = JSON.parse((calls[0] as [string, RequestInit])[1].body as string) as {
+      subject: string;
+    };
     expect(body.subject).toBe('welcome_email');
   });
 
@@ -98,7 +100,9 @@ describe('SendGridProvider.send', () => {
     await provider.send('user@example.com', { type: 'text', text: 'Hi' });
 
     const calls = (fetch as ReturnType<typeof vi.fn>).mock.calls;
-    const body = JSON.parse((calls[0] as [string, RequestInit])[1].body as string) as { subject: string };
+    const body = JSON.parse((calls[0] as [string, RequestInit])[1].body as string) as {
+      subject: string;
+    };
     expect(body.subject).toBe('Galaxy Notification');
   });
 
@@ -180,7 +184,9 @@ describe('SendGridProvider.send', () => {
     await provider.send('user@example.com', { type: 'text', text: 'Hi' });
 
     const calls = (fetch as ReturnType<typeof vi.fn>).mock.calls;
-    const body = JSON.parse((calls[0] as [string, RequestInit])[1].body as string) as { from: { name?: string } };
+    const body = JSON.parse((calls[0] as [string, RequestInit])[1].body as string) as {
+      from: { name?: string };
+    };
     expect(body.from.name).toBeUndefined();
   });
 

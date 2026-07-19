@@ -57,7 +57,10 @@ describe('WorkflowDefinitionService.createWorkflow', () => {
       createdBy: CREATED_BY,
       correlationId: CORR_ID,
     });
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [string, unknown[]][];
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [
+      string,
+      unknown[],
+    ][];
     expect(calls[0]?.[0]).toBe('SELECT set_config($1, $2, true)');
     expect(calls[0]?.[1]).toEqual(['app.current_tenant', ORG]);
   });
@@ -108,7 +111,10 @@ describe('WorkflowDefinitionService.createWorkflow', () => {
       createdBy: CREATED_BY,
       correlationId: CORR_ID,
     });
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [string, unknown[]][];
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [
+      string,
+      unknown[],
+    ][];
     for (const [sql] of calls) {
       expect(sql).not.toContain(ORG);
     }
@@ -151,7 +157,10 @@ describe('WorkflowDefinitionService.listWorkflows', () => {
     const pool = makePool([ok([]), ok([wfRow({ automation_domain: 'membership' })])]);
     const svc = new WorkflowDefinitionService(pool);
     await svc.listWorkflows(ORG, { domain: 'membership' });
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [string, unknown[]][];
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [
+      string,
+      unknown[],
+    ][];
     const params = calls[1]?.[1] ?? [];
     expect(params).toContain('membership');
   });

@@ -92,7 +92,10 @@ describe('AutomationService.evaluateTriggers', () => {
     const pool = makePool([ok([]), ok([])]);
     const svc = new AutomationService(pool);
     await svc.evaluateTriggers(ORG, 'member.created', {});
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [string, unknown[]][];
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [
+      string,
+      unknown[],
+    ][];
     expect(calls[0]?.[0]).toBe('SELECT set_config($1, $2, true)');
     expect(calls[0]?.[1]).toEqual(['app.current_tenant', ORG]);
   });
@@ -145,7 +148,10 @@ describe('AutomationService.listAutomations', () => {
     const pool = makePool([ok([]), ok([automationRow()])]);
     const svc = new AutomationService(pool);
     await svc.listAutomations(ORG, { isActive: true });
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [string, unknown[]][];
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [
+      string,
+      unknown[],
+    ][];
     const params = calls[1]?.[1] ?? [];
     expect(params).toContain(true);
   });

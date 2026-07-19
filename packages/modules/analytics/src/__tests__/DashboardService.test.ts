@@ -44,7 +44,10 @@ describe('DashboardService.createWidget', () => {
       name: 'Workflow Velocity',
       type: 'chart',
     });
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [string, unknown[]][];
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [
+      string,
+      unknown[],
+    ][];
     expect(calls[0]?.[0]).toBe('SELECT set_config($1, $2, true)');
     expect(calls[0]?.[1]).toEqual(['app.current_tenant', ORG]);
   });
@@ -94,7 +97,10 @@ describe('DashboardService.createWidget', () => {
       name: 'X',
       type: 'chart',
     });
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [string, unknown[]][];
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [
+      string,
+      unknown[],
+    ][];
     for (const [sql] of calls) {
       expect(sql).not.toContain(ORG);
     }
@@ -106,7 +112,10 @@ describe('DashboardService.getWidgets', () => {
     const pool = makePool([ok([]), ok([widgetRow()])]);
     const svc = new DashboardService(pool);
     await svc.getWidgets(ORG);
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [string, unknown[]][];
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [
+      string,
+      unknown[],
+    ][];
     expect(calls[0]?.[0]).toBe('SELECT set_config($1, $2, true)');
   });
 
@@ -129,7 +138,10 @@ describe('DashboardService.getWidgets', () => {
     const pool = makePool([ok([]), ok([widgetRow({ category: 'executive' })])]);
     const svc = new DashboardService(pool);
     await svc.getWidgets(ORG, 'executive');
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [string, unknown[]][];
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [
+      string,
+      unknown[],
+    ][];
     const selectParams = calls[1]?.[1] ?? [];
     expect(selectParams).toContain('executive');
   });

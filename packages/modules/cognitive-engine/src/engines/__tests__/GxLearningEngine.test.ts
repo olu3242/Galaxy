@@ -38,7 +38,10 @@ describe('GxLearningEngine.recordOutcome', () => {
     const pool = makePool([ok([]), ok([])]);
     const engine = new GxLearningEngine(pool);
     await engine.recordOutcome(sampleEvent);
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [string, unknown[]][];
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [
+      string,
+      unknown[],
+    ][];
     expect(calls[0]?.[0]).toBe('SELECT set_config($1, $2, true)');
     expect(calls[0]?.[1]).toEqual(['app.current_tenant', ORG]);
   });
@@ -47,7 +50,10 @@ describe('GxLearningEngine.recordOutcome', () => {
     const pool = makePool([ok([]), ok([])]);
     const engine = new GxLearningEngine(pool);
     await engine.recordOutcome(sampleEvent);
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [string, unknown[]][];
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [
+      string,
+      unknown[],
+    ][];
     const insertQuery = calls[1]?.[0];
     expect(insertQuery).toContain('INSERT INTO agent_learning_events');
     const params = calls[1]?.[1] ?? [];
@@ -59,7 +65,10 @@ describe('GxLearningEngine.recordOutcome', () => {
     const engine = new GxLearningEngine(pool);
     const { errorMessage: _unused, ...eventWithoutError } = sampleEvent;
     await engine.recordOutcome(eventWithoutError);
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [string, unknown[]][];
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [
+      string,
+      unknown[],
+    ][];
     const params = calls[1]?.[1] ?? [];
     expect(params).toContain(null);
   });
@@ -70,7 +79,10 @@ describe('GxLearningEngine.generateInsights', () => {
     const pool = makePool([ok([]), ok([])]);
     const engine = new GxLearningEngine(pool);
     await engine.generateInsights(AGENT, ORG);
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [string, unknown[]][];
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [
+      string,
+      unknown[],
+    ][];
     expect(calls[0]?.[0]).toBe('SELECT set_config($1, $2, true)');
   });
 
@@ -125,7 +137,10 @@ describe('GxLearningEngine.updateMemoryFromLearning', () => {
       generatedAt: '2026-01-01T00:00:00Z',
     };
     await engine.updateMemoryFromLearning(AGENT, ORG, insight, pool);
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [string, unknown[]][];
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [
+      string,
+      unknown[],
+    ][];
     expect(calls[0]?.[0]).toBe('SELECT set_config($1, $2, true)');
     expect(calls[1]?.[0]).toContain('INSERT INTO agent_memories');
   });

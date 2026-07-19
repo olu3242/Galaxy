@@ -59,7 +59,10 @@ describe('TaskEngineService.createTask', () => {
       reporterId: REPORTER_ID,
       correlationId: CORR_ID,
     });
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [string, unknown[]][];
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [
+      string,
+      unknown[],
+    ][];
     expect(calls[0]?.[0]).toBe('SELECT set_config($1, $2, true)');
     expect(calls[0]?.[1]).toEqual(['app.current_tenant', ORG]);
   });
@@ -174,7 +177,10 @@ describe('TaskEngineService.listTasks', () => {
     const pool = makePool([ok([]), ok([taskRow({ status: 'in_progress' })])]);
     const svc = new TaskEngineService(pool);
     await svc.listTasks(ORG, { status: 'in_progress' });
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [string, unknown[]][];
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [
+      string,
+      unknown[],
+    ][];
     const params = calls[1]?.[1] ?? [];
     expect(params).toContain('in_progress');
   });

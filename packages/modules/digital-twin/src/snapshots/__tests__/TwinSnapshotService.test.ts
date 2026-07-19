@@ -92,7 +92,10 @@ describe('TwinSnapshotService', () => {
       const pool = makePool([ok([]), ok([])]);
       const svc = new TwinSnapshotService(pool);
       await svc.getSnapshots('org-1');
-      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [string, unknown[]][];
+      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [
+        string,
+        unknown[],
+      ][];
       const selectCall = calls[1];
       const params = selectCall?.[1] ?? [];
       expect(params[1]).toBe(20);
@@ -102,7 +105,10 @@ describe('TwinSnapshotService', () => {
       const pool = makePool([ok([]), ok([])]);
       const svc = new TwinSnapshotService(pool);
       await svc.getSnapshots('org-1', 5);
-      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [string, unknown[]][];
+      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [
+        string,
+        unknown[],
+      ][];
       const selectCall = calls[1];
       const params = selectCall?.[1] ?? [];
       expect(params[1]).toBe(5);

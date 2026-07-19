@@ -154,7 +154,10 @@ describe('DigitalCOOService', () => {
       const svc = new DigitalCOOService(pool);
       await svc.getBriefingHistory(ORG_ID, 5);
 
-      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [string, unknown[]][];
+      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [
+        string,
+        unknown[],
+      ][];
       expect((calls[1]?.[1] ?? [])[1]).toBe(5);
     });
   });
@@ -230,7 +233,10 @@ describe('DigitalCOOService', () => {
       const svc = new DigitalCOOService(pool);
       await svc.listActions(ORG_ID, 'approved');
 
-      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [string, unknown[]][];
+      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [
+        string,
+        unknown[],
+      ][];
       expect(calls[1]?.[0]).toContain('status');
       expect((calls[1]?.[1] ?? [])[1]).toBe('approved');
     });
@@ -260,7 +266,10 @@ describe('DigitalCOOService', () => {
       expect(action.approvedBy).toBe(ACTOR_ID);
       expect(action.approvedAt).toBeDefined();
 
-      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [string, unknown[]][];
+      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [
+        string,
+        unknown[],
+      ][];
       expect(calls[1]?.[0]).toContain("'approved'");
       expect((calls[1]?.[1] ?? [])[0]).toBe(ACTOR_ID);
     });
@@ -308,7 +317,10 @@ describe('DigitalCOOService', () => {
       expect(action.rejectedBy).toBe(ACTOR_ID);
       expect(action.rejectionReason).toBe('Not needed');
 
-      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [string, unknown[]][];
+      const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [
+        string,
+        unknown[],
+      ][];
       expect(calls[1]?.[0]).toContain("'rejected'");
     });
 

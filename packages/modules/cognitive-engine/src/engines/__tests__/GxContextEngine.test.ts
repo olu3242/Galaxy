@@ -43,7 +43,10 @@ describe('GxContextEngine.enrich', () => {
     const pool = enrichPool([{ name: 'Acme' }], [], [{ count: '0' }], [{ count: '0' }]);
     const engine = new GxContextEngine(pool);
     await engine.enrich({ tenantId: TENANT, actorId: ACTOR, organizationId: ORG });
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [string, unknown[]][];
+    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as unknown as [
+      string,
+      unknown[],
+    ][];
     expect(calls[0]?.[0]).toBe('SELECT set_config($1, $2, true)');
     expect(calls[0]?.[1]).toEqual(['app.current_tenant', ORG]);
   });
