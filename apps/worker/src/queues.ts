@@ -15,5 +15,6 @@ export const agentQueue = new Queue('agent-execution', { connection });
 export const analyticsRollupQueue = new Queue('analytics-rollup', { connection });
 export const healthCheckQueue = new Queue('health-check', { connection });
 export const loopQueue = new Queue('loop-processing', { connection });
+export const approvalTimeoutQueue = new Queue('approval-timeout', { connection });
 
 export { connection };

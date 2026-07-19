@@ -13,6 +13,7 @@ import {
   analyticsRollupQueue,
   healthCheckQueue,
   loopQueue,
+  approvalTimeoutQueue,
 } from './queues.js';
 import { createWorkflowProcessor } from './processors/workflow-execution.js';
 import { createSlaProcessor } from './processors/sla-monitoring.js';
@@ -24,6 +25,7 @@ import { createLoopLearningProcessor } from './processors/loop-learning.js';
 import { createAuditSyncProcessor } from './processors/audit-sync.js';
 import { createApprovalProcessor } from './processors/approval-processing.js';
 import { createLoopProcessor } from './processors/loop-processing.js';
+import { createApprovalTimeoutProcessor } from './processors/approval-timeout.js';
 import { registerScheduledJobs } from './lib/scheduler.js';
 
 const logger = pino({ level: process.env.LOG_LEVEL ?? 'info' });
@@ -131,6 +133,19 @@ approvalWorker.on('failed', (job, err) => {
   logger.error({ jobId: job?.id, err }, 'approval job failed');
 });
 
+// Approval timeout worker — checks for timed-out pending approvals every 5 minutes
+const approvalTimeoutWorker = new Worker(
+  'approval-timeout',
+  createApprovalTimeoutProcessor(pool),
+  { connection },
+);
+approvalTimeoutWorker.on('completed', (job) => {
+  logger.info({ jobId: job.id }, 'approval-timeout job completed');
+});
+approvalTimeoutWorker.on('failed', (job, err) => {
+  logger.error({ jobId: job?.id, err }, 'approval-timeout job failed');
+});
+
 // Loop processing worker — lifecycle: create-loop, record-verification, record-feedback, run-compliance
 const loopWorker = new Worker('loop-processing', createLoopProcessor(pool), { connection });
 loopWorker.on('completed', (job) => {
@@ -174,6 +189,7 @@ const schedulerQueues = new Map([
   ['analytics-rollup', analyticsRollupQueue],
   ['health-check', healthCheckQueue],
   ['loop-processing', loopQueue],
+  ['approval-timeout', approvalTimeoutQueue],
 ]);
 
 registerScheduledJobs(schedulerQueues).catch((err: unknown) => {
@@ -190,6 +206,7 @@ async function shutdown(): Promise<void> {
   await knowledgeWorker.close();
   await notificationWorker.close();
   await approvalWorker.close();
+  await approvalTimeoutWorker.close();
   await auditSyncWorker.close();
   await loopWorker.close();
   await agentWorker.close();
