@@ -67,3 +67,14 @@ export {
   APOLLO_MANIFEST,
   GUARDIAN_MANIFEST,
 } from './manifests/index.js';
+export { AgentLifecycleManager } from './lifecycle/AgentLifecycleManager.js';
+export type {
+  LifecyclePhase,
+  LifecyclePhaseEntry,
+  LifecycleTrace,
+  LifecycleContext,
+  PhaseHandler,
+  LifecycleRunParams,
+} from './lifecycle/AgentLifecycleManager.js';
+export { DIGITAL_WORKFORCE } from './workforce/index.js';
+export type { AgentCapabilityDescriptor } from './workforce/index.js';

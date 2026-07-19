@@ -79,6 +79,7 @@ import * as migration077 from './migrations/077_attendance_records.js';
 import * as migration078 from './migrations/078_wa_templates.js';
 import * as migration079 from './migrations/079_feature_flags_name_column.js';
 import * as migration080 from './migrations/080_loop_instances_phase.js';
+import * as migration081 from './migrations/081_agent_lifecycle_traces.js';
 import * as migration083 from './migrations/083_shared_org_memory.js';
 import * as migration084 from './migrations/084_loop_telemetry.js';
 
@@ -168,6 +169,7 @@ const migrations: { name: string; migration: Migration }[] = [
   { name: '078_wa_templates', migration: migration078 },
   { name: '079_feature_flags_name_column', migration: migration079 },
   { name: '080_loop_instances_phase', migration: migration080 },
+  { name: '081_agent_lifecycle_traces', migration: migration081 },
   { name: '083_shared_org_memory', migration: migration083 },
   { name: '084_loop_telemetry', migration: migration084 },
 ];
