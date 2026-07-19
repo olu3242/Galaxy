@@ -165,6 +165,47 @@ services:
           cpus: '1'
           memory: 512M
 
+  # ──────────────────────────────────────────────────────────────────────────
+  # Prometheus — metrics collection
+  # ──────────────────────────────────────────────────────────────────────────
+  prometheus:
+    image: prom/prometheus:v2.50.0
+    container_name: galaxy_prometheus_prod
+    restart: always
+    volumes:
+      - ../monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    ports:
+      - '9090:9090'
+    networks:
+      - galaxy_internal
+      - galaxy_public
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=15d'
+      - '--web.enable-lifecycle'
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # Grafana — metrics visualisation
+  # ──────────────────────────────────────────────────────────────────────────
+  grafana:
+    image: grafana/grafana:10.3.0
+    container_name: galaxy_grafana_prod
+    restart: always
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: '${GRAFANA_PASSWORD:?GRAFANA_PASSWORD is required}'
+      GF_USERS_ALLOW_SIGN_UP: 'false'
+    ports:
+      - '3002:3000'
+    volumes:
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      - prometheus
+    networks:
+      - galaxy_internal
+      - galaxy_public
+
 networks:
   galaxy_internal:
     driver: bridge
@@ -176,4 +217,8 @@ volumes:
   galaxy_postgres_data_prod:
     driver: local
   galaxy_redis_data_prod:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
     driver: local

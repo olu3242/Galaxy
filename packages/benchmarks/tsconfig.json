@@ -1,0 +1,15 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "composite": true,
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "paths": {
+      "@galaxy/agents": ["../modules/agents/src/index.ts"],
+      "@galaxy/workflow-generator": ["../modules/workflow-generator/src/index.ts"]
+    }
+  },
+  "include": ["src/**/*.ts"]
+}
