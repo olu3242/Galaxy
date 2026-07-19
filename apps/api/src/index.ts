@@ -57,6 +57,7 @@ import { eventsSseRoutes } from './routes/events-sse.js';
 import { authRoutes } from './routes/auth.js';
 import { frontendCompatRoutes } from './routes/frontend-compat.js';
 import { executiveRoutes } from './routes/executive.js';
+import { workflowGenRoutes } from './routes/workflow-gen.js';
 
 declare module 'fastify' {
   interface FastifyInstance {
@@ -175,6 +176,7 @@ async function buildApp(): Promise<FastifyInstance> {
   await fastify.register(eventsSseRoutes, { prefix: '/api/v1' });
   await fastify.register(frontendCompatRoutes, { prefix: '/api/v1' });
   await fastify.register(executiveRoutes, { prefix: '/api/v1' });
+  await fastify.register(workflowGenRoutes, { prefix: '/api/v1' });
 
   // Graceful shutdown
   fastify.addHook('onClose', async () => {

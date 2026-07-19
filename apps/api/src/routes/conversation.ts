@@ -6,6 +6,7 @@ import {
   type SessionStatus,
   type MessageDirection,
 } from '@galaxy/conversation';
+import { ConversationRuntimeService } from '../services/ConversationRuntimeService.js';
 
 export async function conversationRoutes(fastify: FastifyInstance): Promise<void> {
   // POST /conversation/sessions
@@ -129,6 +130,23 @@ export async function conversationRoutes(fastify: FastifyInstance): Promise<void
         rawPayload ?? {},
       );
       return reply.status(201).send(message);
+    },
+  );
+
+  // GET /conversations/:sessionId/resume
+  fastify.get(
+    '/conversations/:sessionId/resume',
+    async (
+      request: FastifyRequest<{
+        Params: { sessionId: string };
+      }>,
+      reply: FastifyReply,
+    ) => {
+      const { sessionId } = request.params;
+      const { organizationId } = request.user;
+      const svc = new ConversationRuntimeService(fastify.pg);
+      const state = await svc.getResumeState(organizationId, sessionId);
+      return reply.send(state);
     },
   );
 
