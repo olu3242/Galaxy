@@ -3,8 +3,9 @@
  *
  * Mocks: pg.Pool, bullmq.Job, @galaxy/communication, @galaxy/events, @galaxy/identity
  */
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import type { Pool, QueryResult } from 'pg';
+import type { Job } from 'bullmq';
 import { createWorkflowProcessor } from '../workflow-execution.js';
 
 // ─── Module mocks ─────────────────────────────────────────────────────────────
@@ -47,12 +48,18 @@ function makePool(responses: QueryResult[]): Pool {
   } as unknown as Pool;
 }
 
-function makeJob(jobName: string, extra?: Record<string, unknown>) {
+function makeJob(jobName: string, extra?: Record<string, unknown>): Job {
   return {
     id: 'job-1',
     name: jobName,
     data: { jobName, organizationId: ORG, runId: RUN_ID, correlationId: 'corr-1', ...extra },
-  } as unknown as import('bullmq').Job;
+  } as unknown as Job;
+}
+
+type QueryCall = [string, unknown[]];
+
+function queryCalls(pool: Pool): QueryCall[] {
+  return (pool.query as ReturnType<typeof vi.fn>).mock.calls as QueryCall[];
 }
 
 // ─── start-workflow ───────────────────────────────────────────────────────────
@@ -60,18 +67,18 @@ function makeJob(jobName: string, extra?: Record<string, unknown>) {
 describe('workflow-execution: start-workflow', () => {
   it('sets tenant context before any DML', async () => {
     const pool = makePool([
-      ok([]),  // set_config
-      ok([]),  // UPDATE workflow_runs
-      ok([]),  // INSERT workflow_history
-      ok([{ id: RUN_ID, trigger_data: {} }]),  // SELECT run
-      ok([]),  // SELECT manager
+      ok([]),
+      ok([]),
+      ok([]),
+      ok([{ id: RUN_ID, trigger_data: {} }]),
+      ok([]),
     ]);
     const processor = createWorkflowProcessor(pool);
     await processor(makeJob('start-workflow'));
 
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as [string, unknown[]][];
-    expect(calls[0]![0]).toBe('SELECT set_config($1, $2, true)');
-    expect(calls[0]![1]).toContain(ORG);
+    const calls = queryCalls(pool);
+    expect(calls[0]?.[0]).toBe('SELECT set_config($1, $2, true)');
+    expect(calls[0]?.[1]).toContain(ORG);
   });
 
   it('updates workflow_runs to running', async () => {
@@ -85,11 +92,10 @@ describe('workflow-execution: start-workflow', () => {
     const processor = createWorkflowProcessor(pool);
     await processor(makeJob('start-workflow'));
 
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as [string, unknown[]][];
-    const updateCall = calls.find(([sql]) => sql.includes("status = 'running'"));
+    const updateCall = queryCalls(pool).find(([sql]) => sql.includes("status = 'running'"));
     expect(updateCall).toBeDefined();
-    expect(updateCall![1]).toContain(RUN_ID);
-    expect(updateCall![1]).toContain(ORG);
+    expect(updateCall?.[1]).toContain(RUN_ID);
+    expect(updateCall?.[1]).toContain(ORG);
   });
 
   it('inserts workflow_history with running status', async () => {
@@ -103,8 +109,7 @@ describe('workflow-execution: start-workflow', () => {
     const processor = createWorkflowProcessor(pool);
     await processor(makeJob('start-workflow'));
 
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as [string, unknown[]][];
-    const histCall = calls.find(([sql]) => sql.includes('workflow_history'));
+    const histCall = queryCalls(pool).find(([sql]) => sql.includes('workflow_history'));
     expect(histCall).toBeDefined();
   });
 });
@@ -117,11 +122,10 @@ describe('workflow-execution: complete-workflow', () => {
     const processor = createWorkflowProcessor(pool);
     await processor(makeJob('complete-workflow'));
 
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as [string, unknown[]][];
-    const updateCall = calls.find(([sql]) => sql.includes("status = 'completed'"));
+    const updateCall = queryCalls(pool).find(([sql]) => sql.includes("status = 'completed'"));
     expect(updateCall).toBeDefined();
-    expect(updateCall![1]).toContain(RUN_ID);
-    expect(updateCall![1]).toContain(ORG);
+    expect(updateCall?.[1]).toContain(RUN_ID);
+    expect(updateCall?.[1]).toContain(ORG);
   });
 
   it('inserts completed workflow_history entry', async () => {
@@ -129,8 +133,7 @@ describe('workflow-execution: complete-workflow', () => {
     const processor = createWorkflowProcessor(pool);
     await processor(makeJob('complete-workflow'));
 
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as [string, unknown[]][];
-    const histCall = calls.find(
+    const histCall = queryCalls(pool).find(
       ([sql]) => sql.includes('workflow_history') && sql.includes("'completed'"),
     );
     expect(histCall).toBeDefined();
@@ -141,14 +144,12 @@ describe('workflow-execution: complete-workflow', () => {
     const processor = createWorkflowProcessor(pool);
     await processor(makeJob('complete-workflow'));
 
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as [string, unknown[]][];
-    const auditCall = calls.find(
+    const auditCall = queryCalls(pool).find(
       ([sql]) => sql.includes('audit_logs') && sql.includes('INSERT'),
     );
     expect(auditCall).toBeDefined();
-    const params = auditCall![1];
-    expect(params).toContain('workflow.completed');
-    expect(params).toContain(ORG);
+    expect(auditCall?.[1]).toContain('workflow.completed');
+    expect(auditCall?.[1]).toContain(ORG);
   });
 });
 
@@ -160,10 +161,9 @@ describe('workflow-execution: fail-workflow', () => {
     const processor = createWorkflowProcessor(pool);
     await processor(makeJob('fail-workflow'));
 
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as [string, unknown[]][];
-    const updateCall = calls.find(([sql]) => sql.includes("status = 'failed'"));
+    const updateCall = queryCalls(pool).find(([sql]) => sql.includes("status = 'failed'"));
     expect(updateCall).toBeDefined();
-    expect(updateCall![1]).toContain(RUN_ID);
+    expect(updateCall?.[1]).toContain(RUN_ID);
   });
 
   it('writes audit log for workflow.failed', async () => {
@@ -171,13 +171,11 @@ describe('workflow-execution: fail-workflow', () => {
     const processor = createWorkflowProcessor(pool);
     await processor(makeJob('fail-workflow'));
 
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as [string, unknown[]][];
-    const auditCall = calls.find(
+    const auditCall = queryCalls(pool).find(
       ([sql]) => sql.includes('audit_logs') && sql.includes('INSERT'),
     );
     expect(auditCall).toBeDefined();
-    const params = auditCall![1];
-    expect(params).toContain('workflow.failed');
+    expect(auditCall?.[1]).toContain('workflow.failed');
   });
 });
 
@@ -189,8 +187,7 @@ describe('workflow-execution: advance-step', () => {
     const processor = createWorkflowProcessor(pool);
     await processor(makeJob('advance-step'));
 
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as [string, unknown[]][];
-    const histCall = calls.find(([sql]) => sql.includes('workflow_history'));
+    const histCall = queryCalls(pool).find(([sql]) => sql.includes('workflow_history'));
     expect(histCall).toBeDefined();
   });
 });

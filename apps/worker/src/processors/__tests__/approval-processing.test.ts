@@ -5,6 +5,7 @@
  */
 import { describe, it, expect, vi } from 'vitest';
 import type { Pool, QueryResult } from 'pg';
+import type { Job } from 'bullmq';
 import { createApprovalProcessor } from '../approval-processing.js';
 
 // ─── Module mocks ─────────────────────────────────────────────────────────────
@@ -73,7 +74,13 @@ function makeJob(jobName: string, extra?: Record<string, unknown>) {
       correlationId: 'corr-1',
       ...extra,
     },
-  } as unknown as import('bullmq').Job;
+  } as unknown as Job;
+}
+
+type QueryCall = [string, unknown[]];
+
+function queryCalls(pool: Pool): QueryCall[] {
+  return (pool.query as ReturnType<typeof vi.fn>).mock.calls as QueryCall[];
 }
 
 function runRow(overrides: Partial<{ status: string; senderPhone: string }> = {}) {
@@ -99,9 +106,9 @@ describe('approval-processing: post-approval-advance', () => {
     const processor = createApprovalProcessor(pool);
     await processor(makeJob('post-approval-advance'));
 
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as [string, unknown[]][];
-    expect(calls[0]![0]).toBe('SELECT set_config($1, $2, true)');
-    expect(calls[0]![1]).toContain(ORG);
+    const calls = queryCalls(pool);
+    expect(calls[0]?.[0]).toBe('SELECT set_config($1, $2, true)');
+    expect(calls[0]?.[1]).toContain(ORG);
   });
 
   it('updates workflow_runs to completed', async () => {
@@ -114,11 +121,11 @@ describe('approval-processing: post-approval-advance', () => {
     const processor = createApprovalProcessor(pool);
     await processor(makeJob('post-approval-advance'));
 
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as [string, unknown[]][];
+    const calls = queryCalls(pool);
     const updateCall = calls.find(([sql]) => sql.includes("status = 'completed'"));
     expect(updateCall).toBeDefined();
-    expect(updateCall![1]).toContain(RUN_ID);
-    expect(updateCall![1]).toContain(ORG);
+    expect(updateCall?.[1]).toContain(RUN_ID);
+    expect(updateCall?.[1]).toContain(ORG);
   });
 
   it('inserts workflow_history entry with approverId', async () => {
@@ -126,10 +133,10 @@ describe('approval-processing: post-approval-advance', () => {
     const processor = createApprovalProcessor(pool);
     await processor(makeJob('post-approval-advance'));
 
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as [string, unknown[]][];
+    const calls = queryCalls(pool);
     const histCall = calls.find(([sql]) => sql.includes('workflow_history'));
     expect(histCall).toBeDefined();
-    expect(histCall![1]).toContain(APPROVER_ID);
+    expect(histCall?.[1]).toContain(APPROVER_ID);
   });
 
   it('writes audit log for workflow.completed', async () => {
@@ -137,10 +144,10 @@ describe('approval-processing: post-approval-advance', () => {
     const processor = createApprovalProcessor(pool);
     await processor(makeJob('post-approval-advance'));
 
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as [string, unknown[]][];
+    const calls = queryCalls(pool);
     const auditCall = calls.find(([sql]) => sql.includes('audit_logs'));
     expect(auditCall).toBeDefined();
-    expect(auditCall![1]).toContain('workflow.completed');
+    expect(auditCall?.[1]).toContain('workflow.completed');
   });
 
   it('skips when run is already completed', async () => {
@@ -148,7 +155,7 @@ describe('approval-processing: post-approval-advance', () => {
     const processor = createApprovalProcessor(pool);
     await processor(makeJob('post-approval-advance'));
 
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as [string, unknown[]][];
+    const calls = queryCalls(pool);
     const updateCall = calls.find(([sql]) => sql.includes("status = 'completed'") && sql.includes('UPDATE'));
     expect(updateCall).toBeUndefined();
   });
@@ -169,9 +176,9 @@ describe('approval-processing: post-approval-advance', () => {
       }),
     );
 
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as [string, unknown[]][];
-    expect(calls[0]![0]).toContain('organization_id');
-    expect(calls[0]![1]).toContain(RUN_ID);
+    const calls = queryCalls(pool);
+    expect(calls[0]?.[0]).toContain('organization_id');
+    expect(calls[0]?.[1]).toContain(RUN_ID);
   });
 });
 
@@ -183,11 +190,11 @@ describe('approval-processing: post-rejection-notify', () => {
     const processor = createApprovalProcessor(pool);
     await processor(makeJob('post-rejection-notify', { decision: 'rejected' }));
 
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as [string, unknown[]][];
+    const calls = queryCalls(pool);
     const updateCall = calls.find(([sql]) => sql.includes("status = 'failed'"));
     expect(updateCall).toBeDefined();
-    expect(updateCall![1]).toContain(RUN_ID);
-    expect(updateCall![1]).toContain(ORG);
+    expect(updateCall?.[1]).toContain(RUN_ID);
+    expect(updateCall?.[1]).toContain(ORG);
   });
 
   it('inserts workflow_history with failed transition', async () => {
@@ -195,10 +202,10 @@ describe('approval-processing: post-rejection-notify', () => {
     const processor = createApprovalProcessor(pool);
     await processor(makeJob('post-rejection-notify', { decision: 'rejected' }));
 
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as [string, unknown[]][];
+    const calls = queryCalls(pool);
     const histCall = calls.find(([sql]) => sql.includes('workflow_history'));
     expect(histCall).toBeDefined();
-    expect(histCall![1]).toContain(APPROVER_ID);
+    expect(histCall?.[1]).toContain(APPROVER_ID);
   });
 
   it('writes audit log for workflow.rejected', async () => {
@@ -206,10 +213,10 @@ describe('approval-processing: post-rejection-notify', () => {
     const processor = createApprovalProcessor(pool);
     await processor(makeJob('post-rejection-notify', { decision: 'rejected' }));
 
-    const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as [string, unknown[]][];
+    const calls = queryCalls(pool);
     const auditCall = calls.find(([sql]) => sql.includes('audit_logs'));
     expect(auditCall).toBeDefined();
-    expect(auditCall![1]).toContain('workflow.rejected');
+    expect(auditCall?.[1]).toContain('workflow.rejected');
   });
 });
 

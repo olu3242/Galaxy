@@ -5,6 +5,7 @@
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import type { Pool, QueryResult } from 'pg';
+import type { Job } from 'bullmq';
 
 // ─── Module mocks ─────────────────────────────────────────────────────────────
 
@@ -66,7 +67,7 @@ function makeJob(channel: 'whatsapp' | 'email' | 'sms', recipientIds = [R1, R2])
       content: 'Hello from Galaxy',
       channel,
     },
-  } as unknown as import('bullmq').Job;
+  } as unknown as Job;
 }
 
 // Helper to get the WhatsApp send mock from the most-recently-created instance
@@ -95,8 +96,8 @@ describe('notification-dispatch: tenant context', () => {
     await processor(makeJob('whatsapp'));
 
     const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as [string, unknown[]][];
-    expect(calls[0]![0]).toBe('SELECT set_config($1, $2, true)');
-    expect(calls[0]![1]).toContain(ORG);
+    expect(calls[0]?.[0]).toBe('SELECT set_config($1, $2, true)');
+    expect(calls[0]?.[1]).toContain(ORG);
   });
 });
 
@@ -118,10 +119,8 @@ describe('notification-dispatch: whatsapp channel', () => {
     const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as [string, unknown[]][];
     const updateCall = calls.find(([sql]) => sql.includes('broadcasts') && sql.includes('UPDATE'));
     expect(updateCall).toBeDefined();
-    // sent_count param = 2, failed_count = 0
-    const params = updateCall![1] as unknown[];
-    const sentIdx = params.indexOf(2);
-    expect(sentIdx).toBeGreaterThan(-1);
+    // sent_count param = 2 appears in the query params
+    expect(updateCall?.[1]).toContain(2);
   });
 
   it('records failed_count=1 when one recipient has no phone', async () => {
@@ -139,9 +138,8 @@ describe('notification-dispatch: whatsapp channel', () => {
     const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as [string, unknown[]][];
     const updateCall = calls.find(([sql]) => sql.includes('broadcasts') && sql.includes('UPDATE'));
     expect(updateCall).toBeDefined();
-    // sent_count=1, failed_count=1
-    const params = updateCall![1] as unknown[];
-    expect(params).toContain(1); // at least 1 in the params
+    // sent_count=1, failed_count=1 — both appear in the params
+    expect(updateCall?.[1]).toContain(1);
   });
 
   it('updates broadcast with sent/failed counts', async () => {
@@ -156,7 +154,7 @@ describe('notification-dispatch: whatsapp channel', () => {
     const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls as [string, unknown[]][];
     const updateCall = calls.find(([sql]) => sql.includes('broadcasts') && sql.includes('UPDATE'));
     expect(updateCall).toBeDefined();
-    expect(updateCall![1]).toContain(BROADCAST_ID);
+    expect(updateCall?.[1]).toContain(BROADCAST_ID);
   });
 });
 
