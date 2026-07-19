@@ -1,6 +1,8 @@
 import type { Pool } from 'pg';
 
 export async function up(pool: Pool): Promise<void> {
+  // billing_accounts, billing_profiles, invoice_items, payments, credits,
+  // subscription_events are all new tables in this migration.
   await pool.query(`
     -- Billing accounts (org-scoped)
     CREATE TABLE IF NOT EXISTS billing_accounts (
@@ -29,24 +31,18 @@ export async function up(pool: Pool): Promise<void> {
     DROP POLICY IF EXISTS billing_profiles_tenant ON billing_profiles;
     CREATE POLICY billing_profiles_tenant ON billing_profiles
       USING (organization_id::text = current_setting('app.current_tenant', true));
+  `);
 
-    -- Invoices (org-scoped)
-    CREATE TABLE IF NOT EXISTS invoices (
-      id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-      organization_id  UUID NOT NULL,
-      amount_cents     BIGINT NOT NULL DEFAULT 0,
-      currency         TEXT NOT NULL DEFAULT 'USD',
-      status           TEXT NOT NULL DEFAULT 'draft',
-      due_date         TIMESTAMPTZ,
-      paid_at          TIMESTAMPTZ,
-      created_at       TIMESTAMPTZ NOT NULL DEFAULT NOW()
-    );
+  // invoices was created in 038 with a rich schema; apply RLS if not already set.
+  await pool.query(`
     ALTER TABLE invoices ENABLE ROW LEVEL SECURITY;
     DROP POLICY IF EXISTS invoices_tenant ON invoices;
     CREATE POLICY invoices_tenant ON invoices
       USING (organization_id::text = current_setting('app.current_tenant', true));
-    CREATE INDEX IF NOT EXISTS idx_invoices_org ON invoices (organization_id, created_at DESC);
+    CREATE INDEX IF NOT EXISTS idx_invoices_org_date ON invoices (organization_id, created_at DESC);
+  `);
 
+  await pool.query(`
     -- Invoice items (org-scoped)
     CREATE TABLE IF NOT EXISTS invoice_items (
       id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -92,37 +88,37 @@ export async function up(pool: Pool): Promise<void> {
     DROP POLICY IF EXISTS credits_tenant ON credits;
     CREATE POLICY credits_tenant ON credits
       USING (organization_id::text = current_setting('app.current_tenant', true));
+  `);
 
-    -- Plans (global)
-    CREATE TABLE IF NOT EXISTS plans (
-      id                     UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-      name                   TEXT NOT NULL UNIQUE,
-      display_name           TEXT NOT NULL,
-      price_cents_monthly    BIGINT NOT NULL DEFAULT 0,
-      price_cents_annual     BIGINT NOT NULL DEFAULT 0,
-      features               JSONB NOT NULL DEFAULT '{}',
-      active                 BOOLEAN NOT NULL DEFAULT true,
-      created_at             TIMESTAMPTZ NOT NULL DEFAULT NOW()
-    );
+  // plans was created in 038 with tier/monthly_price_cents columns.
+  // Add the richer display and pricing columns used by the commercial layer.
+  await pool.query(`
+    ALTER TABLE plans
+      ADD COLUMN IF NOT EXISTS display_name TEXT,
+      ADD COLUMN IF NOT EXISTS price_cents_monthly BIGINT NOT NULL DEFAULT 0,
+      ADD COLUMN IF NOT EXISTS price_cents_annual BIGINT NOT NULL DEFAULT 0,
+      ADD COLUMN IF NOT EXISTS features JSONB NOT NULL DEFAULT '{}',
+      ADD COLUMN IF NOT EXISTS active BOOLEAN NOT NULL DEFAULT true
+  `);
+  await pool.query(`
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_plans_name_unique ON plans (name)
+  `);
 
-    -- Subscriptions (org-scoped)
-    CREATE TABLE IF NOT EXISTS subscriptions (
-      id                    UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-      organization_id       UUID NOT NULL,
-      plan_id               UUID NOT NULL REFERENCES plans(id),
-      status                TEXT NOT NULL DEFAULT 'active',
-      trial_ends_at         TIMESTAMPTZ,
-      current_period_start  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-      current_period_end    TIMESTAMPTZ NOT NULL DEFAULT NOW() + INTERVAL '1 month',
-      cancelled_at          TIMESTAMPTZ,
-      created_at            TIMESTAMPTZ NOT NULL DEFAULT NOW()
-    );
+  // subscriptions was created in 038; add the cancellation tracking columns.
+  await pool.query(`
+    ALTER TABLE subscriptions
+      ADD COLUMN IF NOT EXISTS trial_ends_at TIMESTAMPTZ,
+      ADD COLUMN IF NOT EXISTS cancelled_at TIMESTAMPTZ
+  `);
+  await pool.query(`
     ALTER TABLE subscriptions ENABLE ROW LEVEL SECURITY;
     DROP POLICY IF EXISTS subscriptions_tenant ON subscriptions;
     CREATE POLICY subscriptions_tenant ON subscriptions
       USING (organization_id::text = current_setting('app.current_tenant', true));
-    CREATE INDEX IF NOT EXISTS idx_subscriptions_org ON subscriptions (organization_id, created_at DESC);
+    CREATE INDEX IF NOT EXISTS idx_subscriptions_org_date ON subscriptions (organization_id, created_at DESC);
+  `);
 
+  await pool.query(`
     -- Subscription events (org-scoped)
     CREATE TABLE IF NOT EXISTS subscription_events (
       id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -142,12 +138,27 @@ export async function up(pool: Pool): Promise<void> {
 export async function down(pool: Pool): Promise<void> {
   await pool.query(`
     DROP TABLE IF EXISTS subscription_events;
-    DROP TABLE IF EXISTS subscriptions;
-    DROP TABLE IF EXISTS plans;
+  `);
+  await pool.query(`
+    ALTER TABLE subscriptions
+      DROP COLUMN IF EXISTS cancelled_at,
+      DROP COLUMN IF EXISTS trial_ends_at
+  `);
+  await pool.query(`
+    DROP INDEX IF EXISTS idx_plans_name_unique;
+  `);
+  await pool.query(`
+    ALTER TABLE plans
+      DROP COLUMN IF EXISTS active,
+      DROP COLUMN IF EXISTS features,
+      DROP COLUMN IF EXISTS price_cents_annual,
+      DROP COLUMN IF EXISTS price_cents_monthly,
+      DROP COLUMN IF EXISTS display_name
+  `);
+  await pool.query(`
     DROP TABLE IF EXISTS credits;
     DROP TABLE IF EXISTS payments;
     DROP TABLE IF EXISTS invoice_items;
-    DROP TABLE IF EXISTS invoices;
     DROP TABLE IF EXISTS billing_profiles;
     DROP TABLE IF EXISTS billing_accounts;
   `);
