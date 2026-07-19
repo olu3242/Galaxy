@@ -127,15 +127,15 @@ export default function MissionControlHub() {
     type: (i.type === 'recommendation' ? 'recommendation' : 'insight') as AIInsight['type'],
     title: i.title,
     summary: i.summary,
-    confidence: i.confidence ?? 80,
-    impactLevel: i.impactLevel ?? 3,
+    confidence: i.confidence,
+    impactLevel: i.impactLevel,
   }));
 
   const activity: ActivityItem[] = (auditData?.data ?? []).slice(0, 6).map((a) => ({
     id: a.id,
     type: 'system' as const,
     message: `${a.action}: ${a.resourceType} ${a.resourceId.slice(0, 8)}`,
-    severity: (a.severity === 'warn' ? 'warn' : a.severity === 'error' ? 'error' : 'info') as 'info' | 'warn' | 'error' | 'success',
+    severity: a.severity === 'warn' ? ('warn' as const) : a.severity === 'error' ? ('error' as const) : ('info' as const),
     timestamp: a.timestamp,
   }));
 

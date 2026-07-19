@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '../../lib/auth/context';
+import { usePendingApprovals } from '../../lib/api';
 
 const NAV_ITEMS = [
   { href: '/dashboard', label: 'Mission Control', icon: '🌌', exact: true },
@@ -13,7 +14,7 @@ const NAV_ITEMS = [
   { href: '/dashboard/security-ops', label: 'Security Ops', icon: '🛡' },
   { href: '/dashboard/super-admin', label: 'Super Admin', icon: '🌐' },
   null,
-  { href: '/dashboard/approvals', label: 'Approvals', icon: '✅' },
+  { href: '/dashboard/approvals', label: 'Approvals', icon: '✅', badge: 'approvals' as const },
   { href: '/dashboard/loops', label: 'Loop OS', icon: '🔄' },
   { href: '/dashboard/workflow-builder', label: 'Workflow Builder', icon: '⚙️' },
   { href: '/dashboard/members', label: 'Members', icon: '👥' },
@@ -41,6 +42,8 @@ const NAV_ITEMS = [
 export function Sidebar() {
   const pathname = usePathname();
   const { user, logout } = useAuth();
+  const { data: approvalsData } = usePendingApprovals();
+  const pendingCount = approvalsData?.data.length ?? 0;
 
   function isActive(href: string, exact = false) {
     if (exact) return pathname === href;
@@ -115,6 +118,11 @@ export function Sidebar() {
             );
           }
           const active = isActive(item.href, 'exact' in item ? item.exact : false);
+          const badge =
+            'badge' in item && pendingCount > 0
+              ? pendingCount
+              : null;
+
           return (
             <Link key={item.href} href={item.href} style={{ textDecoration: 'none' }}>
               <div
@@ -147,10 +155,29 @@ export function Sidebar() {
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
                     whiteSpace: 'nowrap',
+                    flex: 1,
                   }}
                 >
                   {item.label}
                 </span>
+                {badge !== null && (
+                  <span
+                    style={{
+                      fontSize: '10px',
+                      fontWeight: 700,
+                      lineHeight: 1,
+                      padding: '2px 6px',
+                      borderRadius: '10px',
+                      background: '#f59e0b',
+                      color: '#0a0f1e',
+                      flexShrink: 0,
+                      minWidth: '18px',
+                      textAlign: 'center',
+                    }}
+                  >
+                    {badge > 99 ? '99+' : String(badge)}
+                  </span>
+                )}
               </div>
             </Link>
           );
