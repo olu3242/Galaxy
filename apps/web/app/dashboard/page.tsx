@@ -135,7 +135,12 @@ export default function MissionControlHub() {
     id: a.id,
     type: 'system' as const,
     message: `${a.action}: ${a.resourceType} ${a.resourceId.slice(0, 8)}`,
-    severity: a.severity === 'warn' ? ('warn' as const) : a.severity === 'error' ? ('error' as const) : ('info' as const),
+    severity:
+      a.severity === 'warn'
+        ? ('warn' as const)
+        : a.severity === 'error'
+          ? ('error' as const)
+          : ('info' as const),
     timestamp: a.timestamp,
   }));
 
@@ -149,7 +154,6 @@ export default function MissionControlHub() {
       }}
     >
       <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-
         {/* ── Header ── */}
         <div
           style={{
@@ -320,7 +324,6 @@ export default function MissionControlHub() {
             </div>
           )}
         </div>
-
       </div>
     </main>
   );

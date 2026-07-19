@@ -66,13 +66,7 @@ function queryCalls(pool: Pool): QueryCall[] {
 
 describe('workflow-execution: start-workflow', () => {
   it('sets tenant context before any DML', async () => {
-    const pool = makePool([
-      ok([]),
-      ok([]),
-      ok([]),
-      ok([{ id: RUN_ID, trigger_data: {} }]),
-      ok([]),
-    ]);
+    const pool = makePool([ok([]), ok([]), ok([]), ok([{ id: RUN_ID, trigger_data: {} }]), ok([])]);
     const processor = createWorkflowProcessor(pool);
     await processor(makeJob('start-workflow'));
 
@@ -82,13 +76,7 @@ describe('workflow-execution: start-workflow', () => {
   });
 
   it('updates workflow_runs to running', async () => {
-    const pool = makePool([
-      ok([]),
-      ok([]),
-      ok([]),
-      ok([{ id: RUN_ID, trigger_data: {} }]),
-      ok([]),
-    ]);
+    const pool = makePool([ok([]), ok([]), ok([]), ok([{ id: RUN_ID, trigger_data: {} }]), ok([])]);
     const processor = createWorkflowProcessor(pool);
     await processor(makeJob('start-workflow'));
 
@@ -99,13 +87,7 @@ describe('workflow-execution: start-workflow', () => {
   });
 
   it('inserts workflow_history with running status', async () => {
-    const pool = makePool([
-      ok([]),
-      ok([]),
-      ok([]),
-      ok([{ id: RUN_ID, trigger_data: {} }]),
-      ok([]),
-    ]);
+    const pool = makePool([ok([]), ok([]), ok([]), ok([{ id: RUN_ID, trigger_data: {} }]), ok([])]);
     const processor = createWorkflowProcessor(pool);
     await processor(makeJob('start-workflow'));
 

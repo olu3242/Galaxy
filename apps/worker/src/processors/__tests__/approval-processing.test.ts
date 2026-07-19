@@ -98,10 +98,10 @@ function runRow(overrides: Partial<{ status: string; senderPhone: string }> = {}
 describe('approval-processing: post-approval-advance', () => {
   it('sets tenant context before any DML', async () => {
     const pool = makePool([
-      ok([]),                      // set_config
-      ok([runRow()]),              // SELECT workflow_run
-      ok([]),                      // UPDATE workflow_runs
-      ok([]),                      // INSERT workflow_history
+      ok([]), // set_config
+      ok([runRow()]), // SELECT workflow_run
+      ok([]), // UPDATE workflow_runs
+      ok([]), // INSERT workflow_history
     ]);
     const processor = createApprovalProcessor(pool);
     await processor(makeJob('post-approval-advance'));
@@ -112,12 +112,7 @@ describe('approval-processing: post-approval-advance', () => {
   });
 
   it('updates workflow_runs to completed', async () => {
-    const pool = makePool([
-      ok([]),
-      ok([runRow()]),
-      ok([]),
-      ok([]),
-    ]);
+    const pool = makePool([ok([]), ok([runRow()]), ok([]), ok([])]);
     const processor = createApprovalProcessor(pool);
     await processor(makeJob('post-approval-advance'));
 
@@ -156,17 +151,19 @@ describe('approval-processing: post-approval-advance', () => {
     await processor(makeJob('post-approval-advance'));
 
     const calls = queryCalls(pool);
-    const updateCall = calls.find(([sql]) => sql.includes("status = 'completed'") && sql.includes('UPDATE'));
+    const updateCall = calls.find(
+      ([sql]) => sql.includes("status = 'completed'") && sql.includes('UPDATE'),
+    );
     expect(updateCall).toBeUndefined();
   });
 
   it('resolves organizationId from run when _resolveOrgFromRun is set', async () => {
     const pool = makePool([
-      ok([{ organization_id: ORG }]),  // org lookup
-      ok([]),                           // set_config
-      ok([runRow()]),                   // SELECT run
-      ok([]),                           // UPDATE
-      ok([]),                           // INSERT history
+      ok([{ organization_id: ORG }]), // org lookup
+      ok([]), // set_config
+      ok([runRow()]), // SELECT run
+      ok([]), // UPDATE
+      ok([]), // INSERT history
     ]);
     const processor = createApprovalProcessor(pool);
     await processor(

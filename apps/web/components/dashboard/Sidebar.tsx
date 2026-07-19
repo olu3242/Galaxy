@@ -118,10 +118,7 @@ export function Sidebar() {
             );
           }
           const active = isActive(item.href, 'exact' in item ? item.exact : false);
-          const badge =
-            'badge' in item && pendingCount > 0
-              ? pendingCount
-              : null;
+          const badge = 'badge' in item && pendingCount > 0 ? pendingCount : null;
 
           return (
             <Link key={item.href} href={item.href} style={{ textDecoration: 'none' }}>

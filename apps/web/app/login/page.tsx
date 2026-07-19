@@ -208,7 +208,9 @@ export default function LoginPage() {
                 required
                 autoComplete="email"
                 value={email}
-                onChange={(e) => { setEmail(e.target.value); }}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                }}
                 placeholder="you@organization.com"
                 style={{
                   width: '100%',
@@ -222,8 +224,12 @@ export default function LoginPage() {
                   boxSizing: 'border-box',
                   transition: 'border-color 0.15s',
                 }}
-                onFocus={(e) => { e.currentTarget.style.borderColor = 'var(--gv)'; }}
-                onBlur={(e) => { e.currentTarget.style.borderColor = '#1e293b'; }}
+                onFocus={(e) => {
+                  e.currentTarget.style.borderColor = 'var(--gv)';
+                }}
+                onBlur={(e) => {
+                  e.currentTarget.style.borderColor = '#1e293b';
+                }}
               />
             </div>
 
@@ -245,7 +251,9 @@ export default function LoginPage() {
                   required
                   autoComplete="current-password"
                   value={password}
-                  onChange={(e) => { setPassword(e.target.value); }}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                  }}
                   placeholder="••••••••"
                   style={{
                     width: '100%',
@@ -259,12 +267,18 @@ export default function LoginPage() {
                     boxSizing: 'border-box',
                     transition: 'border-color 0.15s',
                   }}
-                  onFocus={(e) => { e.currentTarget.style.borderColor = 'var(--gv)'; }}
-                  onBlur={(e) => { e.currentTarget.style.borderColor = '#1e293b'; }}
+                  onFocus={(e) => {
+                    e.currentTarget.style.borderColor = 'var(--gv)';
+                  }}
+                  onBlur={(e) => {
+                    e.currentTarget.style.borderColor = '#1e293b';
+                  }}
                 />
                 <button
                   type="button"
-                  onClick={() => { setShowPw((v) => !v); }}
+                  onClick={() => {
+                    setShowPw((v) => !v);
+                  }}
                   style={{
                     position: 'absolute',
                     right: '12px',
