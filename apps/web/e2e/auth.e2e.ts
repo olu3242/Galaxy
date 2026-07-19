@@ -11,10 +11,10 @@ const TEST_PASSWORD = process.env.E2E_TEST_PASSWORD ?? 'test-password';
 test.describe('Authentication', () => {
   test('renders login page with correct structure', async ({ page }) => {
     await page.goto('/login');
-    await expect(page.locator('h1')).toContainText('Galaxy');
+    await expect(page.locator('h2')).toContainText('Sign in to Mission Control');
     await expect(page.locator('input[type="email"]')).toBeVisible();
     await expect(page.locator('input[type="password"]')).toBeVisible();
-    await expect(page.locator('button[type="submit"]')).toContainText('Sign In');
+    await expect(page.locator('button[type="submit"]')).toContainText('Sign in');
   });
 
   test('shows error on invalid credentials', async ({ page }) => {
