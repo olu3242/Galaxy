@@ -80,6 +80,7 @@ import * as migration078 from './migrations/078_wa_templates.js';
 import * as migration079 from './migrations/079_feature_flags_name_column.js';
 import * as migration080 from './migrations/080_loop_instances_phase.js';
 import * as migration083 from './migrations/083_shared_org_memory.js';
+import * as migration084 from './migrations/084_loop_telemetry.js';
 
 interface Migration {
   up: (pool: Pool) => Promise<void>;
@@ -168,6 +169,7 @@ const migrations: { name: string; migration: Migration }[] = [
   { name: '079_feature_flags_name_column', migration: migration079 },
   { name: '080_loop_instances_phase', migration: migration080 },
   { name: '083_shared_org_memory', migration: migration083 },
+  { name: '084_loop_telemetry', migration: migration084 },
 ];
 
 async function ensureMigrationsTable(pool: Pool): Promise<void> {
