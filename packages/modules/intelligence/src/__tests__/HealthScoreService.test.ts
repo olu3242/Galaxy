@@ -4,11 +4,11 @@ import { HealthScoreService } from '../services/HealthScoreService.js';
 
 const organizationId = '00000000-0000-0000-0000-000000000001';
 
-function makeHealthScoreRow(score: number) {
+function makeHealthScoreRow(score: number, category = 'organization') {
   return {
     id: 'score-1',
     organization_id: organizationId,
-    category: 'organization',
+    category,
     entity_id: null,
     score: String(score),
     components: {},
@@ -88,7 +88,7 @@ describe('HealthScoreService', () => {
           rowCount: 1,
         })
         .mockResolvedValueOnce({
-          rows: [makeHealthScoreRow(80)],
+          rows: [makeHealthScoreRow(80, 'workflow')],
           rowCount: 1,
         });
 

@@ -6,3 +6,5 @@ build/
 coverage/
 *.lock
 pnpm-lock.yaml
+.claude/worktrees/
+apps/web/test-results/

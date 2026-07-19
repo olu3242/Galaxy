@@ -1,0 +1,190 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 900" width="1200" height="900" style="background:#04040a;font-family:DM Mono,monospace">
+  <!-- Background grid -->
+  <defs>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(0,229,255,0.04)" stroke-width="1"/>
+    </pattern>
+    <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#00e5ff;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#7b2fff;stop-opacity:1"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <rect width="1200" height="900" fill="#04040a"/>
+  <rect width="1200" height="900" fill="url(#grid)"/>
+
+  <!-- Title -->
+  <text x="600" y="44" fill="white" font-size="20" font-weight="bold" text-anchor="middle" letter-spacing="-0.5">GALAXY LOOP OS™ — SYSTEM ARCHITECTURE</text>
+  <text x="600" y="66" fill="#6b6b8a" font-size="11" text-anchor="middle" letter-spacing="2">ORGANIZATION OPERATING SYSTEM // MULTI-TENANT // EVENT-DRIVEN // SELF-IMPROVING</text>
+
+  <!-- CLIENT LAYER -->
+  <rect x="40" y="90" width="1120" height="80" rx="10" fill="#0d0d1f" stroke="#1e1e40" stroke-width="1"/>
+  <text x="600" y="110" fill="#6b6b8a" font-size="9" text-anchor="middle" letter-spacing="2">CLIENT LAYER</text>
+  <rect x="80" y="118" width="240" height="40" rx="8" fill="#12122a" stroke="#00e5ff" stroke-width="1"/>
+  <text x="200" y="143" fill="#00e5ff" font-size="12" font-weight="bold" text-anchor="middle">📱 WhatsApp (Members)</text>
+  <rect x="480" y="118" width="240" height="40" rx="8" fill="#12122a" stroke="#7b2fff" stroke-width="1"/>
+  <text x="600" y="143" fill="#7b2fff" font-size="12" font-weight="bold" text-anchor="middle">🖥 Web Dashboard (Mission Ctrl)</text>
+  <rect x="880" y="118" width="240" height="40" rx="8" fill="#12122a" stroke="#00e5ff" stroke-width="1" stroke-dasharray="4"/>
+  <text x="1000" y="143" fill="#6b6b8a" font-size="12" font-weight="bold" text-anchor="middle">📲 Mobile Admin (PWA)</text>
+
+  <!-- Arrow down -->
+  <line x1="600" y1="170" x2="600" y2="195" stroke="#1e1e40" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- API GATEWAY -->
+  <rect x="40" y="200" width="1120" height="70" rx="10" fill="#0d0d1f" stroke="#1e1e40" stroke-width="1"/>
+  <text x="600" y="218" fill="#6b6b8a" font-size="9" text-anchor="middle" letter-spacing="2">API GATEWAY + AUTH</text>
+  <rect x="80" y="226" width="200" height="34" rx="6" fill="#12122a" stroke="#00e5ff" stroke-width="1"/>
+  <text x="180" y="248" fill="#e8e8f0" font-size="11" text-anchor="middle">WhatsApp Webhook</text>
+  <rect x="300" y="226" width="200" height="34" rx="6" fill="#12122a" stroke="#7b2fff" stroke-width="1"/>
+  <text x="400" y="248" fill="#e8e8f0" font-size="11" text-anchor="middle">REST API (Fastify)</text>
+  <rect x="520" y="226" width="200" height="34" rx="6" fill="#12122a" stroke="#7b2fff" stroke-width="1"/>
+  <text x="620" y="248" fill="#e8e8f0" font-size="11" text-anchor="middle">GraphQL (Apollo)</text>
+  <rect x="740" y="226" width="180" height="34" rx="6" fill="#12122a" stroke="#f0c040" stroke-width="1"/>
+  <text x="830" y="248" fill="#e8e8f0" font-size="11" text-anchor="middle">WebSocket</text>
+  <rect x="940" y="226" width="180" height="34" rx="6" fill="#12122a" stroke="#00ff9d" stroke-width="1"/>
+  <text x="1030" y="248" fill="#e8e8f0" font-size="11" text-anchor="middle">Auth0 / JWT</text>
+
+  <!-- Arrow -->
+  <line x1="600" y1="270" x2="600" y2="290" stroke="#1e1e40" stroke-width="2"/>
+
+  <!-- RUNTIME KERNEL -->
+  <rect x="40" y="295" width="1120" height="75" rx="10" fill="#12122a" stroke="url(#accentGrad)" stroke-width="2"/>
+  <text x="600" y="314" fill="#00e5ff" font-size="9" text-anchor="middle" letter-spacing="2" filter="url(#glow)">RUNTIME KERNEL — TENANT CONTEXT PROPAGATION LAYER</text>
+  <rect x="80" y="322" width="200" height="34" rx="6" fill="#0d0d1f" stroke="#00e5ff" stroke-width="1"/>
+  <text x="180" y="344" fill="#00e5ff" font-size="11" text-anchor="middle">Tenant Context</text>
+  <rect x="300" y="322" width="200" height="34" rx="6" fill="#0d0d1f" stroke="#7b2fff" stroke-width="1"/>
+  <text x="400" y="344" fill="#7b2fff" font-size="11" text-anchor="middle">Execution Engine</text>
+  <rect x="520" y="322" width="200" height="34" rx="6" fill="#0d0d1f" stroke="#f0c040" stroke-width="1"/>
+  <text x="620" y="344" fill="#f0c040" font-size="11" text-anchor="middle">Job Queue (BullMQ)</text>
+  <rect x="740" y="322" width="180" height="34" rx="6" fill="#0d0d1f" stroke="#00ff9d" stroke-width="1"/>
+  <text x="830" y="344" fill="#00ff9d" font-size="11" text-anchor="middle">Scheduler (Cron)</text>
+  <rect x="940" y="322" width="180" height="34" rx="6" fill="#0d0d1f" stroke="#ff2d78" stroke-width="1"/>
+  <text x="1030" y="344" fill="#ff2d78" font-size="11" text-anchor="middle">Workflow Runtime</text>
+
+  <!-- Arrow -->
+  <line x1="600" y1="370" x2="600" y2="390" stroke="#00e5ff" stroke-width="2" opacity="0.5"/>
+
+  <!-- EVENT FABRIC -->
+  <rect x="40" y="395" width="1120" height="70" rx="10" fill="#0d0d1f" stroke="#7b2fff" stroke-width="1.5"/>
+  <text x="600" y="413" fill="#7b2fff" font-size="9" text-anchor="middle" letter-spacing="2">EVENT FABRIC — KAFKA EVENT BUS</text>
+  <rect x="80" y="421" width="180" height="34" rx="6" fill="#12122a" stroke="#7b2fff" stroke-width="1"/>
+  <text x="170" y="443" fill="#e8e8f0" font-size="11" text-anchor="middle">Event Registry</text>
+  <rect x="280" y="421" width="180" height="34" rx="6" fill="#12122a" stroke="#7b2fff" stroke-width="1"/>
+  <text x="370" y="443" fill="#e8e8f0" font-size="11" text-anchor="middle">Event Store</text>
+  <rect x="480" y="421" width="180" height="34" rx="6" fill="#12122a" stroke="#7b2fff" stroke-width="1"/>
+  <text x="570" y="443" fill="#e8e8f0" font-size="11" text-anchor="middle">Kafka Topics</text>
+  <rect x="680" y="421" width="180" height="34" rx="6" fill="#12122a" stroke="#ff2d78" stroke-width="1"/>
+  <text x="770" y="443" fill="#e8e8f0" font-size="11" text-anchor="middle">Dead Letter Queue</text>
+  <rect x="880" y="421" width="180" height="34" rx="6" fill="#12122a" stroke="#00ff9d" stroke-width="1"/>
+  <text x="970" y="443" fill="#e8e8f0" font-size="11" text-anchor="middle">Replay Engine</text>
+
+  <!-- Arrow -->
+  <line x1="600" y1="465" x2="600" y2="485" stroke="#7b2fff" stroke-width="2" opacity="0.5"/>
+
+  <!-- OS MODULES - ROW 1 -->
+  <text x="600" y="502" fill="#6b6b8a" font-size="9" text-anchor="middle" letter-spacing="2">PLATFORM OS MODULES</text>
+  <rect x="40" y="510" width="195" height="80" rx="10" fill="#0d0d1f" stroke="#00e5ff" stroke-width="1.5"/>
+  <text x="137" y="535" fill="#00e5ff" font-size="11" font-weight="bold" text-anchor="middle">🔐 Identity OS</text>
+  <text x="137" y="553" fill="#6b6b8a" font-size="9" text-anchor="middle">RBAC · ABAC · Device Trust</text>
+  <text x="137" y="567" fill="#6b6b8a" font-size="9" text-anchor="middle">WhatsApp Identity</text>
+  <text x="137" y="581" fill="#6b6b8a" font-size="9" text-anchor="middle">Hierarchical Permissions</text>
+
+  <rect x="250" y="510" width="195" height="80" rx="10" fill="#0d0d1f" stroke="#7b2fff" stroke-width="1.5"/>
+  <text x="347" y="535" fill="#7b2fff" font-size="11" font-weight="bold" text-anchor="middle">👥 People OS</text>
+  <text x="347" y="553" fill="#6b6b8a" font-size="9" text-anchor="middle">360° Member Records</text>
+  <text x="347" y="567" fill="#6b6b8a" font-size="9" text-anchor="middle">Activity Timelines</text>
+  <text x="347" y="581" fill="#6b6b8a" font-size="9" text-anchor="middle">Performance · Attendance</text>
+
+  <rect x="460" y="510" width="195" height="80" rx="10" fill="#0d0d1f" stroke="#00e5ff" stroke-width="1.5"/>
+  <text x="557" y="535" fill="#00e5ff" font-size="11" font-weight="bold" text-anchor="middle">💬 Communication OS</text>
+  <text x="557" y="553" fill="#6b6b8a" font-size="9" text-anchor="middle">WhatsApp Cloud API</text>
+  <text x="557" y="567" fill="#6b6b8a" font-size="9" text-anchor="middle">Broadcasts · Approvals</text>
+  <text x="557" y="581" fill="#6b6b8a" font-size="9" text-anchor="middle">Webhook Architecture</text>
+
+  <rect x="670" y="510" width="195" height="80" rx="10" fill="#0d0d1f" stroke="#f0c040" stroke-width="1.5"/>
+  <text x="767" y="535" fill="#f0c040" font-size="11" font-weight="bold" text-anchor="middle">⚙️ Workflow OS</text>
+  <text x="767" y="553" fill="#6b6b8a" font-size="9" text-anchor="middle">20+ Workflow Templates</text>
+  <text x="767" y="567" fill="#6b6b8a" font-size="9" text-anchor="middle">SLA · Escalation · Logic</text>
+  <text x="767" y="581" fill="#6b6b8a" font-size="9" text-anchor="middle">Conditional Branching</text>
+
+  <rect x="880" y="510" width="280" height="80" rx="10" fill="#0d0d1f" stroke="#ff2d78" stroke-width="1.5"/>
+  <text x="1020" y="535" fill="#ff2d78" font-size="11" font-weight="bold" text-anchor="middle">⚖️ Governance OS</text>
+  <text x="1020" y="553" fill="#6b6b8a" font-size="9" text-anchor="middle">Policy · Approval · Compliance</text>
+  <text x="1020" y="567" fill="#6b6b8a" font-size="9" text-anchor="middle">Immutable Audit Trails</text>
+  <text x="1020" y="581" fill="#6b6b8a" font-size="9" text-anchor="middle">Risk Engine · Fraud Detection</text>
+
+  <!-- OS MODULES - ROW 2 -->
+  <rect x="40" y="610" width="195" height="80" rx="10" fill="#0d0d1f" stroke="#7b2fff" stroke-width="1.5"/>
+  <text x="137" y="635" fill="#7b2fff" font-size="11" font-weight="bold" text-anchor="middle">🧠 Knowledge OS</text>
+  <text x="137" y="653" fill="#6b6b8a" font-size="9" text-anchor="middle">RAG · Semantic Search</text>
+  <text x="137" y="667" fill="#6b6b8a" font-size="9" text-anchor="middle">Org Memory · pgvector</text>
+  <text x="137" y="681" fill="#6b6b8a" font-size="9" text-anchor="middle">Document Intelligence</text>
+
+  <rect x="250" y="610" width="195" height="80" rx="10" fill="#0d0d1f" stroke="#f0c040" stroke-width="1.5"/>
+  <text x="347" y="635" fill="#f0c040" font-size="11" font-weight="bold" text-anchor="middle">📊 Analytics OS</text>
+  <text x="347" y="653" fill="#6b6b8a" font-size="9" text-anchor="middle">Executive Dashboards</text>
+  <text x="347" y="667" fill="#6b6b8a" font-size="9" text-anchor="middle">Real-Time Metrics</text>
+  <text x="347" y="681" fill="#6b6b8a" font-size="9" text-anchor="middle">KPI · Forecast · Trends</text>
+
+  <rect x="460" y="610" width="195" height="80" rx="10" fill="#0d0d1f" stroke="#00ff9d" stroke-width="1.5"/>
+  <text x="557" y="635" fill="#00ff9d" font-size="11" font-weight="bold" text-anchor="middle">🤖 Agent OS</text>
+  <text x="557" y="653" fill="#6b6b8a" font-size="9" text-anchor="middle">7 AI Agents (Claude API)</text>
+  <text x="557" y="667" fill="#6b6b8a" font-size="9" text-anchor="middle">Permission-Bound Actions</text>
+  <text x="557" y="681" fill="#6b6b8a" font-size="9" text-anchor="middle">Full Telemetry + Audit</text>
+
+  <!-- LOOP OS - HIGHLIGHTED -->
+  <rect x="670" y="610" width="490" height="80" rx="10" fill="#0d0d1a" stroke="url(#accentGrad)" stroke-width="2.5"/>
+  <text x="915" y="635" fill="white" font-size="13" font-weight="bold" text-anchor="middle" filter="url(#glow)">⬡ LOOP OS — Galaxy Loop Engine™</text>
+  <text x="760" y="655" fill="#6b6b8a" font-size="9" text-anchor="middle">Verify</text>
+  <text x="820" y="655" fill="#00e5ff" font-size="9" text-anchor="middle">→</text>
+  <text x="870" y="655" fill="#6b6b8a" font-size="9" text-anchor="middle">Learn</text>
+  <text x="925" y="655" fill="#00e5ff" font-size="9" text-anchor="middle">→</text>
+  <text x="975" y="655" fill="#6b6b8a" font-size="9" text-anchor="middle">Optimize</text>
+  <text x="1038" y="655" fill="#00e5ff" font-size="9" text-anchor="middle">→</text>
+  <text x="1090" y="655" fill="#6b6b8a" font-size="9" text-anchor="middle">Repeat</text>
+  <text x="915" y="675" fill="#7b2fff" font-size="9" text-anchor="middle">Loop Registry · Loop Runtime · Verification Engine · Learning Engine · Optimization Engine</text>
+  <text x="915" y="685" fill="#7b2fff" font-size="8" text-anchor="middle">Galaxy's Core Moat — Self-Improving Platform</text>
+
+  <!-- DATA LAYER -->
+  <text x="600" y="718" fill="#6b6b8a" font-size="9" text-anchor="middle" letter-spacing="2">DATA LAYER</text>
+  <rect x="40" y="725" width="270" height="55" rx="8" fill="#0d0d1f" stroke="#00e5ff" stroke-width="1"/>
+  <text x="175" y="750" fill="#e8e8f0" font-size="11" font-weight="bold" text-anchor="middle">🐘 PostgreSQL 16 (RLS)</text>
+  <text x="175" y="768" fill="#6b6b8a" font-size="9" text-anchor="middle">Multi-Tenant · Row-Level Security</text>
+
+  <rect x="330" y="725" width="230" height="55" rx="8" fill="#0d0d1f" stroke="#ff2d78" stroke-width="1"/>
+  <text x="445" y="750" fill="#e8e8f0" font-size="11" font-weight="bold" text-anchor="middle">⚡ Redis 7</text>
+  <text x="445" y="768" fill="#6b6b8a" font-size="9" text-anchor="middle">Cache · Queue · Sessions</text>
+
+  <rect x="580" y="725" width="230" height="55" rx="8" fill="#0d0d1f" stroke="#f0c040" stroke-width="1"/>
+  <text x="695" y="750" fill="#e8e8f0" font-size="11" font-weight="bold" text-anchor="middle">🗂 S3 / Cloudflare R2</text>
+  <text x="695" y="768" fill="#6b6b8a" font-size="9" text-anchor="middle">File Storage · Media</text>
+
+  <rect x="830" y="725" width="180" height="55" rx="8" fill="#0d0d1f" stroke="#7b2fff" stroke-width="1"/>
+  <text x="920" y="750" fill="#e8e8f0" font-size="11" font-weight="bold" text-anchor="middle">🔍 pgvector</text>
+  <text x="920" y="768" fill="#6b6b8a" font-size="9" text-anchor="middle">Embeddings · RAG</text>
+
+  <rect x="1030" y="725" width="130" height="55" rx="8" fill="#0d0d1f" stroke="#00ff9d" stroke-width="1"/>
+  <text x="1095" y="750" fill="#e8e8f0" font-size="11" font-weight="bold" text-anchor="middle">Kafka</text>
+  <text x="1095" y="768" fill="#6b6b8a" font-size="9" text-anchor="middle">Event Streaming</text>
+
+  <!-- MISSION CONTROL banner -->
+  <rect x="40" y="808" width="1120" height="50" rx="8" fill="#12122a" stroke="url(#accentGrad)" stroke-width="1.5"/>
+  <text x="600" y="839" fill="white" font-size="13" font-weight="bold" text-anchor="middle" letter-spacing="1">🌐  MISSION CONTROL — Executive Command Center · Loop Center · Agent Center · Analytics Center</text>
+
+  <!-- Legend -->
+  <rect x="40" y="872" width="8" height="8" rx="2" fill="#00e5ff"/>
+  <text x="54" y="881" fill="#6b6b8a" font-size="9">Identity / Comms</text>
+  <rect x="180" y="872" width="8" height="8" rx="2" fill="#7b2fff"/>
+  <text x="194" y="881" fill="#6b6b8a" font-size="9">People / Knowledge / Events</text>
+  <rect x="380" y="872" width="8" height="8" rx="2" fill="#f0c040"/>
+  <text x="394" y="881" fill="#6b6b8a" font-size="9">Workflow / Analytics</text>
+  <rect x="540" y="872" width="8" height="8" rx="2" fill="#ff2d78"/>
+  <text x="554" y="881" fill="#6b6b8a" font-size="9">Governance</text>
+  <rect x="660" y="872" width="8" height="8" rx="2" fill="#00ff9d"/>
+  <text x="674" y="881" fill="#6b6b8a" font-size="9">Agent OS</text>
+  <rect x="760" y="872" width="8" height="8" rx="2" fill="url(#accentGrad)"/>
+  <text x="774" y="881" fill="#00e5ff" font-size="9" font-weight="bold">Loop OS (Core Moat)</text>
+</svg>

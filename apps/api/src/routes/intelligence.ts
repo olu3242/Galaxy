@@ -17,7 +17,7 @@ function responseEnvelope<T>(data: T, requestId: string) {
   };
 }
 
-export function intelligenceRoutes(fastify: FastifyInstance): void {
+export async function intelligenceRoutes(fastify: FastifyInstance): Promise<void> {
   const healthScoreService = new HealthScoreService(fastify.pg);
   const insightService = new InsightService(fastify.pg);
   const recommendationService = new RecommendationService(fastify.pg);

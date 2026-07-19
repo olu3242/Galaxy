@@ -1,6 +1,8 @@
 import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { KnowledgeService, KnowledgeSearchService } from '@galaxy/knowledge';
 import type { DocumentStatus } from '@galaxy/knowledge';
+import { Queue } from 'bullmq';
+import { Redis } from 'ioredis';
 
 function responseEnvelope<T>(data: T, requestId: string) {
   return {
@@ -12,7 +14,7 @@ function responseEnvelope<T>(data: T, requestId: string) {
   };
 }
 
-export function knowledgeRoutes(fastify: FastifyInstance): void {
+export async function knowledgeRoutes(fastify: FastifyInstance): Promise<void> {
   const knowledgeService = new KnowledgeService(fastify.pg);
   const searchService = new KnowledgeSearchService(fastify.pg);
 
@@ -215,6 +217,153 @@ export function knowledgeRoutes(fastify: FastifyInstance): void {
       );
 
       return reply.send(responseEnvelope(result.rows, request.id));
+    },
+  );
+
+  // ── Document ingestion (enqueue RAG embedding job) ──────────────────────────
+
+  fastify.post(
+    '/knowledge/documents/:id/ingest',
+    async (
+      request: FastifyRequest<{
+        Params: { id: string };
+        Body: { organizationId: string };
+      }>,
+      reply: FastifyReply,
+    ) => {
+      const { id } = request.params;
+      const { organizationId } = request.body;
+      if (!organizationId) return reply.status(400).send({ error: 'organizationId required' });
+
+      const redis = new Redis(process.env.REDIS_URL ?? 'redis://localhost:6379', {
+        maxRetriesPerRequest: null,
+      });
+      const ingestionQueue = new Queue('knowledge-ingestion', { connection: redis });
+
+      try {
+        await ingestionQueue.add('ingest-document', { organizationId, documentId: id });
+        return await reply
+          .status(202)
+          .send(responseEnvelope({ queued: true, documentId: id }, request.id));
+      } finally {
+        await ingestionQueue.close();
+        await redis.quit();
+      }
+    },
+  );
+
+  // ── RAG semantic search ─────────────────────────────────────────────────────
+
+  fastify.get(
+    '/knowledge/rag',
+    async (
+      request: FastifyRequest<{
+        Querystring: { organizationId: string; query: string; limit?: string };
+      }>,
+      reply: FastifyReply,
+    ) => {
+      const { organizationId, query, limit } = request.query;
+      if (!organizationId || !query) {
+        return reply.status(400).send({ error: 'organizationId and query required' });
+      }
+
+      await fastify.pg.query('SELECT set_config($1, $2, true)', [
+        'app.current_tenant',
+        organizationId,
+      ]);
+
+      const topK = limit ? parseInt(limit, 10) : 5;
+
+      const voyageApiKey = process.env.VOYAGE_API_KEY;
+      let chunks: {
+        document_id: string;
+        chunk_index: number;
+        content: string;
+        token_count: number | null;
+        score: number;
+      }[];
+      let searchMethod: 'vector' | 'fulltext';
+
+      if (voyageApiKey) {
+        // Real pgvector cosine-similarity search
+        const embRes = await fetch('https://api.voyageai.com/v1/embeddings', {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${voyageApiKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ model: 'voyage-3', input: [query], input_type: 'query' }),
+        });
+
+        if (!embRes.ok) {
+          return reply.status(502).send({ error: 'Embedding service unavailable' });
+        }
+
+        const embData = (await embRes.json()) as {
+          data: { embedding: number[] }[];
+        };
+        const queryVector = embData.data[0]?.embedding ?? [];
+
+        const vectorResult = await fastify.pg.query<{
+          document_id: string;
+          chunk_index: number;
+          content: string;
+          token_count: number | null;
+          score: number;
+        }>(
+          `SELECT
+             kc.document_id,
+             kc.chunk_index,
+             kc.content,
+             kc.token_count,
+             1 - (kc.embedding <=> $2::vector) AS score
+           FROM knowledge_chunks kc
+           WHERE kc.organization_id = $1
+           ORDER BY kc.embedding <=> $2::vector
+           LIMIT $3`,
+          [organizationId, `[${queryVector.join(',')}]`, topK],
+        );
+
+        chunks = vectorResult.rows;
+        searchMethod = 'vector';
+      } else {
+        // Fallback: full-text search when embeddings are not configured
+        const ftResult = await fastify.pg.query<{
+          document_id: string;
+          chunk_index: number;
+          content: string;
+          token_count: number | null;
+          score: number;
+        }>(
+          `SELECT
+             kc.document_id,
+             kc.chunk_index,
+             kc.content,
+             kc.token_count,
+             ts_rank(to_tsvector('english', kc.content), plainto_tsquery('english', $2)) AS score
+           FROM knowledge_chunks kc
+           WHERE kc.organization_id = $1
+             AND to_tsvector('english', kc.content) @@ plainto_tsquery('english', $2)
+           ORDER BY score DESC
+           LIMIT $3`,
+          [organizationId, query, topK],
+        );
+
+        chunks = ftResult.rows;
+        searchMethod = 'fulltext';
+      }
+
+      return reply.send(
+        responseEnvelope(
+          {
+            query,
+            chunks,
+            count: chunks.length,
+            searchMethod,
+          },
+          request.id,
+        ),
+      );
     },
   );
 }

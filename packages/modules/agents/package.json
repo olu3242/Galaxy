@@ -1,0 +1,35 @@
+{
+  "name": "@galaxy/agents",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint src --max-warnings 0",
+    "lint:fix": "eslint src --fix",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.39.0",
+    "@galaxy/cognitive-engine": "workspace:*",
+    "@galaxy/events": "workspace:*",
+    "@galaxy/types": "workspace:*",
+    "pg": "^8.13.3"
+  },
+  "devDependencies": {
+    "@galaxy/config": "workspace:*",
+    "@types/node": "^22.0.0",
+    "@types/pg": "^8.11.11",
+    "typescript": "^5.8.3",
+    "vitest": "^3.2.3"
+  }
+}

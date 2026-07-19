@@ -1,0 +1,249 @@
+import crypto from 'crypto';
+import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
+import { Queue } from 'bullmq';
+import { Redis } from 'ioredis';
+import { Pool } from 'pg';
+import { InboundMessageProcessor, type InboundWebhookPayload } from '@galaxy/communication';
+import { EventPublisher } from '@galaxy/events';
+
+// Manager approval button reply ID format: "approve:<runId>" or "reject:<runId>"
+const APPROVAL_REPLY_RE = /^(approve|reject):([0-9a-f-]{36})$/i;
+// Loop verification: "loop-yes:<loopId>" or "loop-no:<loopId>"
+const LOOP_VERIFY_RE = /^loop-(yes|no):([0-9a-f-]{36})$/i;
+// Loop feedback rating: "loop-rate:<loopId>:<1-5>"
+const LOOP_RATE_RE = /^loop-rate:([0-9a-f-]{36}):([1-5])$/i;
+
+const VERIFY_TOKEN = process.env.WHATSAPP_VERIFY_TOKEN ?? '';
+const APP_SECRET = process.env.WHATSAPP_APP_SECRET ?? '';
+
+function verifySignature(rawBody: Buffer, signature: string): boolean {
+  if (!APP_SECRET) return false;
+  const expected = `sha256=${crypto.createHmac('sha256', APP_SECRET).update(rawBody).digest('hex')}`;
+  try {
+    return crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expected));
+  } catch {
+    return false;
+  }
+}
+
+interface HubChallengeQuery {
+  'hub.mode'?: string;
+  'hub.verify_token'?: string;
+  'hub.challenge'?: string;
+}
+
+interface WhatsAppWebhookBody {
+  object?: string;
+  entry?: {
+    id: string;
+    changes: {
+      value: {
+        messaging_product: string;
+        metadata: { phone_number_id: string };
+        contacts?: { wa_id: string; profile: { name: string } }[];
+        messages?: {
+          id: string;
+          from: string;
+          timestamp: string;
+          type: string;
+          text?: { body: string };
+          image?: { id: string; mime_type: string; sha256: string };
+          audio?: { id: string; mime_type: string };
+          document?: { id: string; mime_type: string; filename: string };
+          interactive?: {
+            type: string;
+            button_reply?: { id: string; title: string };
+            list_reply?: { id: string; title: string };
+          };
+        }[];
+      };
+      field: string;
+    }[];
+  }[];
+}
+
+export async function whatsappWebhookRoutes(fastify: FastifyInstance): Promise<void> {
+  const redis = new Redis(process.env.REDIS_URL ?? 'redis://localhost:6379', {
+    maxRetriesPerRequest: null,
+    lazyConnect: true,
+  });
+  const intentQueue = new Queue('intent-detection', { connection: redis });
+  const approvalQueue = new Queue('approval-processing', { connection: redis });
+  const loopQueue = new Queue('loop-processing', { connection: redis });
+  const processor = new InboundMessageProcessor();
+  const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+  const eventPublisher = new EventPublisher(pool);
+
+  // Hub challenge verification
+  fastify.get(
+    '/webhooks/whatsapp',
+    async (request: FastifyRequest<{ Querystring: HubChallengeQuery }>, reply: FastifyReply) => {
+      const {
+        'hub.mode': mode,
+        'hub.verify_token': token,
+        'hub.challenge': challenge,
+      } = request.query;
+      if (mode === 'subscribe' && token === VERIFY_TOKEN && challenge) {
+        return reply.status(200).send(challenge);
+      }
+      return reply.status(403).send({ error: 'Forbidden' });
+    },
+  );
+
+  // Inbound message handler
+  fastify.post(
+    '/webhooks/whatsapp',
+    {
+      config: { rawBody: true },
+    },
+    async (request: FastifyRequest<{ Body: WhatsAppWebhookBody }>, reply: FastifyReply) => {
+      // Signature verification
+      const signature = request.headers['x-hub-signature-256'];
+      if (typeof signature !== 'string') {
+        return reply.status(401).send({ error: 'Missing signature' });
+      }
+      // rawBody is populated by Fastify's addContentTypeParser when rawBody option is used
+      const rawBody = (request as FastifyRequest & { rawBody?: Buffer }).rawBody;
+      if (!rawBody || !verifySignature(rawBody, signature)) {
+        return reply.status(401).send({ error: 'Invalid signature' });
+      }
+
+      const correlationId = crypto.randomUUID();
+
+      const body = request.body;
+      if (body.object !== 'whatsapp_business_account') {
+        return reply.status(200).send({ ok: true });
+      }
+
+      const jobs: Promise<unknown>[] = [];
+
+      for (const entry of body.entry ?? []) {
+        for (const change of entry.changes) {
+          if (change.field !== 'messages') continue;
+          for (const msg of change.value.messages ?? []) {
+            const phoneNumberId = change.value.metadata.phone_number_id;
+
+            // Handle interactive button replies
+            if (msg.type === 'interactive' && msg.interactive?.type === 'button_reply') {
+              const buttonId = msg.interactive.button_reply?.id ?? '';
+
+              // Manager approve/reject
+              const approvalMatch = APPROVAL_REPLY_RE.exec(buttonId);
+              if (approvalMatch) {
+                const decision = approvalMatch[1] === 'approve' ? 'approved' : 'rejected';
+                const workflowRunId = approvalMatch[2];
+                jobs.push(
+                  approvalQueue.add('handle-approval', {
+                    jobName:
+                      decision === 'approved' ? 'post-approval-advance' : 'post-rejection-notify',
+                    approvalId: msg.id,
+                    workflowRunId,
+                    approverId: msg.from,
+                    decision,
+                    correlationId,
+                    organizationId: '',
+                    _resolveOrgFromRun: true,
+                  }),
+                );
+                continue;
+              }
+
+              // Loop verification (requester confirms resolution)
+              const loopVerifyMatch = LOOP_VERIFY_RE.exec(buttonId);
+              if (loopVerifyMatch) {
+                const verified = loopVerifyMatch[1] === 'yes';
+                const loopInstanceId = loopVerifyMatch[2];
+                jobs.push(
+                  loopQueue.add('record-verification', {
+                    jobName: 'record-verification',
+                    organizationId: '',
+                    loopInstanceId,
+                    senderPhone: msg.from,
+                    verified,
+                    correlationId,
+                    _resolveOrgFromLoop: true,
+                  }),
+                );
+                continue;
+              }
+
+              // Loop feedback rating
+              const loopRateMatch = LOOP_RATE_RE.exec(buttonId);
+              if (loopRateMatch) {
+                const loopInstanceId = loopRateMatch[1];
+                const score = parseInt(loopRateMatch[2] ?? '3', 10);
+                jobs.push(
+                  loopQueue.add('record-feedback', {
+                    jobName: 'record-feedback',
+                    organizationId: '',
+                    loopInstanceId,
+                    senderPhone: msg.from,
+                    score,
+                    correlationId,
+                    _resolveOrgFromLoop: true,
+                  }),
+                );
+                continue;
+              }
+            }
+
+            const payload: InboundWebhookPayload = {
+              from: msg.from,
+              messageId: msg.id,
+              timestamp: msg.timestamp,
+              type: msg.type,
+              ...(msg.text ? { text: msg.text } : {}),
+              ...(msg.image ? { image: msg.image } : {}),
+              ...(msg.audio ? { audio: msg.audio } : {}),
+              ...(msg.document ? { document: msg.document } : {}),
+            };
+            const normalized = processor.process(payload);
+            jobs.push(
+              intentQueue.add('detect-intent', {
+                phoneNumberId,
+                normalized,
+                rawMessageId: msg.id,
+                correlationId,
+              }),
+            );
+          }
+        }
+      }
+
+      await Promise.all(jobs);
+
+      // Emit webhook.received event (best-effort, non-fatal)
+      const eventId = crypto.randomUUID();
+      eventPublisher
+        .publish({
+          id: eventId,
+          version: '1.0',
+          type: 'webhook.received',
+          tenantId: 'system',
+          correlationId,
+          causationId: correlationId,
+          timestamp: new Date().toISOString(),
+          actor: { type: 'system', id: 'whatsapp-webhook' },
+          payload: { source: 'whatsapp' },
+          metadata: {
+            idempotencyKey: eventId,
+            schemaVersion: '1.0',
+            source: 'galaxy.api.webhooks',
+          },
+        })
+        .catch(() => {
+          // Non-fatal — do not block the response
+        });
+
+      return reply.status(200).send({ ok: true });
+    },
+  );
+
+  fastify.addHook('onClose', async () => {
+    await intentQueue.close();
+    await approvalQueue.close();
+    await loopQueue.close();
+    await redis.quit();
+    await pool.end();
+  });
+}

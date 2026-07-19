@@ -2,7 +2,14 @@ export type ChannelType = 'direct' | 'group' | 'broadcast' | 'announcement';
 
 export type MessageStatus = 'pending' | 'sent' | 'delivered' | 'read' | 'failed';
 
-export type MessageContentType = 'text' | 'image' | 'file' | 'audio' | 'video' | 'template';
+export type MessageContentType =
+  | 'text'
+  | 'image'
+  | 'file'
+  | 'audio'
+  | 'video'
+  | 'template'
+  | 'interactive';
 
 export interface MessageContent {
   type: MessageContentType;
@@ -10,6 +17,7 @@ export interface MessageContent {
   mediaUrl?: string;
   templateName?: string;
   templateVariables?: Record<string, string>;
+  interactive?: Record<string, unknown>;
 }
 
 export interface MessageResult {

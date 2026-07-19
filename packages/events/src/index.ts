@@ -4,3 +4,4 @@ export * from './registry.js';
 export * from './publisher.js';
 export * from './subscriber.js';
 export * from './validator.js';
+export * from './kafka.js';

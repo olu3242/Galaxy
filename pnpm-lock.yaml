@@ -6,6 +6,7 @@ settings:
 
 overrides:
   esbuild: 0.21.5
+  ioredis: 5.11.1
 
 importers:
 
@@ -37,7 +38,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: ^2.0.0
-        version: 2.1.9(@types/node@20.19.42)
+        version: 2.1.9(@types/node@22.19.20)
 
   apps/api:
     dependencies:
@@ -65,33 +66,138 @@ importers:
       '@fastify/websocket':
         specifier: ^8.0.0
         version: 8.3.1
+      '@galaxy/agents':
+        specifier: workspace:*
+        version: link:../../packages/modules/agents
+      '@galaxy/ai-deployment':
+        specifier: workspace:*
+        version: link:../../packages/modules/ai-deployment
       '@galaxy/analytics':
         specifier: workspace:*
         version: link:../../packages/modules/analytics
+      '@galaxy/api-gateway':
+        specifier: workspace:*
+        version: link:../../packages/modules/api-gateway
+      '@galaxy/autonomous-intelligence':
+        specifier: workspace:*
+        version: link:../../packages/modules/autonomous-intelligence
+      '@galaxy/benchmarking':
+        specifier: workspace:*
+        version: link:../../packages/modules/benchmarking
+      '@galaxy/billing':
+        specifier: workspace:*
+        version: link:../../packages/modules/billing
+      '@galaxy/communication':
+        specifier: workspace:*
+        version: link:../../packages/modules/communication
       '@galaxy/config':
         specifier: workspace:*
         version: link:../../packages/config
+      '@galaxy/conversation':
+        specifier: workspace:*
+        version: link:../../packages/modules/conversation
+      '@galaxy/coo':
+        specifier: workspace:*
+        version: link:../../packages/modules/coo
+      '@galaxy/developer':
+        specifier: workspace:*
+        version: link:../../packages/modules/developer
+      '@galaxy/digital-twin':
+        specifier: workspace:*
+        version: link:../../packages/modules/digital-twin
+      '@galaxy/economy':
+        specifier: workspace:*
+        version: link:../../packages/modules/economy
       '@galaxy/events':
         specifier: workspace:*
         version: link:../../packages/events
+      '@galaxy/governance':
+        specifier: workspace:*
+        version: link:../../packages/modules/governance
+      '@galaxy/graph':
+        specifier: workspace:*
+        version: link:../../packages/modules/graph
       '@galaxy/identity':
         specifier: workspace:*
         version: link:../../packages/modules/identity
+      '@galaxy/integrations':
+        specifier: workspace:*
+        version: link:../../packages/modules/integrations
       '@galaxy/intelligence':
         specifier: workspace:*
         version: link:../../packages/modules/intelligence
+      '@galaxy/intelligence-network':
+        specifier: workspace:*
+        version: link:../../packages/modules/intelligence-network
       '@galaxy/knowledge':
         specifier: workspace:*
         version: link:../../packages/modules/knowledge
+      '@galaxy/loop':
+        specifier: workspace:*
+        version: link:../../packages/modules/loop
+      '@galaxy/marketplace':
+        specifier: workspace:*
+        version: link:../../packages/modules/marketplace
+      '@galaxy/mission-control':
+        specifier: workspace:*
+        version: link:../../packages/modules/mission-control
+      '@galaxy/observability':
+        specifier: workspace:*
+        version: link:../../packages/modules/observability
+      '@galaxy/org-dna':
+        specifier: workspace:*
+        version: link:../../packages/modules/org-dna
+      '@galaxy/org-health':
+        specifier: workspace:*
+        version: link:../../packages/modules/org-health
+      '@galaxy/org-memory':
+        specifier: workspace:*
+        version: link:../../packages/modules/org-memory
+      '@galaxy/organization':
+        specifier: workspace:*
+        version: link:../../packages/modules/organization
+      '@galaxy/partner':
+        specifier: workspace:*
+        version: link:../../packages/modules/partner
       '@galaxy/people':
         specifier: workspace:*
         version: link:../../packages/modules/people
+      '@galaxy/platform':
+        specifier: workspace:*
+        version: link:../../packages/modules/platform
+      '@galaxy/platform-admin':
+        specifier: workspace:*
+        version: link:../../packages/modules/platform-admin
+      '@galaxy/policy-engine':
+        specifier: workspace:*
+        version: link:../../packages/modules/policy-engine
+      '@galaxy/predictive':
+        specifier: workspace:*
+        version: link:../../packages/modules/predictive
+      '@galaxy/reliability':
+        specifier: workspace:*
+        version: link:../../packages/modules/reliability
+      '@galaxy/risk-intelligence':
+        specifier: workspace:*
+        version: link:../../packages/modules/risk-intelligence
+      '@galaxy/self-healing':
+        specifier: workspace:*
+        version: link:../../packages/modules/self-healing
+      '@galaxy/solution-packs':
+        specifier: workspace:*
+        version: link:../../packages/modules/solution-packs
       '@galaxy/types':
         specifier: workspace:*
         version: link:../../packages/types
       '@galaxy/utils':
         specifier: workspace:*
         version: link:../../packages/utils
+      '@galaxy/workflow':
+        specifier: workspace:*
+        version: link:../../packages/modules/workflow
+      '@galaxy/workflow-generator':
+        specifier: workspace:*
+        version: link:../../packages/modules/workflow-generator
       bullmq:
         specifier: ^5.0.0
         version: 5.78.0
@@ -99,8 +205,11 @@ importers:
         specifier: ^4.28.0
         version: 4.29.1
       ioredis:
-        specifier: ^5.4.0
+        specifier: 5.11.1
         version: 5.11.1
+      jose:
+        specifier: ^6.2.3
+        version: 6.2.3
       pg:
         specifier: ^8.12.0
         version: 8.21.0
@@ -126,6 +235,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@anthropic-ai/sdk':
+        specifier: ^0.111.0
+        version: 0.111.0(zod@3.25.76)
       '@galaxy/types':
         specifier: workspace:*
         version: link:../../packages/types
@@ -133,21 +245,27 @@ importers:
         specifier: workspace:*
         version: link:../../packages/utils
       framer-motion:
-        specifier: ^11.0.0
-        version: 11.18.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        specifier: ^12.40.0
+        version: 12.40.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       next:
         specifier: 14.2.0
-        version: 14.2.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 14.2.0(@playwright/test@1.61.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       react:
         specifier: ^18.3.0
         version: 18.3.1
       react-dom:
         specifier: ^18.3.0
         version: 18.3.1(react@18.3.1)
+      swr:
+        specifier: ^2.4.2
+        version: 2.4.2(react@18.3.1)
       zod:
         specifier: ^3.23.0
         version: 3.25.76
     devDependencies:
+      '@playwright/test':
+        specifier: ^1.61.1
+        version: 1.61.1
       '@types/node':
         specifier: ^20.0.0
         version: 20.19.42
@@ -172,9 +290,27 @@ importers:
 
   apps/worker:
     dependencies:
+      '@anthropic-ai/sdk':
+        specifier: ^0.39.0
+        version: 0.39.0
+      '@galaxy/agents':
+        specifier: workspace:*
+        version: link:../../packages/modules/agents
+      '@galaxy/communication':
+        specifier: workspace:*
+        version: link:../../packages/modules/communication
       '@galaxy/config':
         specifier: workspace:*
         version: link:../../packages/config
+      '@galaxy/events':
+        specifier: workspace:*
+        version: link:../../packages/events
+      '@galaxy/governance':
+        specifier: workspace:*
+        version: link:../../packages/modules/governance
+      '@galaxy/identity':
+        specifier: workspace:*
+        version: link:../../packages/modules/identity
       '@galaxy/types':
         specifier: workspace:*
         version: link:../../packages/types
@@ -185,7 +321,7 @@ importers:
         specifier: ^5.0.0
         version: 5.78.0
       ioredis:
-        specifier: ^5.4.0
+        specifier: 5.11.1
         version: 5.11.1
       pg:
         specifier: ^8.12.0
@@ -231,6 +367,9 @@ importers:
       '@galaxy/utils':
         specifier: workspace:*
         version: link:../utils
+      kafkajs:
+        specifier: ^2.2.4
+        version: 2.2.4
       pg:
         specifier: ^8.12.0
         version: 8.21.0
@@ -248,7 +387,185 @@ importers:
         specifier: ^2.0.0
         version: 2.1.9(@types/node@20.19.42)
 
+  packages/modules/agents:
+    dependencies:
+      '@anthropic-ai/sdk':
+        specifier: ^0.39.0
+        version: 0.39.0
+      '@galaxy/cognitive-engine':
+        specifier: workspace:*
+        version: link:../cognitive-engine
+      '@galaxy/events':
+        specifier: workspace:*
+        version: link:../../events
+      '@galaxy/types':
+        specifier: workspace:*
+        version: link:../../types
+      pg:
+        specifier: ^8.13.3
+        version: 8.21.0
+    devDependencies:
+      '@galaxy/config':
+        specifier: workspace:*
+        version: link:../../config
+      '@types/node':
+        specifier: ^22.0.0
+        version: 22.19.20
+      '@types/pg':
+        specifier: ^8.11.11
+        version: 8.20.0
+      typescript:
+        specifier: ^5.8.3
+        version: 5.9.3
+      vitest:
+        specifier: ^3.2.3
+        version: 3.2.6(@types/node@22.19.20)
+
+  packages/modules/ai-deployment:
+    dependencies:
+      '@galaxy/types':
+        specifier: workspace:*
+        version: link:../../types
+      '@galaxy/utils':
+        specifier: workspace:*
+        version: link:../../utils
+      pg:
+        specifier: ^8.11.0
+        version: 8.21.0
+      zod:
+        specifier: ^3.23.0
+        version: 3.25.76
+    devDependencies:
+      '@types/node':
+        specifier: ^20.0.0
+        version: 20.19.42
+      '@types/pg':
+        specifier: ^8.11.0
+        version: 8.20.0
+      eslint:
+        specifier: ^9.0.0
+        version: 9.39.4(jiti@1.21.7)
+      tsx:
+        specifier: ^4.16.0
+        version: 4.22.4
+      typescript:
+        specifier: ^5.5.0
+        version: 5.9.3
+      vitest:
+        specifier: ^2.0.0
+        version: 2.1.9(@types/node@20.19.42)
+
   packages/modules/analytics:
+    dependencies:
+      '@galaxy/events':
+        specifier: workspace:*
+        version: link:../../events
+      '@galaxy/types':
+        specifier: workspace:*
+        version: link:../../types
+      '@galaxy/utils':
+        specifier: workspace:*
+        version: link:../../utils
+      pg:
+        specifier: ^8.12.0
+        version: 8.21.0
+      zod:
+        specifier: ^3.23.0
+        version: 3.25.76
+    devDependencies:
+      '@types/node':
+        specifier: ^20.0.0
+        version: 20.19.42
+      '@types/pg':
+        specifier: ^8.11.0
+        version: 8.20.0
+      vitest:
+        specifier: ^2.0.0
+        version: 2.1.9(@types/node@20.19.42)
+
+  packages/modules/api-gateway:
+    dependencies:
+      pg:
+        specifier: ^8.11.0
+        version: 8.21.0
+    devDependencies:
+      '@types/node':
+        specifier: ^20.0.0
+        version: 20.19.42
+      '@types/pg':
+        specifier: ^8.11.0
+        version: 8.20.0
+      eslint:
+        specifier: ^9.0.0
+        version: 9.39.4(jiti@1.21.7)
+      vitest:
+        specifier: ^2.0.0
+        version: 2.1.9(@types/node@20.19.42)
+
+  packages/modules/autonomous-intelligence:
+    dependencies:
+      pg:
+        specifier: ^8.11.0
+        version: 8.21.0
+    devDependencies:
+      '@types/node':
+        specifier: ^20.0.0
+        version: 20.19.42
+      '@types/pg':
+        specifier: ^8.11.0
+        version: 8.20.0
+      eslint:
+        specifier: ^9.0.0
+        version: 9.39.4(jiti@1.21.7)
+      typescript:
+        specifier: ^5.3.0
+        version: 5.9.3
+      vitest:
+        specifier: ^2.0.0
+        version: 2.1.9(@types/node@20.19.42)
+
+  packages/modules/benchmarking:
+    dependencies:
+      pg:
+        specifier: ^8.11.0
+        version: 8.21.0
+    devDependencies:
+      '@types/node':
+        specifier: ^20.0.0
+        version: 20.19.42
+      '@types/pg':
+        specifier: ^8.11.0
+        version: 8.20.0
+      eslint:
+        specifier: ^9.0.0
+        version: 9.39.4(jiti@1.21.7)
+      vitest:
+        specifier: ^2.0.0
+        version: 2.1.9(@types/node@20.19.42)
+
+  packages/modules/billing:
+    dependencies:
+      '@galaxy/types':
+        specifier: workspace:*
+        version: link:../../types
+      pg:
+        specifier: ^8.13.3
+        version: 8.21.0
+    devDependencies:
+      '@types/node':
+        specifier: ^22.0.0
+        version: 22.19.20
+      '@types/pg':
+        specifier: ^8.11.11
+        version: 8.20.0
+      typescript:
+        specifier: ^5.8.3
+        version: 5.9.3
+      vitest:
+        specifier: ^3.2.3
+        version: 3.2.6(@types/node@22.19.20)
+
+  packages/modules/cognitive-engine:
     dependencies:
       '@galaxy/events':
         specifier: workspace:*
@@ -307,6 +624,157 @@ importers:
         specifier: ^2.0.0
         version: 2.1.9(@types/node@20.19.42)
 
+  packages/modules/conversation:
+    dependencies:
+      pg:
+        specifier: ^8.11.0
+        version: 8.21.0
+    devDependencies:
+      '@types/node':
+        specifier: ^20.0.0
+        version: 20.19.42
+      '@types/pg':
+        specifier: ^8.11.0
+        version: 8.20.0
+      eslint:
+        specifier: ^9.0.0
+        version: 9.39.4(jiti@1.21.7)
+      typescript:
+        specifier: ^5.3.0
+        version: 5.9.3
+      vitest:
+        specifier: ^2.0.0
+        version: 2.1.9(@types/node@20.19.42)
+
+  packages/modules/coo:
+    dependencies:
+      pg:
+        specifier: ^8.11.0
+        version: 8.21.0
+    devDependencies:
+      '@types/node':
+        specifier: ^20.0.0
+        version: 20.19.42
+      '@types/pg':
+        specifier: ^8.11.0
+        version: 8.20.0
+      eslint:
+        specifier: ^9.0.0
+        version: 9.39.4(jiti@1.21.7)
+      vitest:
+        specifier: ^2.0.0
+        version: 2.1.9(@types/node@20.19.42)
+
+  packages/modules/developer:
+    dependencies:
+      '@galaxy/types':
+        specifier: workspace:*
+        version: link:../../types
+      pg:
+        specifier: ^8.13.3
+        version: 8.21.0
+    devDependencies:
+      '@types/node':
+        specifier: ^22.0.0
+        version: 22.19.20
+      '@types/pg':
+        specifier: ^8.11.11
+        version: 8.20.0
+      typescript:
+        specifier: ^5.8.3
+        version: 5.9.3
+      vitest:
+        specifier: ^3.2.3
+        version: 3.2.6(@types/node@22.19.20)
+
+  packages/modules/digital-twin:
+    dependencies:
+      pg:
+        specifier: ^8.11.0
+        version: 8.21.0
+    devDependencies:
+      '@types/node':
+        specifier: ^20.0.0
+        version: 20.19.42
+      '@types/pg':
+        specifier: ^8.11.0
+        version: 8.20.0
+      eslint:
+        specifier: ^9.0.0
+        version: 9.39.4(jiti@1.21.7)
+      typescript:
+        specifier: ^5.3.0
+        version: 5.9.3
+
+  packages/modules/economy:
+    dependencies:
+      pg:
+        specifier: ^8.11.0
+        version: 8.21.0
+    devDependencies:
+      '@types/node':
+        specifier: ^20.0.0
+        version: 20.19.42
+      '@types/pg':
+        specifier: ^8.11.0
+        version: 8.20.0
+      eslint:
+        specifier: ^9.0.0
+        version: 9.39.4(jiti@1.21.7)
+      vitest:
+        specifier: ^2.0.0
+        version: 2.1.9(@types/node@20.19.42)
+
+  packages/modules/governance:
+    dependencies:
+      '@galaxy/types':
+        specifier: workspace:*
+        version: link:../../types
+      '@galaxy/utils':
+        specifier: workspace:*
+        version: link:../../utils
+      pg:
+        specifier: ^8.12.0
+        version: 8.21.0
+      zod:
+        specifier: ^3.23.0
+        version: 3.25.76
+    devDependencies:
+      '@types/node':
+        specifier: ^20.0.0
+        version: 20.19.42
+      '@types/pg':
+        specifier: ^8.11.0
+        version: 8.20.0
+      eslint:
+        specifier: ^9.0.0
+        version: 9.39.4(jiti@1.21.7)
+      tsx:
+        specifier: ^4.16.0
+        version: 4.22.4
+      typescript:
+        specifier: ^5.5.0
+        version: 5.9.3
+      vitest:
+        specifier: ^2.0.0
+        version: 2.1.9(@types/node@20.19.42)
+
+  packages/modules/graph:
+    dependencies:
+      pg:
+        specifier: ^8.12.0
+        version: 8.21.0
+    devDependencies:
+      '@types/node':
+        specifier: ^20.0.0
+        version: 20.19.42
+      '@types/pg':
+        specifier: ^8.11.0
+        version: 8.20.0
+      vitest:
+        specifier: ^2.0.0
+        version: 2.1.9(@types/node@20.19.42)
+
   packages/modules/identity:
     dependencies:
       '@galaxy/events':
@@ -334,6 +802,22 @@ importers:
       vitest:
         specifier: ^2.0.0
         version: 2.1.9(@types/node@20.19.42)
+
+  packages/modules/integrations:
+    dependencies:
+      pg:
+        specifier: ^8.11.0
+        version: 8.21.0
+    devDependencies:
+      '@types/node':
+        specifier: ^20.0.0
+        version: 20.19.42
+      '@types/pg':
+        specifier: ^8.11.0
+        version: 8.20.0
+      eslint:
+        specifier: ^9.0.0
+        version: 9.39.4(jiti@1.21.7)
 
   packages/modules/intelligence:
     dependencies:
@@ -363,6 +847,22 @@ importers:
         specifier: ^2.0.0
         version: 2.1.9(@types/node@20.19.42)
 
+  packages/modules/intelligence-network:
+    dependencies:
+      pg:
+        specifier: ^8.11.0
+        version: 8.21.0
+    devDependencies:
+      '@types/node':
+        specifier: ^20.0.0
+        version: 20.19.42
+      '@types/pg':
+        specifier: ^8.11.0
+        version: 8.20.0
+      eslint:
+        specifier: ^9.0.0
+        version: 9.39.4(jiti@1.21.7)
+
   packages/modules/knowledge:
     dependencies:
       '@galaxy/events':
@@ -387,6 +887,84 @@ importers:
       '@types/pg':
         specifier: ^8.11.0
         version: 8.20.0
+      vitest:
+        specifier: ^2.0.0
+        version: 2.1.9(@types/node@20.19.42)
+
+  packages/modules/loop:
+    dependencies:
+      '@galaxy/types':
+        specifier: workspace:*
+        version: link:../../types
+      pg:
+        specifier: ^8.12.0
+        version: 8.21.0
+    devDependencies:
+      '@types/node':
+        specifier: ^20.0.0
+        version: 20.19.42
+      '@types/pg':
+        specifier: ^8.11.0
+        version: 8.20.0
+      vitest:
+        specifier: ^2.0.0
+        version: 2.1.9(@types/node@20.19.42)
+
+  packages/modules/marketplace:
+    dependencies:
+      '@galaxy/events':
+        specifier: workspace:*
+        version: link:../../events
+      '@galaxy/types':
+        specifier: workspace:*
+        version: link:../../types
+      '@galaxy/utils':
+        specifier: workspace:*
+        version: link:../../utils
+      pg:
+        specifier: ^8.12.0
+        version: 8.21.0
+      zod:
+        specifier: ^3.23.0
+        version: 3.25.76
+    devDependencies:
+      '@types/node':
+        specifier: ^20.0.0
+        version: 20.19.42
+      '@types/pg':
+        specifier: ^8.11.0
+        version: 8.20.0
+      eslint:
+        specifier: ^9.0.0
+        version: 9.39.4(jiti@1.21.7)
+      tsx:
+        specifier: ^4.16.0
+        version: 4.22.4
+      typescript:
+        specifier: ^5.5.0
+        version: 5.9.3
+      vitest:
+        specifier: ^2.0.0
+        version: 2.1.9(@types/node@20.19.42)
+
+  packages/modules/mission-control:
+    dependencies:
+      pg:
+        specifier: ^8.11.0
+        version: 8.21.0
+    devDependencies:
+      '@types/node':
+        specifier: ^20.0.0
+        version: 20.19.42
+      '@types/pg':
+        specifier: ^8.11.0
+        version: 8.20.0
+      eslint:
+        specifier: ^9.0.0
+        version: 9.39.4(jiti@1.21.7)
+      typescript:
+        specifier: ^5.3.0
+        version: 5.9.3
       vitest:
         specifier: ^2.0.0
         version: 2.1.9(@types/node@20.19.42)
@@ -419,6 +997,162 @@ importers:
         specifier: ^2.0.0
         version: 2.1.9(@types/node@20.19.42)
 
+  packages/modules/observability:
+    dependencies:
+      '@galaxy/events':
+        specifier: workspace:*
+        version: link:../../events
+      '@galaxy/types':
+        specifier: workspace:*
+        version: link:../../types
+      '@galaxy/utils':
+        specifier: workspace:*
+        version: link:../../utils
+      pg:
+        specifier: ^8.12.0
+        version: 8.21.0
+      zod:
+        specifier: ^3.23.0
+        version: 3.25.76
+    devDependencies:
+      '@types/node':
+        specifier: ^20.0.0
+        version: 20.19.42
+      '@types/pg':
+        specifier: ^8.11.0
+        version: 8.20.0
+      eslint:
+        specifier: ^9.0.0
+        version: 9.39.4(jiti@1.21.7)
+      tsx:
+        specifier: ^4.16.0
+        version: 4.22.4
+      typescript:
+        specifier: ^5.5.0
+        version: 5.9.3
+      vitest:
+        specifier: ^2.0.0
+        version: 2.1.9(@types/node@20.19.42)
+
+  packages/modules/org-dna:
+    dependencies:
+      pg:
+        specifier: ^8.11.0
+        version: 8.21.0
+    devDependencies:
+      '@types/node':
+        specifier: ^20.0.0
+        version: 20.19.42
+      '@types/pg':
+        specifier: ^8.11.0
+        version: 8.20.0
+      eslint:
+        specifier: ^9.0.0
+        version: 9.39.4(jiti@1.21.7)
+      typescript:
+        specifier: ^5.3.0
+        version: 5.9.3
+      vitest:
+        specifier: ^2.0.0
+        version: 2.1.9(@types/node@20.19.42)
+
+  packages/modules/org-health:
+    dependencies:
+      pg:
+        specifier: ^8.11.0
+        version: 8.21.0
+    devDependencies:
+      '@types/node':
+        specifier: ^20.0.0
+        version: 20.19.42
+      '@types/pg':
+        specifier: ^8.11.0
+        version: 8.20.0
+      eslint:
+        specifier: ^9.0.0
+        version: 9.39.4(jiti@1.21.7)
+      typescript:
+        specifier: ^5.3.0
+        version: 5.9.3
+      vitest:
+        specifier: ^2.0.0
+        version: 2.1.9(@types/node@20.19.42)
+
+  packages/modules/org-memory:
+    dependencies:
+      pg:
+        specifier: ^8.11.0
+        version: 8.21.0
+    devDependencies:
+      '@types/node':
+        specifier: ^20.0.0
+        version: 20.19.42
+      '@types/pg':
+        specifier: ^8.11.0
+        version: 8.20.0
+      eslint:
+        specifier: ^9.0.0
+        version: 9.39.4(jiti@1.21.7)
+      vitest:
+        specifier: ^2.0.0
+        version: 2.1.9(@types/node@20.19.42)
+
+  packages/modules/organization:
+    dependencies:
+      '@galaxy/events':
+        specifier: workspace:*
+        version: link:../../events
+      '@galaxy/types':
+        specifier: workspace:*
+        version: link:../../types
+      '@galaxy/utils':
+        specifier: workspace:*
+        version: link:../../utils
+      pg:
+        specifier: ^8.12.0
+        version: 8.21.0
+      zod:
+        specifier: ^3.23.0
+        version: 3.25.76
+    devDependencies:
+      '@types/node':
+        specifier: ^20.0.0
+        version: 20.19.42
+      '@types/pg':
+        specifier: ^8.11.0
+        version: 8.20.0
+      eslint:
+        specifier: ^9.0.0
+        version: 9.39.4(jiti@1.21.7)
+      typescript:
+        specifier: ^5.5.0
+        version: 5.9.3
+      vitest:
+        specifier: ^2.0.0
+        version: 2.1.9(@types/node@20.19.42)
+
+  packages/modules/partner:
+    dependencies:
+      pg:
+        specifier: ^8.12.0
+        version: 8.21.0
+    devDependencies:
+      '@types/node':
+        specifier: ^20.0.0
+        version: 20.19.42
+      '@types/pg':
+        specifier: ^8.11.0
+        version: 8.20.0
+      eslint:
+        specifier: ^9.0.0
+        version: 9.39.4(jiti@1.21.7)
+      typescript:
+        specifier: ^5.5.0
+        version: 5.9.3
+      vitest:
+        specifier: ^2.0.0
+        version: 2.1.9(@types/node@20.19.42)
+
   packages/modules/people:
     dependencies:
       '@galaxy/events':
@@ -447,11 +1181,270 @@ importers:
         specifier: ^2.0.0
         version: 2.1.9(@types/node@20.19.42)
 
+  packages/modules/platform:
+    dependencies:
+      '@galaxy/types':
+        specifier: workspace:*
+        version: link:../../types
+      '@galaxy/utils':
+        specifier: workspace:*
+        version: link:../../utils
+      pg:
+        specifier: ^8.12.0
+        version: 8.21.0
+      zod:
+        specifier: ^3.23.0
+        version: 3.25.76
+    devDependencies:
+      '@types/node':
+        specifier: ^20.0.0
+        version: 20.19.42
+      '@types/pg':
+        specifier: ^8.11.0
+        version: 8.20.0
+      eslint:
+        specifier: ^9.0.0
+        version: 9.39.4(jiti@1.21.7)
+      tsx:
+        specifier: ^4.16.0
+        version: 4.22.4
+      typescript:
+        specifier: ^5.5.0
+        version: 5.9.3
+      vitest:
+        specifier: ^2.0.0
+        version: 2.1.9(@types/node@20.19.42)
+
+  packages/modules/platform-admin:
+    dependencies:
+      '@galaxy/types':
+        specifier: workspace:*
+        version: link:../../types
+      '@galaxy/utils':
+        specifier: workspace:*
+        version: link:../../utils
+      pg:
+        specifier: ^8.12.0
+        version: 8.21.0
+      zod:
+        specifier: ^3.23.0
+        version: 3.25.76
+    devDependencies:
+      '@types/node':
+        specifier: ^20.0.0
+        version: 20.19.42
+      '@types/pg':
+        specifier: ^8.11.0
+        version: 8.20.0
+      eslint:
+        specifier: ^9.0.0
+        version: 9.39.4(jiti@1.21.7)
+      tsx:
+        specifier: ^4.16.0
+        version: 4.22.4
+      typescript:
+        specifier: ^5.5.0
+        version: 5.9.3
+      vitest:
+        specifier: ^2.0.0
+        version: 2.1.9(@types/node@20.19.42)
+
+  packages/modules/policy-engine:
+    dependencies:
+      pg:
+        specifier: ^8.11.0
+        version: 8.21.0
+    devDependencies:
+      '@types/node':
+        specifier: ^20.0.0
+        version: 20.19.42
+      '@types/pg':
+        specifier: ^8.11.0
+        version: 8.20.0
+      eslint:
+        specifier: ^9.0.0
+        version: 9.39.4(jiti@1.21.7)
+      typescript:
+        specifier: ^5.3.0
+        version: 5.9.3
+      vitest:
+        specifier: ^2.0.0
+        version: 2.1.9(@types/node@20.19.42)
+
+  packages/modules/predictive:
+    dependencies:
+      pg:
+        specifier: ^8.11.0
+        version: 8.21.0
+    devDependencies:
+      '@types/node':
+        specifier: ^20.0.0
+        version: 20.19.42
+      '@types/pg':
+        specifier: ^8.11.0
+        version: 8.20.0
+      eslint:
+        specifier: ^9.0.0
+        version: 9.39.4(jiti@1.21.7)
+      vitest:
+        specifier: ^2.0.0
+        version: 2.1.9(@types/node@20.19.42)
+
+  packages/modules/reliability:
+    dependencies:
+      pg:
+        specifier: ^8.11.0
+        version: 8.21.0
+    devDependencies:
+      '@types/node':
+        specifier: ^20.0.0
+        version: 20.19.42
+      '@types/pg':
+        specifier: ^8.11.0
+        version: 8.20.0
+      eslint:
+        specifier: ^9.0.0
+        version: 9.39.4(jiti@1.21.7)
+      typescript:
+        specifier: ^5.3.0
+        version: 5.9.3
+      vitest:
+        specifier: ^2.0.0
+        version: 2.1.9(@types/node@20.19.42)
+
+  packages/modules/risk-intelligence:
+    dependencies:
+      pg:
+        specifier: ^8.11.0
+        version: 8.21.0
+    devDependencies:
+      '@types/node':
+        specifier: ^20.0.0
+        version: 20.19.42
+      '@types/pg':
+        specifier: ^8.11.0
+        version: 8.20.0
+      eslint:
+        specifier: ^9.0.0
+        version: 9.39.4(jiti@1.21.7)
+      vitest:
+        specifier: ^2.0.0
+        version: 2.1.9(@types/node@20.19.42)
+
+  packages/modules/self-healing:
+    dependencies:
+      '@galaxy/types':
+        specifier: workspace:*
+        version: link:../../types
+      '@galaxy/utils':
+        specifier: workspace:*
+        version: link:../../utils
+      pg:
+        specifier: ^8.11.0
+        version: 8.21.0
+      zod:
+        specifier: ^3.23.0
+        version: 3.25.76
+    devDependencies:
+      '@types/node':
+        specifier: ^20.0.0
+        version: 20.19.42
+      '@types/pg':
+        specifier: ^8.11.0
+        version: 8.20.0
+      eslint:
+        specifier: ^9.0.0
+        version: 9.39.4(jiti@1.21.7)
+      tsx:
+        specifier: ^4.16.0
+        version: 4.22.4
+      typescript:
+        specifier: ^5.5.0
+        version: 5.9.3
+      vitest:
+        specifier: ^2.0.0
+        version: 2.1.9(@types/node@20.19.42)
+
+  packages/modules/solution-packs:
+    dependencies:
+      pg:
+        specifier: ^8.11.0
+        version: 8.21.0
+    devDependencies:
+      '@types/node':
+        specifier: ^20.0.0
+        version: 20.19.42
+      '@types/pg':
+        specifier: ^8.11.0
+        version: 8.20.0
+      eslint:
+        specifier: ^9.0.0
+        version: 9.39.4(jiti@1.21.7)
+      vitest:
+        specifier: ^2.0.0
+        version: 2.1.9(@types/node@20.19.42)
+
+  packages/modules/workflow:
+    dependencies:
+      '@galaxy/events':
+        specifier: workspace:*
+        version: link:../../events
+      '@galaxy/types':
+        specifier: workspace:*
+        version: link:../../types
+      '@galaxy/utils':
+        specifier: workspace:*
+        version: link:../../utils
+      pg:
+        specifier: ^8.12.0
+        version: 8.21.0
+      zod:
+        specifier: ^3.23.0
+        version: 3.25.76
+    devDependencies:
+      '@types/node':
+        specifier: ^20.0.0
+        version: 20.19.42
+      '@types/pg':
+        specifier: ^8.11.0
+        version: 8.20.0
+      eslint:
+        specifier: ^9.0.0
+        version: 9.39.4(jiti@1.21.7)
+      tsx:
+        specifier: ^4.16.0
+        version: 4.22.4
+      typescript:
+        specifier: ^5.5.0
+        version: 5.9.3
+      vitest:
+        specifier: ^2.0.0
+        version: 2.1.9(@types/node@20.19.42)
+
+  packages/modules/workflow-generator:
+    dependencies:
+      pg:
+        specifier: ^8.11.0
+        version: 8.21.0
+    devDependencies:
+      '@types/node':
+        specifier: ^20.0.0
+        version: 20.19.42
+      '@types/pg':
+        specifier: ^8.11.0
+        version: 8.20.0
+      eslint:
+        specifier: ^9.0.0
+        version: 9.39.4(jiti@1.21.7)
+      typescript:
+        specifier: ^5.3.0
+        version: 5.9.3
+
   packages/types:
     devDependencies:
       vitest:
         specifier: ^2.0.0
-        version: 2.1.9(@types/node@20.19.42)
+        version: 2.1.9(@types/node@22.19.20)
 
   packages/utils:
     dependencies:
@@ -472,8 +1465,24 @@ packages:
     resolution: {integrity: sha512-UrcABB+4bUrFABwbluTIBErXwvbsU/V7TZWfmbgJfbkwiBuziS9gxdODUyuiecfdGQ85jglMW6juS3+z5TsKLw==}
     engines: {node: '>=10'}
 
+  '@anthropic-ai/sdk@0.111.0':
+    resolution: {integrity: sha512-1hUqKi+uJQoS5X90+InwHbFAXMvgq0DnsC5hVLEeSRaODiU5WvmqDAcVCmGS2wC0pN9Z8jtWCbWw7JLzeDdm/Q==}
+    hasBin: true
+    peerDependencies:
+      zod: ^3.25.0 || ^4.0.0
+    peerDependenciesMeta:
+      zod:
+        optional: true
+
   '@anthropic-ai/sdk@0.27.3':
     resolution: {integrity: sha512-IjLt0gd3L4jlOfilxVXTifn42FnVffMgDC04RJK1KDZpmkBWLv0XC92MVVmkxrFZNS/7l3xWgP/I3nqtX1sQHw==}
+
+  '@anthropic-ai/sdk@0.39.0':
+    resolution: {integrity: sha512-eMyDIPRZbt1CCLErRCi3exlAvNkBtRe+kW5vvJyef93PmNr/clstYgHhtvmkxN82nlKgzyGPCyGxrm0JQ1ZIdg==}
+
+  '@babel/runtime@7.29.7':
+    resolution: {integrity: sha512-Nq8OhGWiZIZGV6hLHoyAKLLcJihP/xFeBMGJoUrxTX2psI8dCifzLhZISFb+VWS3wFMRDmCGw5R+dOySCqPLhw==}
+    engines: {node: '>=6.9.0'}
 
   '@esbuild/aix-ppc64@0.21.5':
     resolution: {integrity: sha512-1SDgH6ZSPTlggy1yI6+Dbkiz8xzpHJEVAlF/AM1tHPLsf5STom9rwtjE4hKAF20FfXXNTFqEYXyJNWh1GiZedQ==}
@@ -717,9 +1726,6 @@ packages:
   '@ioredis/commands@1.10.0':
     resolution: {integrity: sha512-UmeW7z4LfctwoQ5wkhVzgq8tXkreED2xZGpX+Bg+zA+WJFZCT6c062AfCK/Dfk81xZnnwdhJCUMkitihRaoC2Q==}
 
-  '@ioredis/commands@1.5.1':
-    resolution: {integrity: sha512-JH8ZL/ywcJyR9MmJ5BNqZllXNZQqQbnVZOqpPQqE1vHiFgAw4NHbvE0FOduNU8IX9babitBT46571OnPTT0Zcw==}
-
   '@isaacs/cliui@8.0.2':
     resolution: {integrity: sha512-O8jcjabXaleOG9DQ0+ARXWZBTfnP4WNAqzuiJK7ll44AmxGKv/J2M4TPjxjY3znBCfvBXFzucm1twdyFybFqEA==}
     engines: {node: '>=12'}
@@ -847,6 +1853,11 @@ packages:
     resolution: {integrity: sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg==}
     engines: {node: '>=14'}
 
+  '@playwright/test@1.61.1':
+    resolution: {integrity: sha512-8nKv6+0RJSL9FE4jYOEGXnPeM/Hg12qZpmqzZjRh3qM0Y7c3z1mrOTfFLids72RDQYVh9WpLEfR5WdpNX4fkig==}
+    engines: {node: '>=18'}
+    hasBin: true
+
   '@rollup/rollup-android-arm-eabi@4.61.1':
     resolution: {integrity: sha512-JnBB8MdXj45cajvTuO5FmPlvFVJRQgvrz1uSEl3NwqFnReAPGwb8EanbGi4z2nRaqLzjJSv5/JmycoTKlRZxHA==}
     cpu: [arm]
@@ -972,6 +1983,9 @@ packages:
     cpu: [x64]
     os: [win32]
 
+  '@stablelib/base64@1.0.1':
+    resolution: {integrity: sha512-1bnPQqSxSuc3Ii6MhBysoWCg58j97aUjuCSZrGSmDxNqtytIi0k8utUenAwTZN4V5mXXYGsVUI9zeBqy+jBOSQ==}
+
   '@swc/counter@0.1.3':
     resolution: {integrity: sha512-e2BR4lsJkkRlKZ/qCHPw9ZaSxc0MVUd7gtbtaB7aMvHeJVYe8sOB8DBZkP2DtISHGSku9sCK6T6cnY0CtXrOCQ==}
 
@@ -1008,6 +2022,12 @@ packages:
     cpu: [arm64]
     os: [win32]
 
+  '@types/chai@5.2.3':
+    resolution: {integrity: sha512-Mw558oeA9fFbv65/y4mHtXDs9bPnFMZAL/jxdPFUpOHHIXX91mcgEHbS5Lahr+pwZFR8A7GQleRWeI6cGFC2UA==}
+
+  '@types/deep-eql@4.0.2':
+    resolution: {integrity: sha512-c9h9dVVMigMPc4bwTvC5dxqtqJZwQPePsWjPlpSOnojbor6pGqdk541lfA7AqFQr5pB1BRdq0juY9db81BwyFw==}
+
   '@types/estree@1.0.9':
     resolution: {integrity: sha512-GhdPgy1el4/ImP05X05Uw4cw2/M93BCUmnEvWZNStlCzEKME4Fkk+YpoA5OiHNQmoS7Cafb8Xa3Pya8m1Qrzeg==}
 
@@ -1022,6 +2042,9 @@ packages:
 
   '@types/node@20.19.42':
     resolution: {integrity: sha512-5L7SUaFC1RyDraj2yRhyBzHTobyXHmohD100CChNtyPyleoq37Mqab5Gn8XEKI04dfN/oqPdpHk38MgcQWHbZg==}
+
+  '@types/node@22.19.20':
+    resolution: {integrity: sha512-6tELRwSDYWW9EdZhbeZmYGZ1/7Djkt+Ah3/ScEYT9cDord7UJzasR/4D3VONg9tQI5CDp+/CZC1AXj2pCFOvpw==}
 
   '@types/pg@8.20.0':
     resolution: {integrity: sha512-bEPFOaMAHTEP1EzpvHTbmwR8UsFyHSKsRisLIHVMXnpNefSbGA1bD6CVy+qKjGSqmZqNqBDV2azOBo8TgkcVow==}
@@ -1099,6 +2122,9 @@ packages:
   '@vitest/expect@2.1.9':
     resolution: {integrity: sha512-UJCIkTBenHeKT1TTlKMJWy1laZewsRIzYighyYiJKZreqtdxSos/S1t+ktRMQWu2CKqaarrkeszJx1cgC5tGZw==}
 
+  '@vitest/expect@3.2.6':
+    resolution: {integrity: sha512-1+7q9BtaKzEmO+fmNT3kYvoNn5Y71XWAx2Q5HRim4tTVRQVRv4uJFAQ5FbK0OPUeNP/WmVCpxYxoJdvuHVjzBQ==}
+
   '@vitest/mocker@2.1.9':
     resolution: {integrity: sha512-tVL6uJgoUdi6icpxmdrn5YNo3g3Dxv+IHJBr0GXHaEdTcw3F+cPKnsXFhli6nO+f/6SDKPHEK1UN+k+TQv0Ehg==}
     peerDependencies:
@@ -1110,20 +2136,46 @@ packages:
       vite:
         optional: true
 
+  '@vitest/mocker@3.2.6':
+    resolution: {integrity: sha512-EZOrpDbkKotFAP7wPAQV1UIyoGOk4oX7ynWhBhLB7v+meMHbQhU16oPpIYGTTe4oFlhpryGpgpcZP/sin3hYuw==}
+    peerDependencies:
+      msw: ^2.4.9
+      vite: ^5.0.0 || ^6.0.0 || ^7.0.0-0
+    peerDependenciesMeta:
+      msw:
+        optional: true
+      vite:
+        optional: true
+
   '@vitest/pretty-format@2.1.9':
     resolution: {integrity: sha512-KhRIdGV2U9HOUzxfiHmY8IFHTdqtOhIzCpd8WRdJiE7D/HUcZVD0EgQCVjm+Q9gkUXWgBvMmTtZgIG48wq7sOQ==}
+
+  '@vitest/pretty-format@3.2.6':
+    resolution: {integrity: sha512-lb7XXXzmm2h2ASzFnRvQpDo6onT1NmMJA3tkGTWiBFtRJ9lxGY3d3mm/Apt36gej2bkkOVLL/yTOtufDaFa/jA==}
 
   '@vitest/runner@2.1.9':
     resolution: {integrity: sha512-ZXSSqTFIrzduD63btIfEyOmNcBmQvgOVsPNPe0jYtESiXkhd8u2erDLnMxmGrDCwHCCHE7hxwRDCT3pt0esT4g==}
 
+  '@vitest/runner@3.2.6':
+    resolution: {integrity: sha512-HYcoSj1w5tcgUnzoF0HcyaAQjpA1gj9ftUJ7iSJSuipc02jW9gKkigwZbjFldAfYHA1fa8UZVRftdMY5msWM9Q==}
+
   '@vitest/snapshot@2.1.9':
     resolution: {integrity: sha512-oBO82rEjsxLNJincVhLhaxxZdEtV0EFHMK5Kmx5sJ6H9L183dHECjiefOAdnqpIgT5eZwT04PoggUnW88vOBNQ==}
+
+  '@vitest/snapshot@3.2.6':
+    resolution: {integrity: sha512-H+ZjNTWGpObenh0YnlBctAPnJSI20P81PL8BPzWpx54YXLLTm8hEsWawtcYLMrwvpK48hGxLLbCS+1KRXhsKhw==}
 
   '@vitest/spy@2.1.9':
     resolution: {integrity: sha512-E1B35FwzXXTs9FHNK6bDszs7mtydNi5MIfUWpceJ8Xbfb1gBMscAnwLbEu+B44ed6W3XjL9/ehLPHR1fkf1KLQ==}
 
+  '@vitest/spy@3.2.6':
+    resolution: {integrity: sha512-oq6BbH68WzcWmwtBrU9nqLeaXTR4XwJF7FSLkKEZo4i6eoXcrxjcwSuTvWBIRUTC6VC72nXYunzqgZA+IKdtxg==}
+
   '@vitest/utils@2.1.9':
     resolution: {integrity: sha512-v0psaMSkNJ3A2NMrUEHFRzJtDPFn+/VWZ5WxImB21T9fjucJRmS7xCS3ppEnARb9y11OAzaD+P2Ps+b+BGX5iQ==}
+
+  '@vitest/utils@3.2.6':
+    resolution: {integrity: sha512-lI23nIs4bnT3T8NIoh+vFaz5s2/DdP0Jgt2jxwgWljvwn82cLJtyi/If+fjFyoLMGIOz0U/fKvWE0d4jsNQEfg==}
 
   abort-controller@3.0.0:
     resolution: {integrity: sha512-h8lQ8tacZYnR3vNQTgibj+tODHI5/+l06Au2Pcriv/Gmet0eaj4TwWH41sO9wnHDiQsEj19q0drzdWdeAHtweg==}
@@ -1330,10 +2382,6 @@ packages:
     resolution: {integrity: sha512-rwHwUfXL40Chm1r08yrhU3qpUvdVlgkKNeyeGPOxnW8/SyVDvgRaed/Uz54AqWNaTCAThlj6QAs3TZcKI0xDEw==}
     engines: {node: '>=0.10.0'}
 
-  cluster-key-slot@1.1.2:
-    resolution: {integrity: sha512-RMr0FhtfXemyinomL4hrWcYJxmX6deFdCxpJzhDttxgO1+bcCnkk+9drydLVDmAMG7NE6aN/fl4F7ucU/90gAA==}
-    engines: {node: '>=0.10.0'}
-
   color-convert@2.0.1:
     resolution: {integrity: sha512-RRECPsj7iu/xb5oKYcsFHSppFNnsj/52OVTRKb4zP5onXwVF3zVmmToNcOfGC+CRDpfK/U584fMg38ZHCaElKQ==}
     engines: {node: '>=7.0.0'}
@@ -1410,6 +2458,10 @@ packages:
   depd@2.0.0:
     resolution: {integrity: sha512-g7nH6P6dyDioJogAAGprGpCtVImJhpPk/roCzdb3fIh61/s/nPsfR6onyMwkCAR/OlC3yBC0lESvUoQEAssIrw==}
     engines: {node: '>= 0.8'}
+
+  dequal@2.0.3:
+    resolution: {integrity: sha512-0je+qPKHEMohvfRTCEo3CrPG6cAzAYgmzKyxRiYSSDkS6eGJdyVJm7WaYA5ECaAD9wLB2T4EEeymA5aFVcYXCA==}
+    engines: {node: '>=6'}
 
   detect-libc@2.1.2:
     resolution: {integrity: sha512-Btj2BOOO83o3WyH59e8MgXsxEQVcarkUOpEYrubB0urwnN10yQ364rsiByU11nZlqWYZm05i/of7io4mzihBtQ==}
@@ -1575,6 +2627,9 @@ packages:
   fast-querystring@1.1.2:
     resolution: {integrity: sha512-g6KuKWmFXc0fID8WWH0jit4g0AGBoJhCkJMb1RmbsSEUNvQ+ZC8D6CUZ+GtF8nMzSPXnhiePyyqqipzNNEnHjg==}
 
+  fast-sha256@1.3.0:
+    resolution: {integrity: sha512-n11RGP/lrWEFI/bWdygLxhI+pVeo1ZYIVwvvPkW7azl/rOy+F3HYRZ2K5zeE9mmkhQppyv9sQFx0JM9UabnpPQ==}
+
   fast-uri@2.4.0:
     resolution: {integrity: sha512-ypuAmmMKInk5q7XcepxlnUWDLWv4GFtaJqAzWKqn62IpQ3pejtr5dTVbt3vwqVaMKmkNR55sTT+CqUKIaT21BA==}
 
@@ -1654,8 +2709,8 @@ packages:
   fraction.js@5.3.4:
     resolution: {integrity: sha512-1X1NTtiJphryn/uLQz3whtY6jK3fTqoE3ohKs0tT+Ujr1W59oopxmoEh7Lu5p6vBaPbgoM0bzveAW4Qi5RyWDQ==}
 
-  framer-motion@11.18.2:
-    resolution: {integrity: sha512-5F5Och7wrvtLVElIpclDT0CBzMVg3dL22B64aZwHtsIY8RB4mXICLrkajK4G9R+ieSAGcgrLeae2SeUTg2pr6w==}
+  framer-motion@12.40.0:
+    resolution: {integrity: sha512-uaBd3qC1v3KQqBEjwTUd183K6PbS+j0yR9w9VmEOLWA/tnUcSn8Xa3uck7t4dgpDoUss8xQTcj8W2L07lrnLFg==}
     peerDependencies:
       '@emotion/is-prop-valid': '*'
       react: ^18.0.0 || ^19.0.0
@@ -1667,6 +2722,11 @@ packages:
         optional: true
       react-dom:
         optional: true
+
+  fsevents@2.3.2:
+    resolution: {integrity: sha512-xiqMQR4xAeHTuB9uWm+fFRcIOgKBMiOBP+eXiyT7jsgVCq1bkVygt00oASowB7EdtpOHaaPgKt812P9ab+DDKA==}
+    engines: {node: ^8.16.0 || ^10.6.0 || >=11.0.0}
+    os: [darwin]
 
   fsevents@2.3.3:
     resolution: {integrity: sha512-5xoDfX+fL7faATnagmWPpbFtwh/R77WmMMqqHGS65C3vvB0YHrgF+B1YmZ3441tMj5n63k0212XNoJwzlhffQw==}
@@ -1771,10 +2831,6 @@ packages:
   inherits@2.0.4:
     resolution: {integrity: sha512-k/vGaX4/Yla3WzyMCvTQOXYeIHvqOKtnqBduzTHpzpQZzAskKMhZ2K+EnBiSM9zGSoIFeMpXKxa4dYeZIQqewQ==}
 
-  ioredis@5.10.1:
-    resolution: {integrity: sha512-HuEDBTI70aYdx1v6U97SbNx9F1+svQKBDo30o0b9fw055LMepzpOOd0Ccg9Q6tbqmBSJaMuY0fB7yw9/vjBYCA==}
-    engines: {node: '>=12.22.0'}
-
   ioredis@5.11.1:
     resolution: {integrity: sha512-ehuGcf94bQXhfagULNXrJdfnWO38v070jxSx/qE87Kjzmu2fU7ro5EFAb+OPituLqgfyuQaym5DlrNydW2sJ9A==}
     engines: {node: '>=12.22.0'}
@@ -1829,8 +2885,14 @@ packages:
     resolution: {integrity: sha512-/imKNG4EbWNrVjoNC/1H5/9GFy+tqjGBHCaSsN+P2RnPqjsLmv6UD3Ej+Kj8nBWaRAwyk7kK5ZUc+OEatnTR3A==}
     hasBin: true
 
+  jose@6.2.3:
+    resolution: {integrity: sha512-YYVDInQKFJfR/xa3ojUTl8c2KoTwiL1R5Wg9YCydwH0x0B9grbzlg5HC7mMjCtUJjbQ/YnGEZIhI5tCgfTb4Hw==}
+
   js-tokens@4.0.0:
     resolution: {integrity: sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ==}
+
+  js-tokens@9.0.1:
+    resolution: {integrity: sha512-mxa9E9ITFOt0ban3j6L5MpjwegGz6lBQmM1IJkWeBZGcMxto50+eWdjC/52xDbS2vy0k7vIMK0Fe2wfL9OQSpQ==}
 
   js-yaml@4.2.0:
     resolution: {integrity: sha512-ePWsvanv0DWuDRsW8dnt+R4jQ31SCRCQ7hhNcPXZPsoBZiemuZNYGf7adZdqX2D86j6rvKp3RpCxVTSb8WQlOw==}
@@ -1846,6 +2908,10 @@ packages:
     resolution: {integrity: sha512-pJ4XLQP4Q9HTxl6RVDLJ8Cyh1uitSs0CzDBAz1uoJ4sRD/Bk7cFSXL1FUXDW3zJ7YnfliJx6eu8Jn283bpZ4Yg==}
     engines: {node: '>=10'}
 
+  json-schema-to-ts@3.1.1:
+    resolution: {integrity: sha512-+DWg8jCJG2TEnpy7kOm/7/AxaYoaRbjVB4LFZLySZlWn8exGs3A4OLJR966cVvU26N7X9TWxl+Jsw7dzAqKT6g==}
+    engines: {node: '>=16'}
+
   json-schema-traverse@0.4.1:
     resolution: {integrity: sha512-xbbCH5dCYU5T8LcEhhuh7HJ88HXuW3qsI3Y0zOZFKfZEHcpWiHU/Jxzk629Brsab/mMiHQti9wMP+845RPe3Vg==}
 
@@ -1854,6 +2920,10 @@ packages:
 
   json-stable-stringify-without-jsonify@1.0.1:
     resolution: {integrity: sha512-Bdboy+l7tA3OGW6FjyFHWkP5LuByj1Tk33Ljyq0axyzdk9//JSi2u3fP1QSmd1KNwq6VOKYGlAu87CisVir6Pw==}
+
+  kafkajs@2.2.4:
+    resolution: {integrity: sha512-j/YeapB1vfPT2iOIUn/vxdyKEuhuY2PxMBvf5JWux6iSaukAccrMtXEY/Lb7OvavDhOWME589bpLrEdnVHjfjA==}
+    engines: {node: '>=14.0.0'}
 
   keyv@4.5.4:
     resolution: {integrity: sha512-oxVHkHR/EJf2CNXnWxRLW6mg7JyCCUcG0DtEGmL2ctUo1PNTin1PUil+r/+4r5MpVgC/fn1kjsx7mjSujKqIpw==}
@@ -1884,12 +2954,6 @@ packages:
   locate-path@6.0.0:
     resolution: {integrity: sha512-iPZK6eYjbxRu3uB4/WZ3EsEIMJFMqAoopl3R+zuq0UjcAm/MO6KCweDgPfP3elTztoKP3KtnVHxTn2NHBSDVUw==}
     engines: {node: '>=10'}
-
-  lodash.defaults@4.2.0:
-    resolution: {integrity: sha512-qjxPLHd3r5DnsdGacqOMU6pb/avJzdh9tFX2ymgoZE27BmjXrNy/y4LoaiTeAb+O3gL8AfpJGtqfX/ae2leYYQ==}
-
-  lodash.isarguments@3.1.0:
-    resolution: {integrity: sha512-chi4NHZlZqZD18a0imDHnZPrDeBbTtVN7GXMwuGdRH9qotxAjYs3aVLKc7zNOG9eddR5Ksd8rvFEBc9SsggPpg==}
 
   lodash.merge@4.6.2:
     resolution: {integrity: sha512-0KpjqXRVvrYyCsX1swR/XTK0va6VQkQM6MNo7PqW77ByjAhoARA8EfrP1N4+KlKj8YS0ZUCtRT/YUuhyYDujIQ==}
@@ -1975,11 +3039,11 @@ packages:
   mnemonist@0.39.8:
     resolution: {integrity: sha512-vyWo2K3fjrUw8YeeZ1zF0fy6Mu59RHokURlld8ymdUPjMlD9EC9ov1/YPqTgqRvUN9nTr3Gqfz29LYAmu0PHPQ==}
 
-  motion-dom@11.18.1:
-    resolution: {integrity: sha512-g76KvA001z+atjfxczdRtw/RXOM3OMSdd1f4DL77qCTF/+avrRJiawSG4yDibEQ215sr9kpinSlX2pCTJ9zbhw==}
+  motion-dom@12.40.0:
+    resolution: {integrity: sha512-HxU3ZaBwNPVQUBQf1xxgq+7JrPNZvjLVxgbpEZL7RrWJnsxOf0/OM+yrHG9ogLQ31Do/r57Oz2gQWPK+6q62mg==}
 
-  motion-utils@11.18.1:
-    resolution: {integrity: sha512-49Kt+HKjtbJKLtgO/LKj9Ld+6vw9BjH5d9sc40R/kVyH8GLAXgT42M2NnuPcJNuA3s9ZfZBUcwIgpmZWGEE+hA==}
+  motion-utils@12.39.0:
+    resolution: {integrity: sha512-8nadJAJjTtqRkmRF36FoJTrywK9nnFmnPwnSMyxaOCU7GDjN9RTMJIxx9De8ErM+vpPhMccr/6fo5WciyQLnMQ==}
 
   ms@2.1.3:
     resolution: {integrity: sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA==}
@@ -2121,6 +3185,9 @@ packages:
   pathe@1.1.2:
     resolution: {integrity: sha512-whLdWMYL2TwI08hn8/ZqAbrVemu0LNaNNJZX73O6qaIdCTfXutsLhMkjdENX0qhsQ9uIimo4/aQOmXkoon2nDQ==}
 
+  pathe@2.0.3:
+    resolution: {integrity: sha512-WUjGcAqP1gQacoQe+OBJsFA7Ld4DyXuUIjZ5cc75cLHvJ7dtNsTugphxIADwspS+AraAUePCKrSVtPLFj/F88w==}
+
   pathval@2.0.1:
     resolution: {integrity: sha512-//nshmD55c46FuFw26xV/xFAaB5HF9Xdap7HJBBnrKdAd6/GxDBaNA1870O79+9ueg61cZLSVc+OaFlfmObYVQ==}
     engines: {node: '>= 14.16'}
@@ -2192,6 +3259,16 @@ packages:
   pirates@4.0.7:
     resolution: {integrity: sha512-TfySrs/5nm8fQJDcBDuUng3VOUKsd7S+zqvbOTiGXHfxX4wK31ard+hoNuvkicM/2YFzlpDgABOevKSsB4G/FA==}
     engines: {node: '>= 6'}
+
+  playwright-core@1.61.1:
+    resolution: {integrity: sha512-h7Qlt6m4REp25qvIdvbDtVmD4LqVXfpRxhORv9L0jzETM05p4fuPJ3dKyuSXQxDSbXnmS79HAgi9589lGSpLkg==}
+    engines: {node: '>=18'}
+    hasBin: true
+
+  playwright@1.61.1:
+    resolution: {integrity: sha512-DWnY5o3YbLWK4GovuAVwpqL+1VwGNdUGrRr++8j8PtQQzvAVZUIMjKQ90fY689sEJZJBbZVw1rXaOKSTitkzPQ==}
+    engines: {node: '>=18'}
+    hasBin: true
 
   postcss-import@15.1.0:
     resolution: {integrity: sha512-hpr+J05B2FVYUAXHeK1YyI267J/dDDhMU6B6civm8hSY1jYJnBXxzKDKDswzJmtLHryrjhnDjqqp/49t8FALew==}
@@ -2428,6 +3505,9 @@ packages:
   standard-as-callback@2.1.0:
     resolution: {integrity: sha512-qoRRSyROncaz1z0mvYqIE4lCd9p2R90i6GxW3uZv5ucSu8tU7B5HXUP1gG8pVZsYNVaXjk8ClXHPttLyxAL48A==}
 
+  standardwebhooks@1.0.0:
+    resolution: {integrity: sha512-BbHGOQK9olHPMvQNHWul6MYlrRTAOKn03rOe4A8O3CLWhNf4YHBqq2HJKKC+sfqpxiBY52pNeesD6jIiLDz8jg==}
+
   statuses@2.0.1:
     resolution: {integrity: sha512-RwNA9Z/7PrK06rYLIzFMlaF+l73iwpzsqRIFgbMLbTcLD6cOao82TaWefPXQvB2fOC4AjuYSEndS7N/mTCbkdQ==}
     engines: {node: '>= 0.8'}
@@ -2474,6 +3554,9 @@ packages:
     resolution: {integrity: sha512-6fPc+R4ihwqP6N/aIv2f1gMH8lOVtWQHoqC4yK6oSDVVocumAsfCqjkXnqiYMhmMwS/mEHLp7Vehlt3ql6lEig==}
     engines: {node: '>=8'}
 
+  strip-literal@3.1.0:
+    resolution: {integrity: sha512-8r3mkIM/2+PpjHoOtiAW8Rg3jJLHaV7xPwG+YRGrv6FP0wwk/toTpATxWYOW0BKdWwl82VT2tFYi5DlROa0Mxg==}
+
   styled-jsx@5.1.1:
     resolution: {integrity: sha512-pW7uC1l4mBZ8ugbiZrcIsiIvVx1UmTfw7UkC3Um2tmfUq9Bhk8IiyEIPl6F8agHgjzku6j0xQEZbfA5uSgSaCw==}
     engines: {node: '>= 12.0.0'}
@@ -2499,6 +3582,11 @@ packages:
   supports-preserve-symlinks-flag@1.0.0:
     resolution: {integrity: sha512-ot0WnXS9fgdkgIcePe6RHNk1WA8+muPa6cSjeR3V8K27q9BB1rTE3R1p7Hv0z1ZyAc8s6Vvv8DIyWf681MAt0w==}
     engines: {node: '>= 0.4'}
+
+  swr@2.4.2:
+    resolution: {integrity: sha512-ej644Y2bvkIajfR32KGeSSdBXQW+ScjGjkybZgSE7kFpk9eGnV44XY9FJylXi+W75pavSX1PVNB57W5EbhGIYw==}
+    peerDependencies:
+      react: ^16.11.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
 
   tailwindcss@3.4.19:
     resolution: {integrity: sha512-3ofp+LL8E+pK/JuPLPggVAIaEuhvIz4qNcf3nA1Xn2o/7fb7s/TYpHhwGDv1ZU3PkBluUVaF8PyCHcm48cKLWQ==}
@@ -2533,8 +3621,16 @@ packages:
     resolution: {integrity: sha512-weEDEq7Z5eTHPDh4xjX789+fHfF+P8boiFB+0vbWzpbnbsEr/GRaohi/uMKxg8RZMXnl1ItAi/IUHWMsjDV7kQ==}
     engines: {node: '>=14.0.0'}
 
+  tinyrainbow@2.0.0:
+    resolution: {integrity: sha512-op4nsTR47R6p0vMUUoYl/a+ljLFVtlfaXkLQmqfLR1qHma1h/ysYk4hEXZ880bf2CYgTskvTa/e196Vd5dDQXw==}
+    engines: {node: '>=14.0.0'}
+
   tinyspy@3.0.2:
     resolution: {integrity: sha512-n1cw8k1k0x4pgA2+9XrOkFydTerNcJ1zWCO5Nn9scWHTD+5tp8dghT2x1uduQePZTZgd3Tupf+x9BxJjeJi77Q==}
+    engines: {node: '>=14.0.0'}
+
+  tinyspy@4.0.4:
+    resolution: {integrity: sha512-azl+t0z7pw/z958Gy9svOTuzqIk6xq+NSheJzn5MMWtWTFywIacg2wUlzKFGtt3cthx0r2SxMK0yzJOR0IES7Q==}
     engines: {node: '>=14.0.0'}
 
   to-regex-range@5.0.1:
@@ -2551,6 +3647,9 @@ packages:
 
   tr46@0.0.3:
     resolution: {integrity: sha512-N3WMsuqV66lT30CrXNbEjx4GEwlow3v6rr4mCcv6prnfwhS01rkgyFdjPNBYd9br7LpXV1+Emh01fHnq2Gdgrw==}
+
+  ts-algebra@2.0.0:
+    resolution: {integrity: sha512-FPAhNPFMrkwz76P7cdjdmiShwMynZYN6SgOujD1urY4oNm80Ou9oMdmbR45LotcKOXoy7wSmHkRFE6Mxbrhefw==}
 
   ts-api-utils@2.5.0:
     resolution: {integrity: sha512-OJ/ibxhPlqrMM0UiNHJ/0CKQkoKF243/AEmplt3qpRgkW8VG7IfOS41h7V8TjITqdByHzrjcS/2si+y4lIh8NA==}
@@ -2597,12 +3696,22 @@ packages:
   uri-js@4.4.1:
     resolution: {integrity: sha512-7rKUyy33Q1yc98pQ1DAmLtwX109F7TIfWlW1Ydo8Wl1ii1SeHieeh0HHfPeL2fMXK6z0s8ecKs9frCuLJvndBg==}
 
+  use-sync-external-store@1.6.0:
+    resolution: {integrity: sha512-Pp6GSwGP/NrPIrxVFAIkOQeyw8lFenOHijQWkUTrDvrF4ALqylP2C/KCkeS9dpUM3KvYRQhna5vt7IL95+ZQ9w==}
+    peerDependencies:
+      react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
+
   util-deprecate@1.0.2:
     resolution: {integrity: sha512-EPD5q1uXyFxJpCrLnCc1nHnq3gOa6DZBocAIiI2TaSCA7VCJ1UJDMagCzIkXNsUYfD1daK//LTEQ8xiIbrHtcw==}
 
   vite-node@2.1.9:
     resolution: {integrity: sha512-AM9aQ/IPrW/6ENLQg3AGY4K1N2TGZdR5e4gu/MmmR2xR3Ll1+dib+nook92g4TV3PXVyeyxdWwtaCAiUL0hMxA==}
     engines: {node: ^18.0.0 || >=20.0.0}
+    hasBin: true
+
+  vite-node@3.2.4:
+    resolution: {integrity: sha512-EbKSKh+bh1E1IFxeO0pg1n4dvoOTt0UDiXMd/qn++r98+jPO1xtJilvXldeuQ8giIB5IkpjCgMleHMNEsGH6pg==}
+    engines: {node: ^18.0.0 || ^20.0.0 || >=22.0.0}
     hasBin: true
 
   vite@5.4.21:
@@ -2649,6 +3758,34 @@ packages:
       jsdom: '*'
     peerDependenciesMeta:
       '@edge-runtime/vm':
+        optional: true
+      '@types/node':
+        optional: true
+      '@vitest/browser':
+        optional: true
+      '@vitest/ui':
+        optional: true
+      happy-dom:
+        optional: true
+      jsdom:
+        optional: true
+
+  vitest@3.2.6:
+    resolution: {integrity: sha512-xejya+bT/j/+R/AGa1XOfRxLmNUlLtlwjRsFUILF+xHfzElmGcmFydy2gqqIrd62ptIEfwVMofd19uNWD9L7Nw==}
+    engines: {node: ^18.0.0 || ^20.0.0 || >=22.0.0}
+    hasBin: true
+    peerDependencies:
+      '@edge-runtime/vm': '*'
+      '@types/debug': ^4.1.12
+      '@types/node': ^18.0.0 || ^20.0.0 || >=22.0.0
+      '@vitest/browser': 3.2.6
+      '@vitest/ui': 3.2.6
+      happy-dom: '*'
+      jsdom: '*'
+    peerDependenciesMeta:
+      '@edge-runtime/vm':
+        optional: true
+      '@types/debug':
         optional: true
       '@types/node':
         optional: true
@@ -2729,6 +3866,13 @@ snapshots:
 
   '@alloc/quick-lru@5.2.0': {}
 
+  '@anthropic-ai/sdk@0.111.0(zod@3.25.76)':
+    dependencies:
+      json-schema-to-ts: 3.1.1
+      standardwebhooks: 1.0.0
+    optionalDependencies:
+      zod: 3.25.76
+
   '@anthropic-ai/sdk@0.27.3':
     dependencies:
       '@types/node': 18.19.130
@@ -2740,6 +3884,20 @@ snapshots:
       node-fetch: 2.7.0
     transitivePeerDependencies:
       - encoding
+
+  '@anthropic-ai/sdk@0.39.0':
+    dependencies:
+      '@types/node': 18.19.130
+      '@types/node-fetch': 2.6.13
+      abort-controller: 3.0.0
+      agentkeepalive: 4.6.0
+      form-data-encoder: 1.7.2
+      formdata-node: 4.4.1
+      node-fetch: 2.7.0
+    transitivePeerDependencies:
+      - encoding
+
+  '@babel/runtime@7.29.7': {}
 
   '@esbuild/aix-ppc64@0.21.5':
     optional: true
@@ -2959,8 +4117,6 @@ snapshots:
 
   '@ioredis/commands@1.10.0': {}
 
-  '@ioredis/commands@1.5.1': {}
-
   '@isaacs/cliui@8.0.2':
     dependencies:
       string-width: 5.1.2
@@ -3050,6 +4206,10 @@ snapshots:
   '@pkgjs/parseargs@0.11.0':
     optional: true
 
+  '@playwright/test@1.61.1':
+    dependencies:
+      playwright: 1.61.1
+
   '@rollup/rollup-android-arm-eabi@4.61.1':
     optional: true
 
@@ -3125,6 +4285,8 @@ snapshots:
   '@rollup/rollup-win32-x64-msvc@4.61.1':
     optional: true
 
+  '@stablelib/base64@1.0.1': {}
+
   '@swc/counter@0.1.3': {}
 
   '@swc/helpers@0.5.5':
@@ -3150,13 +4312,20 @@ snapshots:
   '@turbo/windows-arm64@2.9.16':
     optional: true
 
+  '@types/chai@5.2.3':
+    dependencies:
+      '@types/deep-eql': 4.0.2
+      assertion-error: 2.0.1
+
+  '@types/deep-eql@4.0.2': {}
+
   '@types/estree@1.0.9': {}
 
   '@types/json-schema@7.0.15': {}
 
   '@types/node-fetch@2.6.13':
     dependencies:
-      '@types/node': 20.19.42
+      '@types/node': 22.19.20
       form-data: 4.0.5
 
   '@types/node@18.19.130':
@@ -3167,9 +4336,13 @@ snapshots:
     dependencies:
       undici-types: 6.21.0
 
+  '@types/node@22.19.20':
+    dependencies:
+      undici-types: 6.21.0
+
   '@types/pg@8.20.0':
     dependencies:
-      '@types/node': 20.19.42
+      '@types/node': 22.19.20
       pg-protocol: 1.14.0
       pg-types: 2.2.0
 
@@ -3282,6 +4455,14 @@ snapshots:
       chai: 5.3.3
       tinyrainbow: 1.2.0
 
+  '@vitest/expect@3.2.6':
+    dependencies:
+      '@types/chai': 5.2.3
+      '@vitest/spy': 3.2.6
+      '@vitest/utils': 3.2.6
+      chai: 5.3.3
+      tinyrainbow: 2.0.0
+
   '@vitest/mocker@2.1.9(vite@5.4.21(@types/node@20.19.42))':
     dependencies:
       '@vitest/spy': 2.1.9
@@ -3290,14 +4471,40 @@ snapshots:
     optionalDependencies:
       vite: 5.4.21(@types/node@20.19.42)
 
+  '@vitest/mocker@2.1.9(vite@5.4.21(@types/node@22.19.20))':
+    dependencies:
+      '@vitest/spy': 2.1.9
+      estree-walker: 3.0.3
+      magic-string: 0.30.21
+    optionalDependencies:
+      vite: 5.4.21(@types/node@22.19.20)
+
+  '@vitest/mocker@3.2.6(vite@5.4.21(@types/node@22.19.20))':
+    dependencies:
+      '@vitest/spy': 3.2.6
+      estree-walker: 3.0.3
+      magic-string: 0.30.21
+    optionalDependencies:
+      vite: 5.4.21(@types/node@22.19.20)
+
   '@vitest/pretty-format@2.1.9':
     dependencies:
       tinyrainbow: 1.2.0
+
+  '@vitest/pretty-format@3.2.6':
+    dependencies:
+      tinyrainbow: 2.0.0
 
   '@vitest/runner@2.1.9':
     dependencies:
       '@vitest/utils': 2.1.9
       pathe: 1.1.2
+
+  '@vitest/runner@3.2.6':
+    dependencies:
+      '@vitest/utils': 3.2.6
+      pathe: 2.0.3
+      strip-literal: 3.1.0
 
   '@vitest/snapshot@2.1.9':
     dependencies:
@@ -3305,15 +4512,31 @@ snapshots:
       magic-string: 0.30.21
       pathe: 1.1.2
 
+  '@vitest/snapshot@3.2.6':
+    dependencies:
+      '@vitest/pretty-format': 3.2.6
+      magic-string: 0.30.21
+      pathe: 2.0.3
+
   '@vitest/spy@2.1.9':
     dependencies:
       tinyspy: 3.0.2
+
+  '@vitest/spy@3.2.6':
+    dependencies:
+      tinyspy: 4.0.4
 
   '@vitest/utils@2.1.9':
     dependencies:
       '@vitest/pretty-format': 2.1.9
       loupe: 3.2.1
       tinyrainbow: 1.2.0
+
+  '@vitest/utils@3.2.6':
+    dependencies:
+      '@vitest/pretty-format': 3.2.6
+      loupe: 3.2.1
+      tinyrainbow: 2.0.0
 
   abort-controller@3.0.0:
     dependencies:
@@ -3443,7 +4666,7 @@ snapshots:
   bullmq@5.78.0:
     dependencies:
       cron-parser: 4.9.0
-      ioredis: 5.10.1
+      ioredis: 5.11.1
       msgpackr: 2.0.2
       node-abort-controller: 3.1.1
       semver: 7.8.0
@@ -3510,8 +4733,6 @@ snapshots:
 
   cluster-key-slot@1.1.1: {}
 
-  cluster-key-slot@1.1.2: {}
-
   color-convert@2.0.1:
     dependencies:
       color-name: 1.1.4
@@ -3563,6 +4784,8 @@ snapshots:
   denque@2.1.0: {}
 
   depd@2.0.0: {}
+
+  dequal@2.0.3: {}
 
   detect-libc@2.1.2:
     optional: true
@@ -3773,6 +4996,8 @@ snapshots:
     dependencies:
       fast-decode-uri-component: 1.0.1
 
+  fast-sha256@1.3.0: {}
+
   fast-uri@2.4.0: {}
 
   fast-uri@3.1.2: {}
@@ -3870,14 +5095,17 @@ snapshots:
 
   fraction.js@5.3.4: {}
 
-  framer-motion@11.18.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
+  framer-motion@12.40.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
     dependencies:
-      motion-dom: 11.18.1
-      motion-utils: 11.18.1
+      motion-dom: 12.40.0
+      motion-utils: 12.39.0
       tslib: 2.8.1
     optionalDependencies:
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
+
+  fsevents@2.3.2:
+    optional: true
 
   fsevents@2.3.3:
     optional: true
@@ -3972,20 +5200,6 @@ snapshots:
 
   inherits@2.0.4: {}
 
-  ioredis@5.10.1:
-    dependencies:
-      '@ioredis/commands': 1.5.1
-      cluster-key-slot: 1.1.2
-      debug: 4.4.3
-      denque: 2.1.0
-      lodash.defaults: 4.2.0
-      lodash.isarguments: 3.1.0
-      redis-errors: 1.2.0
-      redis-parser: 3.0.0
-      standard-as-callback: 2.1.0
-    transitivePeerDependencies:
-      - supports-color
-
   ioredis@5.11.1:
     dependencies:
       '@ioredis/commands': 1.10.0
@@ -4036,7 +5250,11 @@ snapshots:
 
   jiti@1.21.7: {}
 
+  jose@6.2.3: {}
+
   js-tokens@4.0.0: {}
+
+  js-tokens@9.0.1: {}
 
   js-yaml@4.2.0:
     dependencies:
@@ -4056,11 +5274,18 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  json-schema-to-ts@3.1.1:
+    dependencies:
+      '@babel/runtime': 7.29.7
+      ts-algebra: 2.0.0
+
   json-schema-traverse@0.4.1: {}
 
   json-schema-traverse@1.0.0: {}
 
   json-stable-stringify-without-jsonify@1.0.1: {}
+
+  kafkajs@2.2.4: {}
 
   keyv@4.5.4:
     dependencies:
@@ -4108,10 +5333,6 @@ snapshots:
   locate-path@6.0.0:
     dependencies:
       p-locate: 5.0.0
-
-  lodash.defaults@4.2.0: {}
-
-  lodash.isarguments@3.1.0: {}
 
   lodash.merge@4.6.2: {}
 
@@ -4184,11 +5405,11 @@ snapshots:
     dependencies:
       obliterator: 2.0.5
 
-  motion-dom@11.18.1:
+  motion-dom@12.40.0:
     dependencies:
-      motion-utils: 11.18.1
+      motion-utils: 12.39.0
 
-  motion-utils@11.18.1: {}
+  motion-utils@12.39.0: {}
 
   ms@2.1.3: {}
 
@@ -4218,7 +5439,7 @@ snapshots:
 
   natural-compare@1.4.0: {}
 
-  next@14.2.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
+  next@14.2.0(@playwright/test@1.61.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
     dependencies:
       '@next/env': 14.2.0
       '@swc/helpers': 0.5.5
@@ -4239,6 +5460,7 @@ snapshots:
       '@next/swc-win32-arm64-msvc': 14.2.0
       '@next/swc-win32-ia32-msvc': 14.2.0
       '@next/swc-win32-x64-msvc': 14.2.0
+      '@playwright/test': 1.61.1
     transitivePeerDependencies:
       - '@babel/core'
       - babel-plugin-macros
@@ -4320,6 +5542,8 @@ snapshots:
 
   pathe@1.1.2: {}
 
+  pathe@2.0.3: {}
+
   pathval@2.0.1: {}
 
   pg-cloudflare@1.4.0:
@@ -4388,6 +5612,14 @@ snapshots:
       thread-stream: 3.2.0
 
   pirates@4.0.7: {}
+
+  playwright-core@1.61.1: {}
+
+  playwright@1.61.1:
+    dependencies:
+      playwright-core: 1.61.1
+    optionalDependencies:
+      fsevents: 2.3.2
 
   postcss-import@15.1.0(postcss@8.5.15):
     dependencies:
@@ -4602,6 +5834,11 @@ snapshots:
 
   standard-as-callback@2.1.0: {}
 
+  standardwebhooks@1.0.0:
+    dependencies:
+      '@stablelib/base64': 1.0.1
+      fast-sha256: 1.3.0
+
   statuses@2.0.1: {}
 
   std-env@3.10.0: {}
@@ -4648,6 +5885,10 @@ snapshots:
 
   strip-json-comments@3.1.1: {}
 
+  strip-literal@3.1.0:
+    dependencies:
+      js-tokens: 9.0.1
+
   styled-jsx@5.1.1(react@18.3.1):
     dependencies:
       client-only: 0.0.1
@@ -4668,6 +5909,12 @@ snapshots:
       has-flag: 4.0.0
 
   supports-preserve-symlinks-flag@1.0.0: {}
+
+  swr@2.4.2(react@18.3.1):
+    dependencies:
+      dequal: 2.0.3
+      react: 18.3.1
+      use-sync-external-store: 1.6.0(react@18.3.1)
 
   tailwindcss@3.4.19(tsx@4.22.4)(yaml@2.9.0):
     dependencies:
@@ -4722,7 +5969,11 @@ snapshots:
 
   tinyrainbow@1.2.0: {}
 
+  tinyrainbow@2.0.0: {}
+
   tinyspy@3.0.2: {}
+
+  tinyspy@4.0.4: {}
 
   to-regex-range@5.0.1:
     dependencies:
@@ -4733,6 +5984,8 @@ snapshots:
   toidentifier@1.0.1: {}
 
   tr46@0.0.3: {}
+
+  ts-algebra@2.0.0: {}
 
   ts-api-utils@2.5.0(typescript@5.9.3):
     dependencies:
@@ -4777,6 +6030,10 @@ snapshots:
     dependencies:
       punycode: 2.3.1
 
+  use-sync-external-store@1.6.0(react@18.3.1):
+    dependencies:
+      react: 18.3.1
+
   util-deprecate@1.0.2: {}
 
   vite-node@2.1.9(@types/node@20.19.42):
@@ -4797,6 +6054,42 @@ snapshots:
       - supports-color
       - terser
 
+  vite-node@2.1.9(@types/node@22.19.20):
+    dependencies:
+      cac: 6.7.14
+      debug: 4.4.3
+      es-module-lexer: 1.7.0
+      pathe: 1.1.2
+      vite: 5.4.21(@types/node@22.19.20)
+    transitivePeerDependencies:
+      - '@types/node'
+      - less
+      - lightningcss
+      - sass
+      - sass-embedded
+      - stylus
+      - sugarss
+      - supports-color
+      - terser
+
+  vite-node@3.2.4(@types/node@22.19.20):
+    dependencies:
+      cac: 6.7.14
+      debug: 4.4.3
+      es-module-lexer: 1.7.0
+      pathe: 2.0.3
+      vite: 5.4.21(@types/node@22.19.20)
+    transitivePeerDependencies:
+      - '@types/node'
+      - less
+      - lightningcss
+      - sass
+      - sass-embedded
+      - stylus
+      - sugarss
+      - supports-color
+      - terser
+
   vite@5.4.21(@types/node@20.19.42):
     dependencies:
       esbuild: 0.21.5
@@ -4804,6 +6097,15 @@ snapshots:
       rollup: 4.61.1
     optionalDependencies:
       '@types/node': 20.19.42
+      fsevents: 2.3.3
+
+  vite@5.4.21(@types/node@22.19.20):
+    dependencies:
+      esbuild: 0.21.5
+      postcss: 8.5.15
+      rollup: 4.61.1
+    optionalDependencies:
+      '@types/node': 22.19.20
       fsevents: 2.3.3
 
   vitest@2.1.9(@types/node@20.19.42):
@@ -4830,6 +6132,79 @@ snapshots:
       why-is-node-running: 2.3.0
     optionalDependencies:
       '@types/node': 20.19.42
+    transitivePeerDependencies:
+      - less
+      - lightningcss
+      - msw
+      - sass
+      - sass-embedded
+      - stylus
+      - sugarss
+      - supports-color
+      - terser
+
+  vitest@2.1.9(@types/node@22.19.20):
+    dependencies:
+      '@vitest/expect': 2.1.9
+      '@vitest/mocker': 2.1.9(vite@5.4.21(@types/node@22.19.20))
+      '@vitest/pretty-format': 2.1.9
+      '@vitest/runner': 2.1.9
+      '@vitest/snapshot': 2.1.9
+      '@vitest/spy': 2.1.9
+      '@vitest/utils': 2.1.9
+      chai: 5.3.3
+      debug: 4.4.3
+      expect-type: 1.3.0
+      magic-string: 0.30.21
+      pathe: 1.1.2
+      std-env: 3.10.0
+      tinybench: 2.9.0
+      tinyexec: 0.3.2
+      tinypool: 1.1.1
+      tinyrainbow: 1.2.0
+      vite: 5.4.21(@types/node@22.19.20)
+      vite-node: 2.1.9(@types/node@22.19.20)
+      why-is-node-running: 2.3.0
+    optionalDependencies:
+      '@types/node': 22.19.20
+    transitivePeerDependencies:
+      - less
+      - lightningcss
+      - msw
+      - sass
+      - sass-embedded
+      - stylus
+      - sugarss
+      - supports-color
+      - terser
+
+  vitest@3.2.6(@types/node@22.19.20):
+    dependencies:
+      '@types/chai': 5.2.3
+      '@vitest/expect': 3.2.6
+      '@vitest/mocker': 3.2.6(vite@5.4.21(@types/node@22.19.20))
+      '@vitest/pretty-format': 3.2.6
+      '@vitest/runner': 3.2.6
+      '@vitest/snapshot': 3.2.6
+      '@vitest/spy': 3.2.6
+      '@vitest/utils': 3.2.6
+      chai: 5.3.3
+      debug: 4.4.3
+      expect-type: 1.3.0
+      magic-string: 0.30.21
+      pathe: 2.0.3
+      picomatch: 4.0.4
+      std-env: 3.10.0
+      tinybench: 2.9.0
+      tinyexec: 0.3.2
+      tinyglobby: 0.2.17
+      tinypool: 1.1.1
+      tinyrainbow: 2.0.0
+      vite: 5.4.21(@types/node@22.19.20)
+      vite-node: 3.2.4(@types/node@22.19.20)
+      why-is-node-running: 2.3.0
+    optionalDependencies:
+      '@types/node': 22.19.20
     transitivePeerDependencies:
       - less
       - lightningcss
