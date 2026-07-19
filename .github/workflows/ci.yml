@@ -84,7 +84,7 @@ jobs:
         run: pnpm build --filter=@galaxy/types --filter=@galaxy/config --filter=@galaxy/utils
 
       - name: Run unit tests
-        run: pnpm test --filter=@galaxy/types --filter=@galaxy/utils
+        run: pnpm test --filter=@galaxy/types --filter=@galaxy/utils --filter=@galaxy/workflow --filter=@galaxy/conversation --filter=@galaxy/developer --filter=@galaxy/digital-twin --filter=@galaxy/intelligence --filter=@galaxy/observability --filter=@galaxy/policy-engine --filter=@galaxy/integrations --filter=@galaxy/identity --filter=@galaxy/people --filter=@galaxy/organization --filter=@galaxy/economy --filter=@galaxy/api-gateway
         env:
           NODE_ENV: test
 
