@@ -34,7 +34,7 @@ function sessionRow(overrides: Partial<{ status: string; closed_at: Date | null 
   return {
     id: SESSION_ID,
     organization_id: ORG,
-    channel_type: 'WHATSAPP',
+    channel_type: 'whatsapp',
     external_id: 'ext-001',
     participant_id: 'member-1',
     status: overrides.status ?? 'OPEN',
@@ -56,7 +56,7 @@ function messageRow(overrides: Partial<{ status: string; intent: string | null }
     id: MESSAGE_ID,
     organization_id: ORG,
     session_id: SESSION_ID,
-    direction: 'INBOUND',
+    direction: 'inbound',
     status: overrides.status ?? 'received',
     content: 'Hello, I need help',
     raw_payload: {},
@@ -75,11 +75,11 @@ describe('ConversationSessionService.createSession', () => {
   it('sets tenant context and returns mapped session', async () => {
     const pool = makePool([ok([]), ok([sessionRow()])]);
     const svc = new ConversationSessionService(pool);
-    const result = await svc.createSession(ORG, 'WHATSAPP', 'ext-001', 'member-1');
+    const result = await svc.createSession(ORG, 'whatsapp', 'ext-001', 'member-1');
 
     expect(result.id).toBe(SESSION_ID);
     expect(result.status).toBe('OPEN');
-    expect(result.channelType).toBe('WHATSAPP');
+    expect(result.channelType).toBe('whatsapp');
     expect(result.organizationId).toBe(ORG);
 
     const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls;
@@ -89,7 +89,7 @@ describe('ConversationSessionService.createSession', () => {
   it('throws when INSERT/UPSERT returns no row', async () => {
     const pool = makePool([ok([]), ok([])]);
     const svc = new ConversationSessionService(pool);
-    await expect(svc.createSession(ORG, 'WHATSAPP', 'ext-001', 'member-1')).rejects.toThrow(
+    await expect(svc.createSession(ORG, 'whatsapp', 'ext-001', 'member-1')).rejects.toThrow(
       'Failed to create conversation session',
     );
   });
@@ -112,10 +112,10 @@ describe('ConversationSessionService.getSession', () => {
 
 describe('ConversationSessionService.updateSessionStatus', () => {
   it('returns session with updated status', async () => {
-    const pool = makePool([ok([]), ok([sessionRow({ status: 'PAUSED' })])]);
+    const pool = makePool([ok([]), ok([sessionRow({ status: 'ACTIVE' })])]);
     const svc = new ConversationSessionService(pool);
-    const result = await svc.updateSessionStatus(ORG, SESSION_ID, 'PAUSED');
-    expect(result.status).toBe('PAUSED');
+    const result = await svc.updateSessionStatus(ORG, SESSION_ID, 'ACTIVE');
+    expect(result.status).toBe('ACTIVE');
   });
 
   it('throws when session not found', async () => {
@@ -186,11 +186,11 @@ describe('ConversationMessageService.ingestMessage', () => {
   it('sets tenant context and returns message with received status', async () => {
     const pool = makePool([ok([]), ok([messageRow()])]);
     const svc = new ConversationMessageService(pool);
-    const result = await svc.ingestMessage(ORG, SESSION_ID, 'INBOUND', 'Hello', {});
+    const result = await svc.ingestMessage(ORG, SESSION_ID, 'inbound', 'Hello', {});
 
     expect(result.id).toBe(MESSAGE_ID);
     expect(result.status).toBe('received');
-    expect(result.direction).toBe('INBOUND');
+    expect(result.direction).toBe('inbound');
 
     const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls;
     expect((calls[0] as [string, unknown[]])[0]).toBe('SELECT set_config($1, $2, true)');
@@ -199,7 +199,7 @@ describe('ConversationMessageService.ingestMessage', () => {
   it('throws when INSERT returns no row', async () => {
     const pool = makePool([ok([]), ok([])]);
     const svc = new ConversationMessageService(pool);
-    await expect(svc.ingestMessage(ORG, SESSION_ID, 'INBOUND', 'Hi', {})).rejects.toThrow(
+    await expect(svc.ingestMessage(ORG, SESSION_ID, 'inbound', 'Hi', {})).rejects.toThrow(
       'Failed to ingest conversation message',
     );
   });
@@ -234,16 +234,16 @@ describe('ConversationMessageService.getMessages', () => {
 
 describe('ConversationMessageService.updateMessageStatus', () => {
   it('returns message with updated status', async () => {
-    const pool = makePool([ok([]), ok([messageRow({ status: 'delivered' })])]);
+    const pool = makePool([ok([]), ok([messageRow({ status: 'processed' })])]);
     const svc = new ConversationMessageService(pool);
-    const result = await svc.updateMessageStatus(ORG, MESSAGE_ID, 'delivered');
-    expect(result.status).toBe('delivered');
+    const result = await svc.updateMessageStatus(ORG, MESSAGE_ID, 'processed');
+    expect(result.status).toBe('processed');
   });
 
   it('throws when message not found', async () => {
     const pool = makePool([ok([]), ok([])]);
     const svc = new ConversationMessageService(pool);
-    await expect(svc.updateMessageStatus(ORG, 'ghost', 'delivered')).rejects.toThrow(
+    await expect(svc.updateMessageStatus(ORG, 'ghost', 'processed')).rejects.toThrow(
       'Conversation message not found',
     );
   });
