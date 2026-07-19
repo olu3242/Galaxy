@@ -85,8 +85,12 @@ export class DAGPlanner {
       const layerTasks = layer.filter((taskId) => {
         const node = plan.nodes.get(taskId);
         if (!node) return false;
-        const depsFailed = node.task.dependsOn.some((depId) => failedTasks.includes(depId));
-        if (depsFailed) {
+        // A task is blocked if any dependency failed OR was itself skipped
+        // (skipped means its own dependency chain is broken).
+        const depsBlocked = node.task.dependsOn.some(
+          (depId) => failedTasks.includes(depId) || skippedTasks.includes(depId),
+        );
+        if (depsBlocked) {
           node.status = 'skipped';
           skippedTasks.push(taskId);
           return false;

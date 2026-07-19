@@ -14,6 +14,7 @@ export interface AgentMessage {
 
 export interface AgentBusSubscription {
   agentId: string;
+  organizationId: string;
   handler: (message: AgentMessage) => void;
 }
 
@@ -31,17 +32,21 @@ export class AgentBus {
 
   /** Subscribe an agent to messages addressed to it or broadcast within an org. */
   subscribe(subscription: AgentBusSubscription): () => void {
-    const handler = (message: AgentMessage): void => {
-      if (message.toAgentId === 'broadcast' || message.toAgentId === subscription.agentId) {
-        subscription.handler(message);
-      }
+    const directHandler = (message: AgentMessage): void => {
+      subscription.handler(message);
+    };
+    const broadcastHandler = (message: AgentMessage): void => {
+      subscription.handler(message);
     };
 
-    const channel = `org:${subscription.agentId}`;
-    this.emitter.on(channel, handler);
+    const directChannel = `org:${subscription.agentId}`;
+    const broadcastChannel = `org:broadcast:${subscription.organizationId}`;
+    this.emitter.on(directChannel, directHandler);
+    this.emitter.on(broadcastChannel, broadcastHandler);
 
     return () => {
-      this.emitter.off(channel, handler);
+      this.emitter.off(directChannel, directHandler);
+      this.emitter.off(broadcastChannel, broadcastHandler);
     };
   }
 

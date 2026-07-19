@@ -15,21 +15,21 @@ export async function executiveRoutes(fastify: FastifyInstance): Promise<void> {
     async (
       request: FastifyRequest<{
         Body: {
-          organizationId: string;
           query: string;
-          actorId: string;
           context?: Record<string, unknown>;
           correlationId?: string;
         };
       }>,
       reply: FastifyReply,
     ) => {
-      const { organizationId, query, actorId, context, correlationId } = request.body;
+      // organizationId and actorId come from the verified JWT — never from the body.
+      const user = request.user as { sub: string; organizationId: string };
+      const { query, context, correlationId } = request.body;
       const copilot = new AliceCopilot(fastify.pg);
       const response = await copilot.query({
-        organizationId,
+        organizationId: user.organizationId,
         query,
-        actorId,
+        actorId: user.sub,
         correlationId: correlationId ?? randomUUID(),
         ...(context !== undefined ? { context } : {}),
       });
@@ -38,26 +38,18 @@ export async function executiveRoutes(fastify: FastifyInstance): Promise<void> {
   );
 
   // GET /executive/briefing — daily executive intelligence briefing
-  fastify.get(
-    '/executive/briefing',
-    async (
-      request: FastifyRequest<{
-        Querystring: { organizationId: string; actorId: string };
-      }>,
-      reply: FastifyReply,
-    ) => {
-      const { organizationId, actorId } = request.query;
-      const copilot = new AliceCopilot(fastify.pg);
-      const response = await copilot.query({
-        organizationId,
-        query: 'Provide a comprehensive executive morning briefing covering all key areas.',
-        actorId,
-        correlationId: randomUUID(),
-        context: { briefingType: 'daily_morning' },
-      });
-      return reply.send(response);
-    },
-  );
+  fastify.get('/executive/briefing', async (request: FastifyRequest, reply: FastifyReply) => {
+    const user = request.user as { sub: string; organizationId: string };
+    const copilot = new AliceCopilot(fastify.pg);
+    const response = await copilot.query({
+      organizationId: user.organizationId,
+      query: 'Provide a comprehensive executive morning briefing covering all key areas.',
+      actorId: user.sub,
+      correlationId: randomUUID(),
+      context: { briefingType: 'daily_morning' },
+    });
+    return reply.send(response);
+  });
 
   // POST /executive/strategic-review — deep strategic review
   fastify.post(
@@ -65,20 +57,19 @@ export async function executiveRoutes(fastify: FastifyInstance): Promise<void> {
     async (
       request: FastifyRequest<{
         Body: {
-          organizationId: string;
-          actorId: string;
           reviewPeriod?: 'week' | 'month' | 'quarter';
           correlationId?: string;
         };
       }>,
       reply: FastifyReply,
     ) => {
-      const { organizationId, actorId, reviewPeriod = 'week', correlationId } = request.body;
+      const user = request.user as { sub: string; organizationId: string };
+      const { reviewPeriod = 'week', correlationId } = request.body;
       const copilot = new AliceCopilot(fastify.pg);
       const response = await copilot.query({
-        organizationId,
+        organizationId: user.organizationId,
         query: `Perform a strategic ${reviewPeriod}ly review: highlight wins, risks, blockers, and recommended actions.`,
-        actorId,
+        actorId: user.sub,
         correlationId: correlationId ?? randomUUID(),
         context: { reviewPeriod },
       });
