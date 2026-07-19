@@ -407,7 +407,7 @@ describe('PeopleService', () => {
     const svc = new PeopleService(pool);
     const result = await svc.createDepartmentWithTeam(
       { organizationId: ORG, name: 'Engineering', correlationId: CORR, actorId: ACTOR },
-      { name: 'Alpha', departmentId: DEPT_ID },
+      { name: 'Alpha' },
     );
 
     expect(result.departmentId).toBe(DEPT_ID);
