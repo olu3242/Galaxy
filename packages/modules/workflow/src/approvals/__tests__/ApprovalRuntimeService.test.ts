@@ -59,7 +59,8 @@ describe('ApprovalRuntimeService', () => {
   describe('request()', () => {
     it('inserts approval_request and pauses workflow run', async () => {
       const row = makeRow();
-      const query = vi.fn()
+      const query = vi
+        .fn()
         .mockResolvedValueOnce({ rows: [], rowCount: 0 }) // set_config
         .mockResolvedValueOnce({ rows: [row], rowCount: 1 }) // INSERT approval_requests
         .mockResolvedValueOnce({ rows: [], rowCount: 1 }); // UPDATE workflow_runs
@@ -93,7 +94,8 @@ describe('ApprovalRuntimeService', () => {
     });
 
     it('throws if INSERT returns no row', async () => {
-      const query = vi.fn()
+      const query = vi
+        .fn()
         .mockResolvedValueOnce({ rows: [], rowCount: 0 }) // set_config
         .mockResolvedValueOnce({ rows: [], rowCount: 0 }); // INSERT returns nothing
 
@@ -121,14 +123,20 @@ describe('ApprovalRuntimeService', () => {
   describe('decide()', () => {
     it('approves and resumes workflow run', async () => {
       const row = makeRow();
-      const approvedRow = makeRow({ status: 'approved', decision: 'approved', decided_by: 'member-1', decided_at: '2026-01-02T00:00:00Z' });
+      const approvedRow = makeRow({
+        status: 'approved',
+        decision: 'approved',
+        decided_by: 'member-1',
+        decided_at: '2026-01-02T00:00:00Z',
+      });
 
-      const query = vi.fn()
-        .mockResolvedValueOnce({ rows: [row], rowCount: 1 })          // SELECT approval
-        .mockResolvedValueOnce({ rows: [], rowCount: 0 })              // set_config
-        .mockResolvedValueOnce({ rows: [approvedRow], rowCount: 1 })  // UPDATE approval
-        .mockResolvedValueOnce({ rows: [], rowCount: 1 })              // UPDATE workflow_run
-        .mockResolvedValueOnce({ rows: [], rowCount: 1 });             // INSERT audit_log
+      const query = vi
+        .fn()
+        .mockResolvedValueOnce({ rows: [row], rowCount: 1 }) // SELECT approval
+        .mockResolvedValueOnce({ rows: [], rowCount: 0 }) // set_config
+        .mockResolvedValueOnce({ rows: [approvedRow], rowCount: 1 }) // UPDATE approval
+        .mockResolvedValueOnce({ rows: [], rowCount: 1 }) // UPDATE workflow_run
+        .mockResolvedValueOnce({ rows: [], rowCount: 1 }); // INSERT audit_log
 
       pool = { query } as unknown as Pool;
       service = new ApprovalRuntimeService(pool);
@@ -145,7 +153,8 @@ describe('ApprovalRuntimeService', () => {
 
     it('rejects if actor is not assigned', async () => {
       const row = makeRow({ assigned_to: ['member-2'] });
-      const query = vi.fn()
+      const query = vi
+        .fn()
         .mockResolvedValueOnce({ rows: [row], rowCount: 1 })
         .mockResolvedValueOnce({ rows: [], rowCount: 0 }); // set_config
 
@@ -159,7 +168,8 @@ describe('ApprovalRuntimeService', () => {
 
     it('rejects if approval is already decided', async () => {
       const row = makeRow({ status: 'approved' });
-      const query = vi.fn()
+      const query = vi
+        .fn()
         .mockResolvedValueOnce({ rows: [row], rowCount: 1 })
         .mockResolvedValueOnce({ rows: [], rowCount: 0 }); // set_config
 
@@ -179,7 +189,8 @@ describe('ApprovalRuntimeService', () => {
       const row = makeRow();
       const delegatedRow = makeRow({ status: 'delegated', delegated_to: 'member-2' });
 
-      const query = vi.fn()
+      const query = vi
+        .fn()
         .mockResolvedValueOnce({ rows: [row], rowCount: 1 })
         .mockResolvedValueOnce({ rows: [], rowCount: 0 })
         .mockResolvedValueOnce({ rows: [delegatedRow], rowCount: 1 })
@@ -198,16 +209,17 @@ describe('ApprovalRuntimeService', () => {
 
     it('rejects if actor is not assigned', async () => {
       const row = makeRow({ assigned_to: ['member-99'] });
-      const query = vi.fn()
+      const query = vi
+        .fn()
         .mockResolvedValueOnce({ rows: [row], rowCount: 1 })
         .mockResolvedValueOnce({ rows: [], rowCount: 0 });
 
       pool = { query } as unknown as Pool;
       service = new ApprovalRuntimeService(pool);
 
-      await expect(
-        service.delegate('apr-1', 'member-1', 'member-2', 'reason'),
-      ).rejects.toThrow('not assigned');
+      await expect(service.delegate('apr-1', 'member-1', 'member-2', 'reason')).rejects.toThrow(
+        'not assigned',
+      );
     });
   });
 
@@ -218,7 +230,8 @@ describe('ApprovalRuntimeService', () => {
       const row = makeRow({ escalate_to: 'manager-1' });
       const escalatedRow = makeRow({ status: 'escalated', escalated_to: 'manager-1' });
 
-      const query = vi.fn()
+      const query = vi
+        .fn()
         .mockResolvedValueOnce({ rows: [row], rowCount: 1 })
         .mockResolvedValueOnce({ rows: [], rowCount: 0 })
         .mockResolvedValueOnce({ rows: [escalatedRow], rowCount: 1 })
@@ -243,7 +256,8 @@ describe('ApprovalRuntimeService', () => {
       const overdue = makeRow({ timeout_at: '2026-01-01T00:00:00Z', escalate_to: null });
       const timedOutRow = makeRow({ status: 'timeout' });
 
-      const query = vi.fn()
+      const query = vi
+        .fn()
         // Sweep query
         .mockResolvedValueOnce({ rows: [overdue], rowCount: 1 })
         // set_config for org
@@ -276,7 +290,8 @@ describe('ApprovalRuntimeService', () => {
   describe('getPending()', () => {
     it('returns pending approvals assigned to actor', async () => {
       const row = makeRow();
-      const query = vi.fn()
+      const query = vi
+        .fn()
         .mockResolvedValueOnce({ rows: [], rowCount: 0 }) // set_config
         .mockResolvedValueOnce({ rows: [row], rowCount: 1 });
 
@@ -294,7 +309,8 @@ describe('ApprovalRuntimeService', () => {
   describe('getByWorkflowRun()', () => {
     it('returns all approvals for a workflow run', async () => {
       const rows = [makeRow(), makeRow({ id: 'apr-2' })];
-      const query = vi.fn()
+      const query = vi
+        .fn()
         .mockResolvedValueOnce({ rows: [], rowCount: 0 })
         .mockResolvedValueOnce({ rows, rowCount: 2 });
 

@@ -151,7 +151,8 @@ describe('KnowledgeIngestionService', () => {
 
     it('preserves paragraph boundaries when possible', () => {
       const service = new KnowledgeIngestionService({} as Pool);
-      const content = 'First paragraph content.\n\nSecond paragraph content.\n\nThird paragraph content.';
+      const content =
+        'First paragraph content.\n\nSecond paragraph content.\n\nThird paragraph content.';
       const chunks = service.chunkContent(content, 50);
       // Each paragraph is ~25 chars so they should be individual chunks
       expect(chunks.length).toBeGreaterThanOrEqual(2);
@@ -178,11 +179,11 @@ describe('KnowledgeIngestionService', () => {
 
       const mockResponse = {
         ok: true,
-        json: async () => ({ content: [{ text: '0' }] }),
+        json: () => Promise.resolve({ content: [{ text: '0' }] }),
       };
-      const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
-        mockResponse as Response,
-      );
+      const fetchSpy = vi
+        .spyOn(globalThis, 'fetch')
+        .mockResolvedValueOnce(mockResponse as Response);
 
       const service = new KnowledgeIngestionService({} as Pool);
       const result = await service.generateEmbedding('test text');
@@ -196,9 +197,9 @@ describe('KnowledgeIngestionService', () => {
       process.env.ANTHROPIC_API_KEY = 'test-key';
 
       const mockResponse = { ok: false, status: 500 };
-      const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
-        mockResponse as Response,
-      );
+      const fetchSpy = vi
+        .spyOn(globalThis, 'fetch')
+        .mockResolvedValueOnce(mockResponse as Response);
 
       const service = new KnowledgeIngestionService({} as Pool);
       const result = await service.generateEmbedding('test text');
