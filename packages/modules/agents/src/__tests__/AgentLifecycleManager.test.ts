@@ -28,49 +28,49 @@ describe('AgentLifecycleManager', () => {
       correlationId: 'corr-001',
       input: { query: 'status report' },
       handlers: {
-        OBSERVE: async (ctx) => {
+        OBSERVE: (ctx) => {
           executedPhases.push(ctx.currentPhase);
-          return { observations: 'context loaded' };
+          return Promise.resolve({ observations: 'context loaded' });
         },
-        UNDERSTAND: async (ctx) => {
+        UNDERSTAND: (ctx) => {
           executedPhases.push(ctx.currentPhase);
-          return { intent: 'status_query' };
+          return Promise.resolve({ intent: 'status_query' });
         },
-        RETRIEVE_CONTEXT: async (ctx) => {
+        RETRIEVE_CONTEXT: (ctx) => {
           executedPhases.push(ctx.currentPhase);
-          return { workflows: 5, approvals: 2 };
+          return Promise.resolve({ workflows: 5, approvals: 2 });
         },
-        REASON: async (ctx) => {
+        REASON: (ctx) => {
           executedPhases.push(ctx.currentPhase);
-          return { reasoning: 'all clear' };
+          return Promise.resolve({ reasoning: 'all clear' });
         },
-        PLAN: async (ctx) => {
+        PLAN: (ctx) => {
           executedPhases.push(ctx.currentPhase);
-          return { steps: ['query_db', 'format_response'] };
+          return Promise.resolve({ steps: ['query_db', 'format_response'] });
         },
-        DELEGATE: async (ctx) => {
+        DELEGATE: (ctx) => {
           executedPhases.push(ctx.currentPhase);
-          return null;
+          return Promise.resolve(null);
         },
-        EXECUTE: async (ctx) => {
+        EXECUTE: (ctx) => {
           executedPhases.push(ctx.currentPhase);
-          return { result: 'success' };
+          return Promise.resolve({ result: 'success' });
         },
-        VERIFY: async (ctx) => {
+        VERIFY: (ctx) => {
           executedPhases.push(ctx.currentPhase);
-          return { verified: true };
+          return Promise.resolve({ verified: true });
         },
-        LEARN: async (ctx) => {
+        LEARN: (ctx) => {
           executedPhases.push(ctx.currentPhase);
-          return { learningId: 'learn-001' };
+          return Promise.resolve({ learningId: 'learn-001' });
         },
-        OPTIMIZE: async (ctx) => {
+        OPTIMIZE: (ctx) => {
           executedPhases.push(ctx.currentPhase);
-          return null;
+          return Promise.resolve(null);
         },
-        REPORT: async (ctx) => {
+        REPORT: (ctx) => {
           executedPhases.push(ctx.currentPhase);
-          return { summary: 'All systems operational' };
+          return Promise.resolve({ summary: 'All systems operational' });
         },
       },
     });
@@ -107,7 +107,7 @@ describe('AgentLifecycleManager', () => {
       correlationId: 'corr-002',
       input: {},
       handlers: {
-        EXECUTE: async () => ({ done: true }),
+        EXECUTE: () => Promise.resolve({ done: true }),
       },
     });
 
@@ -119,7 +119,7 @@ describe('AgentLifecycleManager', () => {
   });
 
   it('stores handler results in phaseResults for downstream phases', async () => {
-    let capturedResults: Record<string, unknown> | undefined;
+    let capturedResults: Partial<Record<LifecyclePhase, unknown>> | undefined;
 
     await manager.run({
       executionId: 'exec-003',
@@ -128,16 +128,16 @@ describe('AgentLifecycleManager', () => {
       correlationId: 'corr-003',
       input: { amount: 5000 },
       handlers: {
-        OBSERVE: async () => ({ risk: 'low' }),
-        REASON: async (ctx) => {
-          capturedResults = ctx.phaseResults as Record<string, unknown>;
-          return { decision: 'proceed' };
+        OBSERVE: () => Promise.resolve({ risk: 'low' }),
+        REASON: (ctx) => {
+          capturedResults = ctx.phaseResults;
+          return Promise.resolve({ decision: 'proceed' });
         },
       },
     });
 
     expect(capturedResults).toBeDefined();
-    expect((capturedResults as Record<string, unknown>)['OBSERVE']).toEqual({ risk: 'low' });
+    expect(capturedResults?.OBSERVE).toEqual({ risk: 'low' });
   });
 
   it('marks trace as failed and persists on handler error', async () => {
@@ -153,7 +153,7 @@ describe('AgentLifecycleManager', () => {
         correlationId: 'corr-004',
         input: {},
         handlers: {
-          EXECUTE: async () => {
+          EXECUTE: () => {
             throw new Error('execution failed');
           },
         },
@@ -209,10 +209,10 @@ describe('AgentLifecycleManager', () => {
 
     expect(insertCall).toBeDefined();
     const params = insertCall?.[1] as unknown[];
-    expect(params?.[0]).toBe('org-999'); // organization_id
-    expect(params?.[1]).toBe('exec-006'); // execution_id
-    expect(params?.[2]).toBe('guardian'); // agent_type
-    expect(params?.[3]).toBe('corr-006'); // correlation_id
-    expect(params?.[6]).toBe('completed'); // outcome
+    expect(params[0]).toBe('org-999'); // organization_id
+    expect(params[1]).toBe('exec-006'); // execution_id
+    expect(params[2]).toBe('guardian'); // agent_type
+    expect(params[3]).toBe('corr-006'); // correlation_id
+    expect(params[6]).toBe('completed'); // outcome
   });
 });

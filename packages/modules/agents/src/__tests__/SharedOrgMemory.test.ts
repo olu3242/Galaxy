@@ -1,7 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import type { Pool, QueryResult } from 'pg';
 import { SharedOrgMemory } from '../memory/SharedOrgMemory.js';
-import type { OrgMemoryEntry } from '../memory/SharedOrgMemory.js';
 
 function ok<T extends object>(rows: T[]): QueryResult<T> {
   return { rows, rowCount: rows.length, command: 'SELECT', oid: 0, fields: [] };
@@ -106,7 +105,7 @@ describe('SharedOrgMemory', () => {
       expect(results[0]?.title).toBe('Deploy always after tests');
 
       const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls;
-      const selectSql = (calls[1] as [string, unknown[]])[0] as string;
+      const selectSql = (calls[1] as [string, unknown[]])[0];
       expect(selectSql).toContain('ILIKE');
       const params = (calls[1] as [string, unknown[]])[1];
       expect(params[1]).toBe('%tests%');
@@ -119,7 +118,7 @@ describe('SharedOrgMemory', () => {
       await svc.retrieve(ORG, 'tests', 'lesson', 5);
 
       const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls;
-      const params = (calls[1] as [string, unknown[]])[1] as unknown[];
+      const params = (calls[1] as [string, unknown[]])[1];
       expect(params).toContain('lesson');
       expect(params).toContain(5);
     });
@@ -142,10 +141,10 @@ describe('SharedOrgMemory', () => {
       const result = await svc.getLatest(ORG, 'entry-1');
 
       expect(result).not.toBeNull();
-      expect((result as OrgMemoryEntry).version).toBe(2);
+      expect(result?.version).toBe(2);
 
       const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls;
-      const sql = (calls[1] as [string, unknown[]])[0] as string;
+      const sql = (calls[1] as [string, unknown[]])[0];
       expect(sql).toContain('ORDER BY version DESC');
       expect(sql).toContain('LIMIT 1');
     });
@@ -173,7 +172,7 @@ describe('SharedOrgMemory', () => {
       expect(results[1]?.version).toBe(2);
 
       const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls;
-      const sql = (calls[1] as [string, unknown[]])[0] as string;
+      const sql = (calls[1] as [string, unknown[]])[0];
       expect(sql).toContain('ORDER BY version ASC');
     });
 
@@ -206,7 +205,7 @@ describe('SharedOrgMemory', () => {
       expect(result.createdBy).toBe('operations_copilot');
 
       const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls;
-      const insertParams = (calls[1] as [string, unknown[]])[1] as unknown[];
+      const insertParams = (calls[1] as [string, unknown[]])[1];
       expect(insertParams).toContain('lesson');
     });
 
@@ -226,7 +225,7 @@ describe('SharedOrgMemory', () => {
       });
 
       const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls;
-      const insertParams = (calls[1] as [string, unknown[]])[1] as unknown[];
+      const insertParams = (calls[1] as [string, unknown[]])[1];
       expect(insertParams).toContainEqual(result.tags);
     });
   });

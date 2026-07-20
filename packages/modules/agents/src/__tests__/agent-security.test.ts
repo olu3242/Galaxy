@@ -54,10 +54,12 @@ describe('Agent Security', () => {
       const calls = queryMock.mock.calls as [string, unknown[]][];
 
       // First call must be the set_config RLS statement
-      expect(calls[0]![0]).toContain('set_config');
-      expect(calls[0]![1]).toContain(ORG_A);
+      const firstCall = calls[0];
+      if (firstCall === undefined) throw new Error('Expected at least one query call');
+      expect(firstCall[0]).toContain('set_config');
+      expect(firstCall[1]).toContain(ORG_A);
       // The org_id must not be ORG_B
-      expect(calls[0]![1]).not.toContain(ORG_B);
+      expect(firstCall[1]).not.toContain(ORG_B);
     });
 
     it('actor from org A cannot be validated against org B context', async () => {
@@ -80,7 +82,9 @@ describe('Agent Security', () => {
       const queryMock = pool.query as ReturnType<typeof vi.fn>;
       const calls = queryMock.mock.calls as [string, unknown[]][];
       // Confirm it set ORG_A, not ORG_B
-      expect(calls[0]![1]).toEqual(['app.current_tenant', ORG_A]);
+      const firstCall = calls[0];
+      if (firstCall === undefined) throw new Error('Expected at least one query call');
+      expect(firstCall[1]).toEqual(['app.current_tenant', ORG_A]);
     });
   });
 

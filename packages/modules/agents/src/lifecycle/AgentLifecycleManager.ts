@@ -99,7 +99,7 @@ export class AgentLifecycleManager {
     try {
       for (const phase of ORDERED_PHASES) {
         ctx.currentPhase = phase;
-        await this.enterPhase(trace, phase);
+        this.enterPhase(trace, phase);
 
         const handler = handlers[phase];
         let result: unknown = undefined;
@@ -109,7 +109,7 @@ export class AgentLifecycleManager {
         }
 
         ctx.phaseResults[phase] = result;
-        await this.exitPhase(trace, phase, result);
+        this.exitPhase(trace, phase, result);
       }
 
       trace.totalDurationMs = Date.now() - startMs;
@@ -122,8 +122,7 @@ export class AgentLifecycleManager {
       if (lastPhase !== undefined && lastPhase.exitedAt === undefined) {
         const now = new Date().toISOString();
         lastPhase.exitedAt = now;
-        lastPhase.durationMs =
-          new Date(now).getTime() - new Date(lastPhase.enteredAt).getTime();
+        lastPhase.durationMs = new Date(now).getTime() - new Date(lastPhase.enteredAt).getTime();
         lastPhase.result = { error: err instanceof Error ? err.message : String(err) };
       }
 
@@ -136,18 +135,14 @@ export class AgentLifecycleManager {
     return trace;
   }
 
-  private async enterPhase(trace: LifecycleTrace, phase: LifecyclePhase): Promise<void> {
+  private enterPhase(trace: LifecycleTrace, phase: LifecyclePhase): void {
     trace.phases.push({
       phase,
       enteredAt: new Date().toISOString(),
     });
   }
 
-  private async exitPhase(
-    trace: LifecycleTrace,
-    phase: LifecyclePhase,
-    result: unknown,
-  ): Promise<void> {
+  private exitPhase(trace: LifecycleTrace, phase: LifecyclePhase, result: unknown): void {
     const entry = trace.phases.find((p) => p.phase === phase && p.exitedAt === undefined);
     if (entry === undefined) return;
 
