@@ -1,0 +1,21 @@
+[allowlist]
+description = "Global allowlist for test fixtures, CI config env vars, and certification docs"
+
+# Test files use fake credentials that are clearly marked as test values
+paths = [
+  '''apps/api/src/__tests__/.*\.test\.ts''',
+  '''apps/api/src/__tests__/.*\.spec\.ts''',
+  '''apps/web/e2e/.*''',
+  '''packages/chaos/src/__tests__/.*''',
+  '''\.github/workflows/.*\.yml''',
+  '''docs/certification/.*''',
+]
+
+# Allow common test/dummy credential patterns
+regexes = [
+  '''test-jwt-''',
+  '''test-whatsapp''',
+  '''test-signing-key''',
+  '''test-webhook''',
+  '''minimum-32-characters''',
+]
