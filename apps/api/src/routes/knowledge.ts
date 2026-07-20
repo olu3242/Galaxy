@@ -428,11 +428,9 @@ export async function knowledgeRoutes(fastify: FastifyInstance): Promise<void> {
       } = request.body;
 
       if (!organizationId || !title || !content || !sourceId || !createdBy) {
-        return reply
-          .status(400)
-          .send({
-            error: 'organizationId, title, content, sourceType, sourceId, createdBy are required',
-          });
+        return reply.status(400).send({
+          error: 'organizationId, title, content, sourceType, sourceId, createdBy are required',
+        });
       }
 
       const document = await ingestionService.ingestText({

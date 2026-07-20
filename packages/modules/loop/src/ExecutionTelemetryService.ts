@@ -98,9 +98,7 @@ export class ExecutionTelemetryService {
     ]);
   }
 
-  async record(
-    entry: Omit<ExecutionTelemetryEntry, 'id' | 'recordedAt'>,
-  ): Promise<void> {
+  async record(entry: Omit<ExecutionTelemetryEntry, 'id' | 'recordedAt'>): Promise<void> {
     await this.setTenantContext(entry.organizationId);
     await this.pool.query(
       `INSERT INTO execution_telemetry
@@ -178,10 +176,7 @@ export class ExecutionTelemetryService {
     };
   }
 
-  async detectBottlenecks(
-    organizationId: string,
-    workflowDefinitionId: string,
-  ): Promise<string[]> {
+  async detectBottlenecks(organizationId: string, workflowDefinitionId: string): Promise<string[]> {
     await this.setTenantContext(organizationId);
     const result = await this.pool.query<BottleneckRow>(
       `SELECT

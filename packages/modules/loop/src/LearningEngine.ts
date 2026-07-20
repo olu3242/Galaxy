@@ -1,5 +1,8 @@
 import crypto from 'node:crypto';
-import type { ExecutionTelemetryEntry, ExecutionTelemetryService } from './ExecutionTelemetryService.js';
+import type {
+  ExecutionTelemetryEntry,
+  ExecutionTelemetryService,
+} from './ExecutionTelemetryService.js';
 
 /**
  * Minimal interface for persisting lessons to shared org memory.
@@ -74,7 +77,8 @@ export class LearningEngine {
       );
       recommendations.push({
         type: 'reduce_approval_chain',
-        description: 'Review approval chain — more than half of execution time was spent waiting for human approvals',
+        description:
+          'Review approval chain — more than half of execution time was spent waiting for human approvals',
         estimatedSavingMs: Math.round(entry.approvalWaitMs * 0.4),
       });
     }
@@ -171,7 +175,8 @@ export class LearningEngine {
       if (stats.avgDurationMs > slaProxyMs * 0.7) {
         suggestions.push({
           type: 'reduce_approval_chain',
-          description: 'Average duration is above 70% of a 30-minute SLA — consider streamlining the approval chain',
+          description:
+            'Average duration is above 70% of a 30-minute SLA — consider streamlining the approval chain',
           estimatedSavingMs: Math.round(stats.avgDurationMs * 0.2),
         });
       }

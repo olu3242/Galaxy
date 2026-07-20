@@ -28,7 +28,9 @@ function makePool(responses: QueryResult[]): Pool {
   } as unknown as Pool;
 }
 
-function makeEntry(overrides: Partial<ExecutionTelemetryEntry> = {}): Omit<ExecutionTelemetryEntry, 'id' | 'recordedAt'> {
+function makeEntry(
+  overrides: Partial<ExecutionTelemetryEntry> = {},
+): Omit<ExecutionTelemetryEntry, 'id' | 'recordedAt'> {
   return {
     organizationId: ORG,
     workflowRunId: 'run-001',

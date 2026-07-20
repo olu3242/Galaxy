@@ -134,11 +134,9 @@ approvalWorker.on('failed', (job, err) => {
 });
 
 // Approval timeout worker — checks for timed-out pending approvals every 5 minutes
-const approvalTimeoutWorker = new Worker(
-  'approval-timeout',
-  createApprovalTimeoutProcessor(pool),
-  { connection },
-);
+const approvalTimeoutWorker = new Worker('approval-timeout', createApprovalTimeoutProcessor(pool), {
+  connection,
+});
 approvalTimeoutWorker.on('completed', (job) => {
   logger.info({ jobId: job.id }, 'approval-timeout job completed');
 });

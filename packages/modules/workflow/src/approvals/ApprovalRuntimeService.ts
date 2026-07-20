@@ -377,8 +377,11 @@ export class ApprovalRuntimeService {
     const timedOut: ApprovalRequest[] = [];
 
     for (const row of overdueResult.rows) {
-      const { organization_id: organizationId, id: approvalId, correlation_id: correlationId } =
-        row;
+      const {
+        organization_id: organizationId,
+        id: approvalId,
+        correlation_id: correlationId,
+      } = row;
 
       await this.setTenant(organizationId);
 
@@ -469,4 +472,3 @@ export class ApprovalRuntimeService {
     return row !== undefined ? rowToRequest(row) : null;
   }
 }
-

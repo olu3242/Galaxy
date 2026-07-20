@@ -68,9 +68,7 @@ describe('LearningEngine.processExecution', () => {
     const memory = makeOrgMemory();
     const engine = new LearningEngine(telemetry, memory);
     const event = await engine.processExecution(makeEntry());
-    expect(event.id).toMatch(
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/,
-    );
+    expect(event.id).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/);
     expect(event.workflowRunId).toBe(RUN_ID);
   });
 
@@ -102,9 +100,7 @@ describe('LearningEngine.processExecution', () => {
     const telemetry = new ExecutionTelemetryService(pool);
     const memory = makeOrgMemory();
     const engine = new LearningEngine(telemetry, memory);
-    const event = await engine.processExecution(
-      makeEntry({ bottlenecks: ['step-2', 'step-4'] }),
-    );
+    const event = await engine.processExecution(makeEntry({ bottlenecks: ['step-2', 'step-4'] }));
     const rec = event.recommendations.find((r) => r.type === 'parallelize');
     expect(rec).toBeDefined();
     expect(rec?.estimatedSavingMs).toBeGreaterThan(0);
@@ -149,9 +145,7 @@ describe('LearningEngine.processExecution', () => {
     const telemetry = new ExecutionTelemetryService(pool);
     const memory = makeOrgMemory();
     const engine = new LearningEngine(telemetry, memory);
-    const event = await engine.processExecution(
-      makeEntry({ stepCount: 5, failedSteps: 2 }),
-    );
+    const event = await engine.processExecution(makeEntry({ stepCount: 5, failedSteps: 2 }));
     const rec = event.recommendations.find((r) => r.type === 'remove_step');
     expect(rec).toBeDefined();
   });
@@ -161,9 +155,7 @@ describe('LearningEngine.processExecution', () => {
     const telemetry = new ExecutionTelemetryService(pool);
     const memory = makeOrgMemory();
     const engine = new LearningEngine(telemetry, memory);
-    await engine.processExecution(
-      makeEntry({ outcome: 'failed', errorMessages: ['err1'] }),
-    );
+    await engine.processExecution(makeEntry({ outcome: 'failed', errorMessages: ['err1'] }));
     expect(memory.store).toHaveBeenCalledWith(
       ORG,
       expect.objectContaining({ memoryType: 'lesson' }),

@@ -17,10 +17,7 @@ export { LoopOptimizationService } from './services/LoopOptimizationService.js';
 export type { WorkflowPattern, LoopInsight } from './services/LoopLearningService.js';
 export type { OptimizationRecommendation } from './services/LoopOptimizationService.js';
 export { ExecutionTelemetryService } from './ExecutionTelemetryService.js';
-export type {
-  ExecutionTelemetryEntry,
-  WorkflowStats,
-} from './ExecutionTelemetryService.js';
+export type { ExecutionTelemetryEntry, WorkflowStats } from './ExecutionTelemetryService.js';
 export { LearningEngine } from './LearningEngine.js';
 export type {
   SharedOrgMemory,

@@ -218,7 +218,9 @@ describe.skipIf(!DATABASE_URL)('Multi-Tenant Certification', () => {
       const { rows } = await pool
         .query<{
           organization_id: string;
-        }>(`SELECT organization_id FROM autonomous_agents WHERE organization_id = $1 LIMIT 1`, [orgBId])
+        }>(`SELECT organization_id FROM autonomous_agents WHERE organization_id = $1 LIMIT 1`, [
+          orgBId,
+        ])
         .catch(() => ({ rows: [] as { organization_id: string }[] }));
 
       expect(rows).toHaveLength(0);

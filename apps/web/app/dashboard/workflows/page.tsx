@@ -2,11 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import {
-  useWorkflowDefinitions,
-  useAllApprovals,
-  useWorkflowStats,
-} from '../../../lib/api';
+import { useWorkflowDefinitions, useAllApprovals, useWorkflowStats } from '../../../lib/api';
 import type { WorkflowDefinition, ApprovalItem } from '../../../lib/api';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -152,7 +148,12 @@ function StatPill({
       }}
     >
       <div
-        style={{ fontSize: '11px', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: '6px' }}
+        style={{
+          fontSize: '11px',
+          textTransform: 'uppercase',
+          color: 'var(--muted)',
+          marginBottom: '6px',
+        }}
       >
         {label}
       </div>
@@ -181,7 +182,11 @@ export default function WorkflowsPage() {
   const [approvalStatus, setApprovalStatus] = useState('');
 
   const { data: wfData, isLoading: wfLoading } = useWorkflowDefinitions(statusFilter || undefined);
-  const { data: apData, isLoading: apLoading } = useAllApprovals(approvalStatus || undefined, 1, 50);
+  const { data: apData, isLoading: apLoading } = useAllApprovals(
+    approvalStatus || undefined,
+    1,
+    50,
+  );
   const { data: statsData } = useWorkflowStats();
 
   const stats = statsData?.data;
@@ -264,7 +269,11 @@ export default function WorkflowsPage() {
           <StatPill label="Active" value={stats?.active ?? '—'} accent="#22c55e" />
           <StatPill label="Pending" value={stats?.pending ?? '—'} accent="#f59e0b" />
           <StatPill label="Completed" value={stats?.completed ?? '—'} accent="#6366f1" />
-          <StatPill label="SLA Breaches" value={stats?.slaBreaches ?? '—'} accent={stats && stats.slaBreaches > 0 ? '#ef4444' : '#22c55e'} />
+          <StatPill
+            label="SLA Breaches"
+            value={stats?.slaBreaches ?? '—'}
+            accent={stats && stats.slaBreaches > 0 ? '#ef4444' : '#22c55e'}
+          />
           <StatPill
             label="Auto-Approval"
             value={stats ? `${String(Math.round(stats.autoApprovalRate * 100))}%` : '—'}
@@ -289,10 +298,20 @@ export default function WorkflowsPage() {
               gap: '4px',
             }}
           >
-            <button style={tabStyle(tab === 'definitions')} onClick={() => { setTab('definitions'); }}>
+            <button
+              style={tabStyle(tab === 'definitions')}
+              onClick={() => {
+                setTab('definitions');
+              }}
+            >
               Definitions ({workflows.length})
             </button>
-            <button style={tabStyle(tab === 'approvals')} onClick={() => { setTab('approvals'); }}>
+            <button
+              style={tabStyle(tab === 'approvals')}
+              onClick={() => {
+                setTab('approvals');
+              }}
+            >
               Approvals ({approvals.length})
             </button>
           </div>
@@ -312,7 +331,9 @@ export default function WorkflowsPage() {
                 {(['', 'active', 'paused', 'archived'] as const).map((s) => (
                   <button
                     key={s}
-                    onClick={() => { setStatusFilter(s); }}
+                    onClick={() => {
+                      setStatusFilter(s);
+                    }}
                     style={{
                       padding: '4px 12px',
                       borderRadius: '6px',
@@ -334,7 +355,9 @@ export default function WorkflowsPage() {
                 {(['', 'pending', 'approved', 'rejected', 'escalated'] as const).map((s) => (
                   <button
                     key={s}
-                    onClick={() => { setApprovalStatus(s); }}
+                    onClick={() => {
+                      setApprovalStatus(s);
+                    }}
                     style={{
                       padding: '4px 12px',
                       borderRadius: '6px',

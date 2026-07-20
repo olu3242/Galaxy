@@ -93,9 +93,7 @@ export class SemanticSearchService {
 
     // Keyword match against title and content
     const queryLike = `%${trimmedQuery}%`;
-    conditions.push(
-      `(d.title ILIKE $${String(idx)} OR d.content ILIKE $${String(idx)})`,
-    );
+    conditions.push(`(d.title ILIKE $${String(idx)} OR d.content ILIKE $${String(idx)})`);
     params.push(queryLike);
     idx++;
 

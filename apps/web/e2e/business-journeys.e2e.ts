@@ -64,8 +64,7 @@ test.describe('WhatsApp Workflow', () => {
   }) => {
     const res = await request.post(`${API}/api/v1/workflows/generate`, {
       data: {
-        description:
-          'Review invoice then approve payment then notify finance team',
+        description: 'Review invoice then approve payment then notify finance team',
         industryHint: 'finance',
       },
     });
@@ -180,15 +179,12 @@ test.describe('Multi-Tenant Isolation', () => {
     // Attempt to access a workflow from a different (non-existent) org using no auth.
     // Without a valid JWT scoped to org B, the API must reject with 401 or 403.
     const orgBWorkflowId = '00000000-0000-0000-0000-000000000099';
-    const res = await request.get(
-      `${API}/api/v1/workflows/${orgBWorkflowId}`,
-      {
-        headers: {
-          // Deliberately absent or invalid Authorization header
-          Authorization: 'Bearer invalid-token-for-org-a',
-        },
+    const res = await request.get(`${API}/api/v1/workflows/${orgBWorkflowId}`, {
+      headers: {
+        // Deliberately absent or invalid Authorization header
+        Authorization: 'Bearer invalid-token-for-org-a',
       },
-    );
+    });
     // Must NOT be 200 — cross-tenant read must be denied
     expect(res.status()).not.toBe(200);
     expect([401, 403, 404]).toContain(res.status());
