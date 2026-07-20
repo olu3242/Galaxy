@@ -1,7 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import type { Pool, QueryResult } from 'pg';
 import { ApprovalRuntimeService } from '../ApprovalRuntimeService.js';
-import type { ApprovalRequest } from '../ApprovalRuntimeService.js';
 
 // ---------------------------------------------------------------------------
 // Helpers
