@@ -12,6 +12,7 @@ import {
 } from '../../lib/api';
 import { LiveActivityFeed, AIInsightCard } from '../../components/ui';
 import type { ActivityItem, AIInsight } from '../../components/ui';
+import { useOrganizationStats } from '../../hooks/useOrganizationStats';
 
 // ─── Role → primary dashboard mapping ────────────────────────────────────────
 
@@ -46,13 +47,13 @@ const ROLE_LABEL: Record<string, string> = {
 // ─── Quick-link grid shown below the hero ────────────────────────────────────
 
 const QUICK_LINKS = [
-  { href: '/dashboard/workflow-ops', label: 'Workflows', icon: '⚡', accent: '#22c55e' },
+  { href: '/dashboard/workflows', label: 'Workflows', icon: '⚡', accent: '#22c55e' },
   { href: '/dashboard/approvals', label: 'Approvals', icon: '✅', accent: '#f59e0b' },
   { href: '/dashboard/agents', label: 'Agents', icon: '🤖', accent: '#a78bfa' },
   { href: '/dashboard/loops', label: 'Loops', icon: '🔄', accent: '#38bdf8' },
   { href: '/dashboard/people', label: 'People', icon: '👥', accent: '#0ea5e9' },
   { href: '/dashboard/knowledge', label: 'Knowledge', icon: '📚', accent: '#22c7a9' },
-  { href: '/dashboard/analytics', label: 'Analytics', icon: '📊', accent: '#6366f1' },
+  { href: '/dashboard/audit', label: 'Audit Log', icon: '🔍', accent: '#6366f1' },
   { href: '/dashboard/settings', label: 'Settings', icon: '⚙️', accent: '#64748b' },
 ];
 
@@ -111,6 +112,7 @@ export default function MissionControlHub() {
   const { data: loopData } = useLoopInsights();
   const { data: insightsData } = useAIInsights();
   const { data: auditData } = useAuditEvents(6);
+  const { data: orgStatsData } = useOrganizationStats();
 
   const role = user?.role ?? '';
   const primaryHref = ROLE_DASHBOARD[role] ?? '/dashboard/workflow-ops';
@@ -121,6 +123,7 @@ export default function MissionControlHub() {
   const wf = wfData?.data;
   const pendingCount = approvalsData?.data.length ?? 0;
   const loopRate = loopData?.data.stats.completionRate;
+  const orgStats = orgStatsData?.data;
 
   const insights: AIInsight[] = (insightsData?.data ?? []).slice(0, 3).map((i) => ({
     id: i.id,
@@ -222,6 +225,57 @@ export default function MissionControlHub() {
             Open my dashboard →
           </Link>
         </div>
+
+        {/* ── Org summary strip ── */}
+        {orgStats != null && (
+          <div
+            style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: '8px',
+              marginBottom: '16px',
+              padding: '10px 16px',
+              background: 'var(--mc-surface)',
+              border: '1px solid var(--card-border)',
+              borderRadius: '10px',
+              fontSize: '12px',
+              color: 'var(--muted)',
+            }}
+          >
+            <span>
+              <strong style={{ color: '#22c55e' }}>{String(orgStats.totalWorkflows)}</strong> total
+              workflows
+            </span>
+            <span style={{ opacity: 0.4 }}>·</span>
+            <span>
+              <strong style={{ color: '#6366f1' }}>{String(orgStats.runningWorkflows)}</strong>{' '}
+              running
+            </span>
+            <span style={{ opacity: 0.4 }}>·</span>
+            <span>
+              <strong style={{ color: '#f59e0b' }}>{String(orgStats.pendingApprovals)}</strong>{' '}
+              pending approvals
+            </span>
+            <span style={{ opacity: 0.4 }}>·</span>
+            <span>
+              <strong style={{ color: '#a78bfa' }}>{String(orgStats.activeAgents)}</strong> active
+              agents
+            </span>
+            <span style={{ opacity: 0.4 }}>·</span>
+            <span>
+              <strong style={{ color: '#22c7a9' }}>{String(orgStats.knowledgeDocuments)}</strong>{' '}
+              knowledge docs
+            </span>
+            {orgStats.alertCount > 0 && (
+              <>
+                <span style={{ opacity: 0.4 }}>·</span>
+                <span>
+                  <strong style={{ color: '#ef4444' }}>{String(orgStats.alertCount)}</strong> alerts
+                </span>
+              </>
+            )}
+          </div>
+        )}
 
         {/* ── Stat bar ── */}
         <div

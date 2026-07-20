@@ -1,6 +1,11 @@
 import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
-import { KnowledgeService, KnowledgeSearchService } from '@galaxy/knowledge';
-import type { DocumentStatus } from '@galaxy/knowledge';
+import {
+  KnowledgeService,
+  KnowledgeSearchService,
+  KnowledgeIngestionService,
+  SemanticSearchService,
+} from '@galaxy/knowledge';
+import type { DocumentStatus, IngestionSourceType } from '@galaxy/knowledge';
 import { Queue } from 'bullmq';
 import { Redis } from 'ioredis';
 
@@ -17,6 +22,31 @@ function responseEnvelope<T>(data: T, requestId: string) {
 export async function knowledgeRoutes(fastify: FastifyInstance): Promise<void> {
   const knowledgeService = new KnowledgeService(fastify.pg);
   const searchService = new KnowledgeSearchService(fastify.pg);
+  // Wire BullMQ scheduler into KnowledgeIngestionService
+  const embeddingScheduler = async (payload: {
+    documentId: string;
+    organizationId: string;
+    correlationId: string;
+  }): Promise<void> => {
+    const redis = new Redis(process.env.REDIS_URL ?? 'redis://localhost:6379', {
+      maxRetriesPerRequest: null,
+    });
+    const queue = new Queue('knowledge-embedding', { connection: redis });
+    try {
+      await queue.add('generate-embeddings', payload, {
+        attempts: 3,
+        backoff: { type: 'exponential', delay: 5000 },
+        removeOnComplete: { count: 100 },
+        removeOnFail: { count: 50 },
+      });
+    } finally {
+      await queue.close();
+      await redis.quit();
+    }
+  };
+
+  const ingestionService = new KnowledgeIngestionService(fastify.pg, embeddingScheduler);
+  const semanticSearchService = new SemanticSearchService(fastify.pg);
 
   fastify.post(
     '/knowledge/documents',
@@ -364,6 +394,114 @@ export async function knowledgeRoutes(fastify: FastifyInstance): Promise<void> {
           request.id,
         ),
       );
+    },
+  );
+
+  // ── KnowledgeIngestionService: POST /knowledge/ingest ─────────────────────
+
+  fastify.post(
+    '/knowledge/ingest',
+    async (
+      request: FastifyRequest<{
+        Body: {
+          organizationId: string;
+          title: string;
+          content: string;
+          sourceType: IngestionSourceType;
+          sourceId: string;
+          tags?: string[];
+          createdBy: string;
+          correlationId: string;
+        };
+      }>,
+      reply: FastifyReply,
+    ) => {
+      const {
+        organizationId,
+        title,
+        content,
+        sourceType,
+        sourceId,
+        tags = [],
+        createdBy,
+        correlationId,
+      } = request.body;
+
+      if (!organizationId || !title || !content || !sourceId || !createdBy) {
+        return reply.status(400).send({
+          error: 'organizationId, title, content, sourceType, sourceId, createdBy are required',
+        });
+      }
+
+      const document = await ingestionService.ingestText({
+        organizationId,
+        title,
+        content,
+        sourceType,
+        sourceId,
+        tags,
+        createdBy,
+        correlationId: correlationId,
+      });
+
+      return reply.status(201).send(responseEnvelope(document, request.id));
+    },
+  );
+
+  // ── SemanticSearchService: GET /knowledge/semantic-search ────────────────
+
+  fastify.get(
+    '/knowledge/semantic-search',
+    async (
+      request: FastifyRequest<{
+        Querystring: {
+          organizationId: string;
+          q: string;
+          sourceTypes?: string;
+          tags?: string;
+          limit?: string;
+          minRelevance?: string;
+          mode?: 'keyword' | 'fulltext';
+        };
+      }>,
+      reply: FastifyReply,
+    ) => {
+      const {
+        organizationId,
+        q,
+        sourceTypes,
+        tags,
+        limit,
+        minRelevance,
+        mode = 'fulltext',
+      } = request.query;
+
+      if (!organizationId || !q) {
+        return reply.status(400).send({ error: 'organizationId and q are required' });
+      }
+
+      const parsedTags = tags ? tags.split(',').map((t) => t.trim()) : undefined;
+      const parsedSourceTypes = sourceTypes
+        ? sourceTypes.split(',').map((s) => s.trim())
+        : undefined;
+
+      let results;
+      if (mode === 'keyword') {
+        results = await semanticSearchService.search(organizationId, q, {
+          ...(parsedTags !== undefined ? { tags: parsedTags } : {}),
+          ...(parsedSourceTypes !== undefined ? { sourceTypes: parsedSourceTypes } : {}),
+          ...(limit ? { limit: parseInt(limit, 10) } : {}),
+          ...(minRelevance ? { minRelevance: parseFloat(minRelevance) } : {}),
+        });
+      } else {
+        results = await semanticSearchService.fullTextSearch(
+          organizationId,
+          q,
+          limit ? parseInt(limit, 10) : undefined,
+        );
+      }
+
+      return reply.send(responseEnvelope({ results, count: results.length, mode }, request.id));
     },
   );
 }

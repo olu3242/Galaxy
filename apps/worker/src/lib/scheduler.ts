@@ -45,6 +45,13 @@ export const SCHEDULED_JOBS: ScheduledJobDefinition[] = [
     data: { jobName: 'audit-sync-incremental', limit: 500 },
   },
   {
+    name: 'approval-timeout-sweep',
+    queueName: 'approval-timeout',
+    cron: '*/5 * * * *',
+    description: 'Sweep pending approval_requests whose timeout_at has passed',
+    data: { jobName: 'approval-timeout-sweep' },
+  },
+  {
     name: 'health-check',
     queueName: 'health-check',
     cron: '*/1 * * * *',

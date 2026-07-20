@@ -1,6 +1,14 @@
 export * from './types.js';
 export { AgentRegistryService } from './registry/AgentRegistryService.js';
 export { AgentMemoryService } from './memory/AgentMemoryService.js';
+export { SharedOrgMemory } from './memory/SharedOrgMemory.js';
+export type {
+  OrgMemoryEntry,
+  OrgMemoryCategory,
+  OrgMemorySourceType,
+  StoreInput as OrgMemoryStoreInput,
+  RecordLessonInput,
+} from './memory/SharedOrgMemory.js';
 export { AgentContextEngine } from './context/AgentContextEngine.js';
 export { DecisionEngine } from './decisions/DecisionEngine.js';
 export { RiskScoringEngine } from './decisions/RiskScoringEngine.js';
@@ -59,3 +67,14 @@ export {
   APOLLO_MANIFEST,
   GUARDIAN_MANIFEST,
 } from './manifests/index.js';
+export { AgentLifecycleManager } from './lifecycle/AgentLifecycleManager.js';
+export type {
+  LifecyclePhase,
+  LifecyclePhaseEntry,
+  LifecycleTrace,
+  LifecycleContext,
+  PhaseHandler,
+  LifecycleRunParams,
+} from './lifecycle/AgentLifecycleManager.js';
+export { DIGITAL_WORKFORCE } from './workforce/index.js';
+export type { AgentCapabilityDescriptor } from './workforce/index.js';
