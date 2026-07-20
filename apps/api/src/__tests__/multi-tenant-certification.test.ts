@@ -341,7 +341,7 @@ describe.skipIf(!DATABASE_URL)('Multi-Tenant Certification', () => {
       // Store a memory in org A
       const memory = await service
         .store(orgAId, {
-          memoryType: 'fact',
+          memoryType: 'lesson',
           subject: 'cert-test',
           content: 'secret org A fact',
           source: 'cert',

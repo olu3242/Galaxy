@@ -11,7 +11,6 @@
 import crypto from 'node:crypto';
 import { describe, it, expect, vi, beforeAll, afterAll, beforeEach } from 'vitest';
 import Fastify, { type FastifyInstance } from 'fastify';
-import fastifyJwt from '@fastify/jwt';
 import type { Pool, QueryResult } from 'pg';
 
 // ── Shared constants ────────────────────────────────────────────────────────
@@ -52,10 +51,7 @@ function signWebhook(body: string): string {
 async function buildTestApp(pool: Pool): Promise<FastifyInstance> {
   const fastify = Fastify({ logger: false });
 
-  // Register JWT plugin
-  await fastify.register(fastifyJwt, { secret: JWT_SECRET });
-
-  // Register the real auth middleware
+  // Register the real auth middleware (it also registers fastify-jwt internally)
   const { registerAuth } = await import('../middleware/auth.js');
   process.env.JWT_SECRET = JWT_SECRET;
   await registerAuth(fastify);
@@ -80,20 +76,12 @@ async function buildTestApp(pool: Pool): Promise<FastifyInstance> {
   });
 
   // ── Executive route: tenantId derived from JWT only
-  fastify.post(
-    '/api/v1/executive/query',
-    async (
-      request: ReturnType<typeof fastify['decorateRequest']> & {
-        body: { query: string; organizationId?: string; role?: string };
-        user: { sub: string; organizationId: string; role: string };
-      },
-      reply,
-    ) => {
-      // Always use JWT claims, never body fields
-      const { organizationId, role } = request.user;
-      return reply.send({ organizationId, role });
-    },
-  );
+  fastify.post('/api/v1/executive/query', async (request, reply) => {
+    // Always use JWT claims, never body fields
+    const user = request.user as { sub: string; organizationId: string; role: string };
+    const { organizationId, role } = user;
+    return reply.send({ organizationId, role });
+  });
 
   // ── Audit log write route (mock, always emits an audit log entry)
   fastify.post('/api/v1/workflows', async (request, reply) => {

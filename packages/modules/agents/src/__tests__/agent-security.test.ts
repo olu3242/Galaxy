@@ -178,7 +178,7 @@ describe('Agent Security', () => {
       bus.publish(AGENT_A, 'broadcast', ORG_A, 'update', { value: 42 });
 
       expect(capturedMsg).not.toBeNull();
-      expect((capturedMsg as { organizationId: string }).organizationId).toBe(ORG_A);
+      expect((capturedMsg as unknown as { organizationId: string }).organizationId).toBe(ORG_A);
     });
   });
 

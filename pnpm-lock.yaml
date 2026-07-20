@@ -317,6 +317,9 @@ importers:
       '@galaxy/utils':
         specifier: workspace:*
         version: link:../../packages/utils
+      '@galaxy/workflow':
+        specifier: workspace:*
+        version: link:../../packages/modules/workflow
       bullmq:
         specifier: ^5.0.0
         version: 5.78.0
@@ -345,6 +348,25 @@ importers:
       vitest:
         specifier: ^2.0.0
         version: 2.1.9(@types/node@20.19.42)
+
+  packages/benchmarks:
+    dependencies:
+      '@galaxy/agents':
+        specifier: workspace:*
+        version: link:../modules/agents
+      '@galaxy/workflow-generator':
+        specifier: workspace:*
+        version: link:../modules/workflow-generator
+    devDependencies:
+      '@types/node':
+        specifier: ^22.0.0
+        version: 22.19.20
+      typescript:
+        specifier: ^5.8.3
+        version: 5.9.3
+      vitest:
+        specifier: ^3.2.3
+        version: 3.2.6(@types/node@22.19.20)
 
   packages/chaos:
     dependencies:

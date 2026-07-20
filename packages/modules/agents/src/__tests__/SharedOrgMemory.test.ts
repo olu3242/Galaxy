@@ -227,7 +227,7 @@ describe('SharedOrgMemory', () => {
 
       const calls = (pool.query as ReturnType<typeof vi.fn>).mock.calls;
       const insertParams = (calls[1] as [string, unknown[]])[1] as unknown[];
-      expect(insertParams).toContain(result.tags);
+      expect(insertParams).toContainEqual(result.tags);
     });
   });
 });

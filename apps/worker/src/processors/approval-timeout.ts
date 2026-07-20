@@ -22,7 +22,7 @@ export function createApprovalTimeoutProcessor(pool: Pool): (job: Job) => Promis
           level: 'info',
           event: 'approval.timeout.processed',
           count: timedOut.length,
-          ids: timedOut.map((a) => a.id),
+          ids: timedOut.map((a: { id: string }) => a.id),
         }),
       );
     }
