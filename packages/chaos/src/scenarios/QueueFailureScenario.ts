@@ -83,7 +83,7 @@ export class QueueFailureScenario implements ChaosScenario {
       dataIntegrityMaintained: true,
       outcome,
       details: recordExists
-        ? `Execution record found with status="${row.status}". Recovery within ${recoveryDurationMs}ms.`
+        ? `Execution record found with status="${row.status}". Recovery within ${String(recoveryDurationMs)}ms.`
         : 'No chaos execution record found in agent_executions.',
     };
   }

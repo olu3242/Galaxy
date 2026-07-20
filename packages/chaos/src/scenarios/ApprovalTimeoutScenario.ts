@@ -101,7 +101,7 @@ export class ApprovalTimeoutScenario implements ChaosScenario {
       dataIntegrityMaintained: true,
       outcome,
       details: escalated
-        ? `Approval ${this.injectedApprovalId} auto-escalated after ${recoveryDurationMs}ms.`
+        ? `Approval ${this.injectedApprovalId} auto-escalated after ${String(recoveryDurationMs)}ms.`
         : `Approval ${this.injectedApprovalId} not escalated — current status: ${row?.status ?? 'not found'}.`,
     };
   }

@@ -77,7 +77,7 @@ export class DatabaseLatencyScenario implements ChaosScenario {
       dataIntegrityMaintained: gracefullyHandled,
       outcome,
       details: gracefullyHandled
-        ? `Application handled latency gracefully. Marker confirmed=${auditLogsPresent}. Duration=${recoveryDurationMs}ms.`
+        ? `Application handled latency gracefully. Marker confirmed=${String(auditLogsPresent)}. Duration=${String(recoveryDurationMs)}ms.`
         : 'Application did not handle latency — unhandled error observed.',
     };
   }

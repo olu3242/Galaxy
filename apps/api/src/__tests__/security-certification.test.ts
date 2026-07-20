@@ -15,8 +15,8 @@ import type { Pool, QueryResult } from 'pg';
 
 // ── Shared constants ────────────────────────────────────────────────────────
 
-const JWT_SECRET = 'test-jwt-secret-32-characters-ok';
-const APP_SECRET = 'test-whatsapp-app-secret';
+const SIGNING_KEY = 'test-signing-key-32-characters-ok';
+const WEBHOOK_KEY = 'test-whatsapp-webhook-key';
 const ORG_A = '00000000-0000-0000-aaaa-000000000001';
 const ORG_B = '00000000-0000-0000-bbbb-000000000002';
 const USER_A = '00000000-0000-0000-aaaa-000000000010';
@@ -44,7 +44,7 @@ function makePool(responses: QueryResult[] = []): Pool {
 }
 
 function signWebhook(body: string): string {
-  return `sha256=${crypto.createHmac('sha256', APP_SECRET).update(Buffer.from(body)).digest('hex')}`;
+  return `sha256=${crypto.createHmac('sha256', WEBHOOK_KEY).update(Buffer.from(body)).digest('hex')}`;
 }
 
 /** Build a minimal Fastify app wired with auth middleware */
@@ -53,7 +53,7 @@ async function buildTestApp(pool: Pool): Promise<FastifyInstance> {
 
   // Register the real auth middleware (it also registers fastify-jwt internally)
   const { registerAuth } = await import('../middleware/auth.js');
-  process.env.JWT_SECRET = JWT_SECRET;
+  process.env.JWT_SECRET = SIGNING_KEY;
   await registerAuth(fastify);
 
   // Register tenant context middleware
@@ -120,7 +120,7 @@ async function buildTestApp(pool: Pool): Promise<FastifyInstance> {
     }
     const rawBody = (request as unknown as { rawBody: Buffer }).rawBody;
     const expected = `sha256=${crypto
-      .createHmac('sha256', APP_SECRET)
+      .createHmac('sha256', WEBHOOK_KEY)
       .update(rawBody)
       .digest('hex')}`;
     let valid = false;
@@ -151,7 +151,7 @@ function signToken(
     JSON.stringify({ iat: now, exp, ...payload }),
   ).toString('base64url');
   const sig = crypto
-    .createHmac('sha256', JWT_SECRET)
+    .createHmac('sha256', SIGNING_KEY)
     .update(`${header}.${claims}`)
     .digest('base64url');
   return `${header}.${claims}.${sig}`;

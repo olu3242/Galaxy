@@ -222,7 +222,7 @@ export class NLWorkflowParser {
     // ------------------------------------------------------------------
     // 3. Build DraftStep list
     // ------------------------------------------------------------------
-    const steps: DraftStep[] = rawSegments.map((seg, idx) => {
+    const steps: DraftStep[] = rawSegments.map((seg, _idx) => {
       const stepType = classifyStepType(seg);
       const assignedRole = extractRole(seg);
       const conditions = extractConditions(seg);

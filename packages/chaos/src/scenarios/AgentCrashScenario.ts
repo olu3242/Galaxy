@@ -106,7 +106,7 @@ export class AgentCrashScenario implements ChaosScenario {
       dataIntegrityMaintained: true,
       outcome,
       details: detectedByMonitor
-        ? `Stuck execution ${this.stuckExecutionId} detected by health monitor. Recovery triggered in ${recoveryDurationMs}ms.`
+        ? `Stuck execution ${this.stuckExecutionId} detected by health monitor. Recovery triggered in ${String(recoveryDurationMs)}ms.`
         : `Execution ${this.stuckExecutionId} was not detected as stuck (may have already been resolved).`,
     };
   }

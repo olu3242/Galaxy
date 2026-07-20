@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import type { Pool, QueryResult, QueryResultRow } from 'pg';
 import { QueueFailureScenario } from '../scenarios/QueueFailureScenario.js';
 import { DatabaseLatencyScenario } from '../scenarios/DatabaseLatencyScenario.js';
@@ -23,9 +23,11 @@ function makeQueryResult<T extends QueryResultRow>(rows: T[]): QueryResult<T> {
 }
 
 function makeMockPool(
-  queryImpl: (text: string, values?: unknown[]) => Promise<QueryResult<QueryResultRow>>,
+  queryImpl: (text: string, values?: unknown[]) => QueryResult<QueryResultRow>,
 ): Pool {
-  return { query: queryImpl } as unknown as Pool;
+  return {
+    query: (text: string, values?: unknown[]) => Promise.resolve(queryImpl(text, values)),
+  } as unknown as Pool;
 }
 
 function makeContext(pool: Pool, overrides: Partial<ChaosContext> = {}): ChaosContext {
@@ -47,7 +49,7 @@ describe('QueueFailureScenario', () => {
     const injectedAt = new Date().toISOString();
     const calls: string[] = [];
 
-    const pool = makeMockPool(async (text) => {
+    const pool = makeMockPool((text) => {
       calls.push(text.trim().split('\n')[0]?.trim() ?? '');
 
       if (text.includes('INSERT INTO agent_executions')) {
@@ -78,7 +80,7 @@ describe('QueueFailureScenario', () => {
   it('returns FAIL when no execution record is found', async () => {
     const scenario = new QueueFailureScenario();
 
-    const pool = makeMockPool(async (text) => {
+    const pool = makeMockPool((text) => {
       if (text.includes('SELECT id, status FROM agent_executions')) {
         return makeQueryResult([]);
       }
@@ -103,7 +105,7 @@ describe('DatabaseLatencyScenario', () => {
     const scenario = new DatabaseLatencyScenario();
     const injectedAt = new Date().toISOString();
 
-    const pool = makeMockPool(async (text) => {
+    const pool = makeMockPool((text) => {
       if (text.includes('SELECT marker_value FROM chaos_markers')) {
         return makeQueryResult([{ marker_value: injectedAt }]);
       }
@@ -124,7 +126,7 @@ describe('DatabaseLatencyScenario', () => {
   it('returns FAIL when marker is not found', async () => {
     const scenario = new DatabaseLatencyScenario();
 
-    const pool = makeMockPool(async (text) => {
+    const pool = makeMockPool((text) => {
       if (text.includes('SELECT marker_value FROM chaos_markers')) {
         return makeQueryResult([{ marker_value: 'some-other-value' }]);
       }
@@ -151,7 +153,7 @@ describe('ApprovalTimeoutScenario', () => {
 
     let currentStatus = 'pending';
 
-    const pool = makeMockPool(async (text) => {
+    const pool = makeMockPool((text) => {
       if (text.includes('INSERT INTO approvals')) {
         return makeQueryResult([{ id: 'approval-chaos-1' }]);
       }
@@ -180,7 +182,7 @@ describe('ApprovalTimeoutScenario', () => {
 
   it('returns FAIL when verify called without inject', async () => {
     const scenario = new ApprovalTimeoutScenario();
-    const pool = makeMockPool(async () => makeQueryResult([]));
+    const pool = makeMockPool(() => makeQueryResult([]));
     const context = makeContext(pool);
 
     const result = await scenario.verify(context);
@@ -199,7 +201,7 @@ describe('AgentCrashScenario', () => {
     const scenario = new AgentCrashScenario();
     const injectedAt = new Date().toISOString();
 
-    const pool = makeMockPool(async (text) => {
+    const pool = makeMockPool((text) => {
       if (text.includes('INSERT INTO agent_executions')) {
         return makeQueryResult([{ id: 'exec-stuck-1' }]);
       }
@@ -228,7 +230,7 @@ describe('AgentCrashScenario', () => {
 
   it('returns FAIL when verify called without inject', async () => {
     const scenario = new AgentCrashScenario();
-    const pool = makeMockPool(async () => makeQueryResult([]));
+    const pool = makeMockPool(() => makeQueryResult([]));
     const context = makeContext(pool);
 
     const result = await scenario.verify(context);
@@ -251,7 +253,7 @@ describe('KnowledgeServiceOutage', () => {
     const scenario = new KnowledgeServiceOutage();
     const injectedAt = new Date().toISOString();
 
-    const pool = makeMockPool(async (text) => {
+    const pool = makeMockPool((text) => {
       if (text.includes('SELECT marker_value FROM chaos_markers')) {
         return makeQueryResult([{ marker_value: injectedAt }]);
       }
@@ -275,7 +277,7 @@ describe('KnowledgeServiceOutage', () => {
   it('returns FAIL when outage not recorded', async () => {
     const scenario = new KnowledgeServiceOutage();
 
-    const pool = makeMockPool(async () => makeQueryResult([]));
+    const pool = makeMockPool(() => makeQueryResult([]));
     const context = makeContext(pool);
 
     // Force outage active so degradation check passes but marker check fails
@@ -303,7 +305,7 @@ describe('ChaosRunner', () => {
       cleanup: vi.fn().mockResolvedValue(undefined),
     };
 
-    const pool = makeMockPool(async () => makeQueryResult([]));
+    const pool = makeMockPool(() => makeQueryResult([]));
     const runner = new ChaosRunner(pool);
     const result = await runner.run(scenario, 'org-1');
 
@@ -313,7 +315,7 @@ describe('ChaosRunner', () => {
   });
 
   it('runAll() returns PARTIAL when some pass and some fail', async () => {
-    const pool = makeMockPool(async (text) => {
+    const pool = makeMockPool((text) => {
       // Provide minimal responses so each scenario can complete
       if (text.includes('INSERT INTO agent_executions') || text.includes('INSERT INTO approvals')) {
         return makeQueryResult([{ id: 'test-id' }]);
@@ -369,7 +371,7 @@ describe('ChaosRunner', () => {
       cleanup: vi.fn().mockResolvedValue(undefined),
     });
 
-    const pool = makeMockPool(async () => makeQueryResult([]));
+    const pool = makeMockPool(() => makeQueryResult([]));
     const runner = new ChaosRunner(pool);
 
     // Inject custom scenarios via run() individually

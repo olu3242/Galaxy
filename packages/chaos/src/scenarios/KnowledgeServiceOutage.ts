@@ -57,7 +57,7 @@ export class KnowledgeServiceOutage implements ChaosScenario {
     // Simulate a knowledge search call during outage — agents must not crash.
     let gracefulDegradation = false;
     try {
-      const searchResult = await this.simulateKnowledgeSearch(context);
+      const searchResult = this.simulateKnowledgeSearch(context);
       // Graceful degradation: returns empty array, does NOT throw.
       gracefulDegradation = Array.isArray(searchResult) && searchResult.length === 0;
     } catch {
@@ -80,8 +80,8 @@ export class KnowledgeServiceOutage implements ChaosScenario {
       dataIntegrityMaintained: true,
       outcome,
       details: outcome === 'PASS'
-        ? `Knowledge outage recorded and agents degraded gracefully (empty result, no crash). Duration=${recoveryDurationMs}ms.`
-        : `Outage recorded=${outageRecorded}, graceful degradation=${gracefulDegradation}.`,
+        ? `Knowledge outage recorded and agents degraded gracefully (empty result, no crash). Duration=${String(recoveryDurationMs)}ms.`
+        : `Outage recorded=${String(outageRecorded)}, graceful degradation=${String(gracefulDegradation)}.`,
     };
   }
 
@@ -102,9 +102,9 @@ export class KnowledgeServiceOutage implements ChaosScenario {
    * Simulates what a knowledge search call would return during an outage.
    * When the outage flag is active, returns [] instead of throwing.
    */
-  private async simulateKnowledgeSearch(
+  private simulateKnowledgeSearch(
     _context: ChaosContext,
-  ): Promise<unknown[]> {
+  ): unknown[] {
     if (KnowledgeServiceOutage.outageActive) {
       // Graceful degradation: return empty results, no crash.
       return [];
