@@ -57,7 +57,9 @@ function AuditRow({ entry }: { entry: AuditEvent }) {
         }}
       >
         {/* Timestamp */}
-        <div style={{ color: 'var(--muted)', fontSize: '11px', fontVariantNumeric: 'tabular-nums' }}>
+        <div
+          style={{ color: 'var(--muted)', fontSize: '11px', fontVariantNumeric: 'tabular-nums' }}
+        >
           {fmtDate(entry.timestamp)}
         </div>
 
@@ -106,7 +108,9 @@ function AuditRow({ entry }: { entry: AuditEvent }) {
         {/* Expand button */}
         {hasMeta ? (
           <button
-            onClick={() => { setExpanded(!expanded); }}
+            onClick={() => {
+              setExpanded(!expanded);
+            }}
             style={{
               background: 'transparent',
               border: 'none',
@@ -185,13 +189,13 @@ export default function AuditPage() {
   const totalPages = Math.ceil(filtered.length / 20);
   const paged = filtered.slice((page - 1) * 20, page * 20);
 
-  function FilterChips<T extends string>({
+  function FilterChips({
     options,
     value,
     onChange,
     label,
   }: {
-    options: readonly T[];
+    options: readonly string[];
     value: string;
     onChange: (v: string) => void;
     label: string;
@@ -206,7 +210,9 @@ export default function AuditPage() {
         {options.map((o) => (
           <button
             key={o}
-            onClick={() => { onChange(o); }}
+            onClick={() => {
+              onChange(o);
+            }}
             style={{
               padding: '3px 10px',
               borderRadius: '6px',
@@ -356,7 +362,9 @@ export default function AuditPage() {
             }}
           >
             <button
-              onClick={() => { setPage(Math.max(1, page - 1)); }}
+              onClick={() => {
+                setPage(Math.max(1, page - 1));
+              }}
               disabled={page <= 1}
               style={{
                 padding: '6px 14px',
@@ -373,7 +381,9 @@ export default function AuditPage() {
               {page} / {totalPages}
             </span>
             <button
-              onClick={() => { setPage(Math.min(totalPages, page + 1)); }}
+              onClick={() => {
+                setPage(Math.min(totalPages, page + 1));
+              }}
               disabled={page >= totalPages}
               style={{
                 padding: '6px 14px',
