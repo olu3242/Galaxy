@@ -112,10 +112,10 @@ export class ApprovalTimeoutScenario implements ChaosScenario {
       'app.current_tenant',
       context.organizationId,
     ]);
-    await context.pool.query(
-      `DELETE FROM approvals WHERE organization_id = $1 AND id = $2`,
-      [context.organizationId, this.injectedApprovalId],
-    );
+    await context.pool.query(`DELETE FROM approvals WHERE organization_id = $1 AND id = $2`, [
+      context.organizationId,
+      this.injectedApprovalId,
+    ]);
     this.injectedApprovalId = null;
   }
 }

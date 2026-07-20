@@ -140,16 +140,11 @@ async function buildTestApp(pool: Pool): Promise<FastifyInstance> {
 }
 
 /** Sign a JWT with the test secret */
-function signToken(
-  payload: Record<string, unknown>,
-  options: { expiresIn?: number } = {},
-): string {
+function signToken(payload: Record<string, unknown>, options: { expiresIn?: number } = {}): string {
   const now = Math.floor(Date.now() / 1000);
   const exp = options.expiresIn !== undefined ? now + options.expiresIn : now + 3600;
   const header = Buffer.from(JSON.stringify({ alg: 'HS256', typ: 'JWT' })).toString('base64url');
-  const claims = Buffer.from(
-    JSON.stringify({ iat: now, exp, ...payload }),
-  ).toString('base64url');
+  const claims = Buffer.from(JSON.stringify({ iat: now, exp, ...payload })).toString('base64url');
   const sig = crypto
     .createHmac('sha256', SIGNING_KEY)
     .update(`${header}.${claims}`)
@@ -184,7 +179,10 @@ describe('Security Certification', () => {
     });
 
     it('rejects requests with expired JWT', async () => {
-      const token = signToken({ sub: USER_A, organizationId: ORG_A, role: 'member' }, { expiresIn: -1 });
+      const token = signToken(
+        { sub: USER_A, organizationId: ORG_A, role: 'member' },
+        { expiresIn: -1 },
+      );
       const res = await app.inject({
         method: 'GET',
         url: '/api/v1/workflows',

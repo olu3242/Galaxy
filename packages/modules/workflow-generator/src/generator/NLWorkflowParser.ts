@@ -68,14 +68,21 @@ const STEP_TIME_MS: Record<DraftStep['stepType'], number> = {
 // ---------------------------------------------------------------------------
 function classifyStepType(sentence: string): DraftStep['stepType'] {
   const lower = sentence.toLowerCase();
-  if (/\b(approve|sign[- ]?off|authoris|authoriz|review\s+and\s+approv|grant\s+permission)\b/.test(lower))
+  if (
+    /\b(approve|sign[- ]?off|authoris|authoriz|review\s+and\s+approv|grant\s+permission)\b/.test(
+      lower,
+    )
+  )
     return 'approval';
-  if (/\b(notify|alert|inform|send\s+(?:an?\s+)?(?:email|message|notification|reminder|sms|whatsapp))\b/.test(lower))
+  if (
+    /\b(notify|alert|inform|send\s+(?:an?\s+)?(?:email|message|notification|reminder|sms|whatsapp))\b/.test(
+      lower,
+    )
+  )
     return 'notification';
   if (/\b(if|when|check\s+whether|validate|verify\s+that|condition)\b/.test(lower))
     return 'condition';
-  if (/\b(wait|pause|hold|delay|until|pending|standby)\b/.test(lower))
-    return 'wait';
+  if (/\b(wait|pause|hold|delay|until|pending|standby)\b/.test(lower)) return 'wait';
   return 'action';
 }
 

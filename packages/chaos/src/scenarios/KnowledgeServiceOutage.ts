@@ -79,9 +79,10 @@ export class KnowledgeServiceOutage implements ChaosScenario {
       auditLogsPresent: outageRecorded,
       dataIntegrityMaintained: true,
       outcome,
-      details: outcome === 'PASS'
-        ? `Knowledge outage recorded and agents degraded gracefully (empty result, no crash). Duration=${String(recoveryDurationMs)}ms.`
-        : `Outage recorded=${String(outageRecorded)}, graceful degradation=${String(gracefulDegradation)}.`,
+      details:
+        outcome === 'PASS'
+          ? `Knowledge outage recorded and agents degraded gracefully (empty result, no crash). Duration=${String(recoveryDurationMs)}ms.`
+          : `Outage recorded=${String(outageRecorded)}, graceful degradation=${String(gracefulDegradation)}.`,
     };
   }
 
@@ -102,9 +103,7 @@ export class KnowledgeServiceOutage implements ChaosScenario {
    * Simulates what a knowledge search call would return during an outage.
    * When the outage flag is active, returns [] instead of throwing.
    */
-  private simulateKnowledgeSearch(
-    _context: ChaosContext,
-  ): unknown[] {
+  private simulateKnowledgeSearch(_context: ChaosContext): unknown[] {
     if (KnowledgeServiceOutage.outageActive) {
       // Graceful degradation: return empty results, no crash.
       return [];

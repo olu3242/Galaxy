@@ -324,7 +324,9 @@ describe('ChaosRunner', () => {
         return makeQueryResult([{ id: 'test-id', status: 'failed' }]);
       }
       if (text.includes('SELECT id, status, started_at FROM agent_executions')) {
-        return makeQueryResult([{ id: 'test-id', status: 'running', started_at: new Date().toISOString() }]);
+        return makeQueryResult([
+          { id: 'test-id', status: 'running', started_at: new Date().toISOString() },
+        ]);
       }
       if (text.includes("SET status = 'escalated'")) {
         return makeQueryResult([]);
