@@ -66,7 +66,7 @@ interface HealthRow {
   success_rate: string | null;
 }
 
-function rowToEntry(row: TelemetryRow): ExecutionTelemetryEntry {
+function _rowToEntry(row: TelemetryRow): ExecutionTelemetryEntry {
   return {
     id: row.id,
     organizationId: row.organization_id,
