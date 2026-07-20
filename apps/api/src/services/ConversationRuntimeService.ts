@@ -175,12 +175,9 @@ export class ConversationRuntimeService {
   }
 
   /** Return the current resume state for a session. */
-  async getResumeState(
-    organizationId: string,
-    sessionId: string,
-  ): Promise<SessionResumeState> {
+  async getResumeState(organizationId: string, sessionId: string): Promise<SessionResumeState> {
     const session = await this.sessions.getSession(organizationId, sessionId);
-    const savedFlow = session.context['_savedFlow'];
+    const savedFlow = session.context._savedFlow;
     const inProgress =
       savedFlow !== undefined && typeof savedFlow === 'object' && savedFlow !== null
         ? (savedFlow as Record<string, unknown>)

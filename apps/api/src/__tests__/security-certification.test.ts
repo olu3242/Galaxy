@@ -61,7 +61,7 @@ async function buildTestApp(pool: Pool): Promise<FastifyInstance> {
   registerTenantContext(fastify, pool);
 
   // ── Protected route (simulates any org-scoped endpoint)
-  fastify.get('/api/v1/workflows', async (request) => {
+  fastify.get('/api/v1/workflows', (request) => {
     const user = request.user as { organizationId: string; role: string };
     return { organizationId: user.organizationId, role: user.role };
   });
@@ -90,7 +90,12 @@ async function buildTestApp(pool: Pool): Promise<FastifyInstance> {
     // Simulate workflow creation + audit log write
     await pool.query(
       'INSERT INTO workflows (id, organization_id, name, created_by) VALUES ($1, $2, $3, $4)',
-      [crypto.randomUUID(), user.organizationId, String(body.name ?? ''), user.sub],
+      [
+        crypto.randomUUID(),
+        user.organizationId,
+        typeof body.name === 'string' ? body.name : '',
+        user.sub,
+      ],
     );
     await pool.query(
       `INSERT INTO audit_logs
@@ -195,7 +200,7 @@ describe('Security Certification', () => {
       const validToken = signToken({ sub: USER_A, organizationId: ORG_A, role: 'member' });
       // Tamper the signature
       const parts = validToken.split('.');
-      const badToken = `${parts[0]}.${parts[1]}.invalidsignatureXXXX`;
+      const badToken = `${parts[0] ?? ''}.${parts[1] ?? ''}.invalidsignatureXXXX`;
       const res = await app.inject({
         method: 'GET',
         url: '/api/v1/workflows',
@@ -218,7 +223,7 @@ describe('Security Certification', () => {
           exp: Math.floor(Date.now() / 1000) + 3600,
         }),
       ).toString('base64url');
-      const tamperedToken = `${header}.${tamperedPayload}.${sig}`;
+      const tamperedToken = `${header ?? ''}.${tamperedPayload}.${sig ?? ''}`;
       const res = await app.inject({
         method: 'GET',
         url: '/api/v1/workflows',
@@ -359,9 +364,10 @@ describe('Security Certification', () => {
         sql.includes('INSERT INTO workflows'),
       );
       expect(insertCall).toBeDefined();
+      if (!insertCall) throw new Error('Expected insertCall');
       // The malicious string must appear as a parameter value, NOT in the SQL string
-      expect(insertCall![0]).not.toContain(maliciousName);
-      expect(insertCall![1]).toContain(maliciousName);
+      expect(insertCall[0]).not.toContain(maliciousName);
+      expect(insertCall[1]).toContain(maliciousName);
     });
 
     it('search query with SQL metacharacters does not cause SQL interpolation', async () => {
@@ -379,9 +385,10 @@ describe('Security Certification', () => {
         sql.includes('INSERT INTO workflows'),
       );
       expect(insertCall).toBeDefined();
+      if (!insertCall) throw new Error('Expected insertCall');
       // Metacharacters must only appear in the params array, never the SQL template
-      expect(insertCall![0]).not.toContain(maliciousQuery);
-      expect(insertCall![1]).toContain(maliciousQuery);
+      expect(insertCall[0]).not.toContain(maliciousQuery);
+      expect(insertCall[1]).toContain(maliciousQuery);
     });
   });
 

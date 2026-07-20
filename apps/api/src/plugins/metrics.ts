@@ -29,10 +29,7 @@ const counters = new Map<string, number>();
 // Gauges — current value keyed by label string
 const gauges = new Map<string, number>();
 // Histograms — map from label string to { buckets, sum, count }
-const histograms = new Map<
-  string,
-  { buckets: Bucket[]; sum: number; count: number }
->();
+const histograms = new Map<string, { buckets: Bucket[]; sum: number; count: number }>();
 
 function counterKey(name: string, labels: Record<string, string>): string {
   const lStr = Object.entries(labels)
@@ -83,7 +80,7 @@ function renderMetrics(): string {
     lines.push('# HELP agent_executions_total Total agent executions by type and status');
     lines.push('# TYPE agent_executions_total counter');
     for (const [key, value] of counters.entries()) {
-      lines.push(`${key} ${value}`);
+      lines.push(`${key} ${String(value)}`);
     }
   }
 
@@ -94,15 +91,13 @@ function renderMetrics(): string {
     lines.push('# HELP pending_approvals Currently pending approval requests');
     lines.push('# TYPE pending_approvals gauge');
     for (const [key, value] of gauges.entries()) {
-      lines.push(`${key} ${value}`);
+      lines.push(`${key} ${String(value)}`);
     }
   }
 
   // Histograms
   if (histograms.size > 0) {
-    lines.push(
-      '# HELP http_request_duration_seconds HTTP request duration in seconds',
-    );
+    lines.push('# HELP http_request_duration_seconds HTTP request duration in seconds');
     lines.push('# TYPE http_request_duration_seconds histogram');
     for (const [key, entry] of histograms.entries()) {
       // Extract label string from key, e.g. "http_request_duration_seconds{route="/health",..."
@@ -112,15 +107,15 @@ function renderMetrics(): string {
       const innerLabels = labelStr.slice(1, -1);
       for (const bucket of entry.buckets) {
         const bucketLabel = innerLabels
-          ? `{${innerLabels},le="${bucket.le}"}`
-          : `{le="${bucket.le}"}`;
-        lines.push(`${baseName}_bucket${bucketLabel} ${bucket.count}`);
+          ? `{${innerLabels},le="${String(bucket.le)}"}`
+          : `{le="${String(bucket.le)}"}`;
+        lines.push(`${baseName}_bucket${bucketLabel} ${String(bucket.count)}`);
       }
       const infLabel = innerLabels ? `{${innerLabels},le="+Inf"}` : `{le="+Inf"}`;
-      lines.push(`${baseName}_bucket${infLabel} ${entry.count}`);
+      lines.push(`${baseName}_bucket${infLabel} ${String(entry.count)}`);
       const sumLabel = innerLabels ? `{${innerLabels}}` : '';
-      lines.push(`${baseName}_sum${sumLabel} ${entry.sum}`);
-      lines.push(`${baseName}_count${sumLabel} ${entry.count}`);
+      lines.push(`${baseName}_sum${sumLabel} ${String(entry.sum)}`);
+      lines.push(`${baseName}_count${sumLabel} ${String(entry.count)}`);
     }
   }
 
@@ -158,21 +153,22 @@ export function setPendingApprovals(organizationId: string, count: number): void
 // Fastify plugin
 // ---------------------------------------------------------------------------
 
-export async function registerMetrics(app: FastifyInstance): Promise<void> {
+export function registerMetrics(app: FastifyInstance): void {
   // Instrument every reply with duration histogram
-  app.addHook(
-    'onResponse',
-    (request: FastifyRequest, reply: FastifyReply, done: () => void) => {
-      const durationMs = reply.elapsedTime;
-      const durationSec = durationMs / 1000;
-      observeHistogram('http_request_duration_seconds', {
+  app.addHook('onResponse', (request: FastifyRequest, reply: FastifyReply, done: () => void) => {
+    const durationMs = reply.elapsedTime;
+    const durationSec = durationMs / 1000;
+    observeHistogram(
+      'http_request_duration_seconds',
+      {
         method: request.method,
-        route: request.routeOptions?.url ?? request.url,
+        route: request.routeOptions.url ?? request.url,
         status_code: String(reply.statusCode),
-      }, durationSec);
-      done();
-    },
-  );
+      },
+      durationSec,
+    );
+    done();
+  });
 
   // Expose /metrics endpoint — exempt from auth middleware
   app.get(

@@ -427,10 +427,12 @@ export async function knowledgeRoutes(fastify: FastifyInstance): Promise<void> {
         correlationId,
       } = request.body;
 
-      if (!organizationId || !title || !content || !sourceType || !sourceId || !createdBy) {
+      if (!organizationId || !title || !content || !sourceId || !createdBy) {
         return reply
           .status(400)
-          .send({ error: 'organizationId, title, content, sourceType, sourceId, createdBy are required' });
+          .send({
+            error: 'organizationId, title, content, sourceType, sourceId, createdBy are required',
+          });
       }
 
       const document = await ingestionService.ingestText({
@@ -441,7 +443,7 @@ export async function knowledgeRoutes(fastify: FastifyInstance): Promise<void> {
         sourceId,
         tags,
         createdBy,
-        correlationId: correlationId ?? request.id,
+        correlationId: correlationId,
       });
 
       return reply.status(201).send(responseEnvelope(document, request.id));
@@ -481,7 +483,9 @@ export async function knowledgeRoutes(fastify: FastifyInstance): Promise<void> {
       }
 
       const parsedTags = tags ? tags.split(',').map((t) => t.trim()) : undefined;
-      const parsedSourceTypes = sourceTypes ? sourceTypes.split(',').map((s) => s.trim()) : undefined;
+      const parsedSourceTypes = sourceTypes
+        ? sourceTypes.split(',').map((s) => s.trim())
+        : undefined;
 
       let results;
       if (mode === 'keyword') {

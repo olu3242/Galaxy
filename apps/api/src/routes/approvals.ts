@@ -22,14 +22,11 @@ export async function approvalRoutes(fastify: FastifyInstance): Promise<void> {
    * GET /api/v1/approvals
    * List pending approvals for the authenticated user.
    */
-  fastify.get(
-    '/approvals',
-    async (request: FastifyRequest, reply: FastifyReply) => {
-      const { organizationId, sub: actorId } = request.user;
-      const pending = await service.getPending(organizationId, actorId);
-      return reply.send({ approvals: pending });
-    },
-  );
+  fastify.get('/approvals', async (request: FastifyRequest, reply: FastifyReply) => {
+    const { organizationId, sub: actorId } = request.user;
+    const pending = await service.getPending(organizationId, actorId);
+    return reply.send({ approvals: pending });
+  });
 
   /**
    * POST /api/v1/approvals/:id/decide
@@ -41,10 +38,6 @@ export async function approvalRoutes(fastify: FastifyInstance): Promise<void> {
       const { sub: actorId } = request.user;
       const { id: approvalId } = request.params;
       const { decision, reason } = request.body;
-
-      if (decision !== 'approved' && decision !== 'rejected') {
-        return reply.status(400).send({ error: 'decision must be "approved" or "rejected"' });
-      }
 
       const updated = await service.decide(approvalId, actorId, decision, reason);
       return reply.send({ approval: updated });

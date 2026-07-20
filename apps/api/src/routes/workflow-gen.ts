@@ -24,10 +24,7 @@ export async function workflowGenRoutes(fastify: FastifyInstance): Promise<void>
    */
   fastify.post(
     '/workflows/generate',
-    async (
-      request: FastifyRequest<{ Body: GenerateBody }>,
-      reply: FastifyReply,
-    ) => {
+    async (request: FastifyRequest<{ Body: GenerateBody }>, reply: FastifyReply) => {
       const { organizationId, sub: actorId } = request.user;
       const { text, channel } = request.body;
 
@@ -49,7 +46,11 @@ export async function workflowGenRoutes(fastify: FastifyInstance): Promise<void>
         [
           organizationId,
           actorId,
-          JSON.stringify({ channel: channel ?? 'web', stepCount: draft.steps.length, confidence: draft.confidence }),
+          JSON.stringify({
+            channel: channel ?? 'web',
+            stepCount: draft.steps.length,
+            confidence: draft.confidence,
+          }),
         ],
       );
 
@@ -65,16 +66,9 @@ export async function workflowGenRoutes(fastify: FastifyInstance): Promise<void>
    */
   fastify.post(
     '/workflows/generate/confirm',
-    async (
-      request: FastifyRequest<{ Body: ConfirmBody }>,
-      reply: FastifyReply,
-    ) => {
+    async (request: FastifyRequest<{ Body: ConfirmBody }>, reply: FastifyReply) => {
       const { organizationId, sub: actorId } = request.user;
       const { draft, name } = request.body;
-
-      if (!draft) {
-        return reply.status(400).send({ error: 'draft is required' });
-      }
 
       const svc = new WorkflowDefinitionService(fastify.pg);
 

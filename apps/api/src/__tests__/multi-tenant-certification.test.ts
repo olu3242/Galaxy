@@ -157,7 +157,7 @@ describe.skipIf(!DATABASE_URL)('Multi-Tenant Certification', () => {
   });
 
   afterAll(async () => {
-    const cleanup: Array<[string, unknown[]]> = [
+    const cleanup: [string, unknown[]][] = [
       [`DELETE FROM approvals WHERE organization_id IN ($1, $2)`, [orgAId, orgBId]],
       [`DELETE FROM workflow_runs WHERE organization_id IN ($1, $2)`, [orgAId, orgBId]],
       [`DELETE FROM workflows WHERE organization_id IN ($1, $2)`, [orgAId, orgBId]],
@@ -204,10 +204,9 @@ describe.skipIf(!DATABASE_URL)('Multi-Tenant Certification', () => {
       await setTenant(pool, orgAId);
 
       const { rows } = await pool
-        .query<{ organization_id: string }>(
-          `SELECT organization_id FROM audit_logs WHERE organization_id = $1 LIMIT 1`,
-          [orgBId],
-        )
+        .query<{
+          organization_id: string;
+        }>(`SELECT organization_id FROM audit_logs WHERE organization_id = $1 LIMIT 1`, [orgBId])
         .catch(() => ({ rows: [] as { organization_id: string }[] }));
 
       expect(rows).toHaveLength(0);
@@ -217,10 +216,9 @@ describe.skipIf(!DATABASE_URL)('Multi-Tenant Certification', () => {
       await setTenant(pool, orgAId);
 
       const { rows } = await pool
-        .query<{ organization_id: string }>(
-          `SELECT organization_id FROM autonomous_agents WHERE organization_id = $1 LIMIT 1`,
-          [orgBId],
-        )
+        .query<{
+          organization_id: string;
+        }>(`SELECT organization_id FROM autonomous_agents WHERE organization_id = $1 LIMIT 1`, [orgBId])
         .catch(() => ({ rows: [] as { organization_id: string }[] }));
 
       expect(rows).toHaveLength(0);
@@ -230,10 +228,9 @@ describe.skipIf(!DATABASE_URL)('Multi-Tenant Certification', () => {
       await setTenant(pool, orgAId);
 
       const { rows } = await pool
-        .query<{ organization_id: string }>(
-          `SELECT organization_id FROM knowledge_documents WHERE id = $1`,
-          [orgBKnowledgeDocId],
-        )
+        .query<{
+          organization_id: string;
+        }>(`SELECT organization_id FROM knowledge_documents WHERE id = $1`, [orgBKnowledgeDocId])
         .catch(() => ({ rows: [] as { organization_id: string }[] }));
 
       expect(rows).toHaveLength(0);
@@ -242,10 +239,9 @@ describe.skipIf(!DATABASE_URL)('Multi-Tenant Certification', () => {
     it('approvals: org A cannot see org B pending approvals', async () => {
       await setTenant(pool, orgAId);
 
-      const { rows } = await pool.query<{ id: string }>(
-        `SELECT id FROM approvals WHERE id = $1`,
-        [orgBApprovalId],
-      );
+      const { rows } = await pool.query<{ id: string }>(`SELECT id FROM approvals WHERE id = $1`, [
+        orgBApprovalId,
+      ]);
 
       expect(rows).toHaveLength(0);
     });
@@ -253,10 +249,9 @@ describe.skipIf(!DATABASE_URL)('Multi-Tenant Certification', () => {
     it('approvals: org A can see its own pending approvals', async () => {
       await setTenant(pool, orgAId);
 
-      const { rows } = await pool.query<{ id: string }>(
-        `SELECT id FROM approvals WHERE id = $1`,
-        [orgAApprovalId],
-      );
+      const { rows } = await pool.query<{ id: string }>(`SELECT id FROM approvals WHERE id = $1`, [
+        orgAApprovalId,
+      ]);
 
       expect(rows).toHaveLength(1);
     });
@@ -299,9 +294,7 @@ describe.skipIf(!DATABASE_URL)('Multi-Tenant Certification', () => {
       expect(run.workflowId).toBe(orgAWorkflowId);
 
       // Clean up the run created by this test
-      await pool
-        .query(`DELETE FROM workflow_runs WHERE id = $1`, [run.id])
-        .catch(() => null);
+      await pool.query(`DELETE FROM workflow_runs WHERE id = $1`, [run.id]).catch(() => null);
     });
 
     it('ApprovalService.listPendingApprovals() filters by organizationId', async () => {
@@ -330,9 +323,7 @@ describe.skipIf(!DATABASE_URL)('Multi-Tenant Certification', () => {
       expect(orgAPending.some((a) => a.id === approval.id)).toBe(true);
 
       // Cleanup
-      await pool
-        .query(`DELETE FROM approvals WHERE id = $1`, [approval.id])
-        .catch(() => null);
+      await pool.query(`DELETE FROM approvals WHERE id = $1`, [approval.id]).catch(() => null);
     });
 
     it('OrgMemoryService.recall() is scoped to organizationId', async () => {
@@ -364,16 +355,14 @@ describe.skipIf(!DATABASE_URL)('Multi-Tenant Certification', () => {
       expect(found).toBe(true);
 
       // Cleanup
-      await pool
-        .query(`DELETE FROM org_memories WHERE id = $1`, [memory.id])
-        .catch(() => null);
+      await pool.query(`DELETE FROM org_memories WHERE id = $1`, [memory.id]).catch(() => null);
     });
 
     it('AgentBus messages carry organizationId and cannot be delivered cross-tenant', () => {
       const bus = new AgentBus();
 
       const agentAId = crypto.randomUUID();
-      const agentBId = crypto.randomUUID();
+      const _agentBId = crypto.randomUUID();
 
       const receivedByOrgB: AgentMessage[] = [];
 
