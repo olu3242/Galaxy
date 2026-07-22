@@ -44,8 +44,8 @@ Deliverables:
 - [x] Docker Compose (local infrastructure)
 - [x] Environment configuration
 - [x] CLAUDE.md (AI assistant instructions)
-- [ ] pnpm lockfile (requires pnpm install run)
-- [ ] husky git hooks
+- [x] pnpm lockfile (requires pnpm install run)
+- [x] husky git hooks
 
 ---
 
