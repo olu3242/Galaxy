@@ -1,5 +1,6 @@
 import Fastify, { type FastifyInstance } from 'fastify';
 import cors from '@fastify/cors';
+import fastifyWebSocket from '@fastify/websocket';
 import { Pool } from 'pg';
 import { registerAuth } from './middleware/auth.js';
 import { registerTenantContext } from './middleware/tenant.js';
@@ -54,6 +55,7 @@ import { loopRoutes } from './routes/loop.js';
 import { broadcastRoutes } from './routes/broadcast.js';
 import { onboardingRoutes } from './routes/onboarding.js';
 import { eventsSseRoutes } from './routes/events-sse.js';
+import { eventsWsRoutes } from './routes/events-ws.js';
 import { authRoutes } from './routes/auth.js';
 import { frontendCompatRoutes } from './routes/frontend-compat.js';
 import { executiveRoutes } from './routes/executive.js';
@@ -75,6 +77,8 @@ async function buildApp(): Promise<FastifyInstance> {
   });
 
   // CORS — allow cross-origin requests from the web app (dev/test)
+  await fastify.register(fastifyWebSocket);
+
   await fastify.register(cors, {
     origin: (origin, cb) => {
       cb(null, true);
@@ -175,6 +179,7 @@ async function buildApp(): Promise<FastifyInstance> {
   await fastify.register(onboardingRoutes, { prefix: '/api/v1' });
   await fastify.register(authRoutes, { prefix: '/api/v1' });
   await fastify.register(eventsSseRoutes, { prefix: '/api/v1' });
+  await fastify.register(eventsWsRoutes, { prefix: '/api/v1' });
   await fastify.register(frontendCompatRoutes, { prefix: '/api/v1' });
   await fastify.register(executiveRoutes, { prefix: '/api/v1' });
   await fastify.register(workflowGenRoutes, { prefix: '/api/v1' });
