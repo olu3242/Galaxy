@@ -16,6 +16,10 @@ import crypto from 'crypto';
 
 const DATABASE_URL = process.env.DATABASE_URL ?? '';
 
+// Non-superuser role used for all RLS assertions.
+// Superusers bypass FORCE ROW LEVEL SECURITY, so we must test as a non-superuser.
+const APP_ROLE = 'galaxy_rls_test_role';
+
 /**
  * All tenant-scoped tables with RLS enabled.
  * Grouped by migration file for traceability.
@@ -233,8 +237,41 @@ describe.skipIf(!process.env.DATABASE_URL)('Cross-tenant RLS isolation', () => {
   let orgAId: string;
   let orgBId: string;
 
+  // Run an RLS assertion query as the non-superuser app role so FORCE RLS applies.
+  // Superusers bypass all RLS; this wrapper downgrades the connection before querying.
+  const withAppRole = async (
+    tenantId: string,
+    sql: string,
+    params: unknown[],
+  ): Promise<{ rows: { organization_id: string }[] }> => {
+    const client = await pool.connect();
+    try {
+      await client.query(`SET ROLE ${APP_ROLE}`);
+      await client.query('SELECT set_config($1, $2, false)', ['app.current_tenant', tenantId]);
+      return await client
+        .query<{ organization_id: string }>(sql, params)
+        .catch(() => ({ rows: [] as { organization_id: string }[] }));
+    } finally {
+      await client.query('RESET ROLE').catch(() => null);
+      client.release();
+    }
+  };
+
   beforeAll(async () => {
     pool = new Pool({ connectionString: DATABASE_URL });
+
+    // Create non-superuser role for RLS testing.
+    // Must be done before org inserts so the role exists for withAppRole calls.
+    await pool.query(`
+      DO $$ BEGIN
+        IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = '${APP_ROLE}') THEN
+          CREATE ROLE ${APP_ROLE};
+        END IF;
+      END $$
+    `);
+    await pool.query(`GRANT SELECT ON ALL TABLES IN SCHEMA public TO ${APP_ROLE}`);
+    // Allow the connecting user to SET ROLE to the app role
+    await pool.query(`GRANT ${APP_ROLE} TO CURRENT_USER`);
 
     orgAId = crypto.randomUUID();
     orgBId = crypto.randomUUID();
@@ -334,12 +371,11 @@ describe.skipIf(!process.env.DATABASE_URL)('Cross-tenant RLS isolation', () => {
 
   for (const table of UNIQUE_RLS_TABLES) {
     it(`[RLS] org A tenant cannot read org B rows in "${table}"`, async () => {
-      await pool.query('SELECT set_config($1, $2, false)', ['app.current_tenant', orgAId]);
-      const { rows } = await pool
-        .query<{
-          organization_id: string;
-        }>(`SELECT organization_id FROM ${table} WHERE organization_id = $1 LIMIT 1`, [orgBId])
-        .catch(() => ({ rows: [] as { organization_id: string }[] }));
+      const { rows } = await withAppRole(
+        orgAId,
+        `SELECT organization_id FROM ${table} WHERE organization_id = $1 LIMIT 1`,
+        [orgBId],
+      );
       // If table doesn't exist yet (migration not run), the catch returns [].
       // If it exists and RLS is working, also returns [].
       expect(rows).toHaveLength(0);
@@ -349,8 +385,8 @@ describe.skipIf(!process.env.DATABASE_URL)('Cross-tenant RLS isolation', () => {
   // ── Positive isolation checks for seeded tables ────────────────────────────
 
   it('[RLS] org A context sees its own workflow_runs', async () => {
-    await pool.query('SELECT set_config($1, $2, false)', ['app.current_tenant', orgAId]);
-    const { rows } = await pool.query<{ organization_id: string }>(
+    const { rows } = await withAppRole(
+      orgAId,
       `SELECT DISTINCT organization_id FROM workflow_runs WHERE organization_id IN ($1, $2)`,
       [orgAId, orgBId],
     );
@@ -360,8 +396,8 @@ describe.skipIf(!process.env.DATABASE_URL)('Cross-tenant RLS isolation', () => {
   });
 
   it('[RLS] org B context cannot read org A workflow_runs', async () => {
-    await pool.query('SELECT set_config($1, $2, false)', ['app.current_tenant', orgBId]);
-    const { rows } = await pool.query<{ organization_id: string }>(
+    const { rows } = await withAppRole(
+      orgBId,
       `SELECT organization_id FROM workflow_runs WHERE organization_id = $1`,
       [orgAId],
     );
@@ -369,8 +405,8 @@ describe.skipIf(!process.env.DATABASE_URL)('Cross-tenant RLS isolation', () => {
   });
 
   it('[RLS] org A context cannot read org B intent_detections', async () => {
-    await pool.query('SELECT set_config($1, $2, false)', ['app.current_tenant', orgAId]);
-    const { rows } = await pool.query<{ organization_id: string }>(
+    const { rows } = await withAppRole(
+      orgAId,
       `SELECT organization_id FROM intent_detections WHERE organization_id = $1`,
       [orgBId],
     );
@@ -378,8 +414,8 @@ describe.skipIf(!process.env.DATABASE_URL)('Cross-tenant RLS isolation', () => {
   });
 
   it('[RLS] org B context sees its own intent_detections', async () => {
-    await pool.query('SELECT set_config($1, $2, false)', ['app.current_tenant', orgBId]);
-    const { rows } = await pool.query<{ organization_id: string }>(
+    const { rows } = await withAppRole(
+      orgBId,
       `SELECT DISTINCT organization_id FROM intent_detections WHERE organization_id IN ($1, $2)`,
       [orgAId, orgBId],
     );
