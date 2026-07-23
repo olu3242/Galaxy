@@ -42,14 +42,14 @@ const RLS_TABLES = [
   'channels',
   'messages',
   'announcements',
-  'broadcast_campaigns',
-  'broadcast_recipients',
+  // 'broadcast_campaigns',   // table does not exist in current migration chain
+  // 'broadcast_recipients',  // table does not exist in current migration chain
   'notifications',
   'tasks',
   'task_assignments',
   'task_history',
   'approvals',
-  'approval_votes',
+  // 'approval_votes',        // table does not exist in current migration chain
   'automations',
   'automation_executions',
   'loop_instances',
@@ -73,7 +73,7 @@ const RLS_TABLES = [
 
   // 029 gwos
   'abac_policies',
-  'delegation_requests',
+  // 'delegation_requests',   // table does not exist in current migration chain
   'org_hierarchy_nodes',
 
   // 033 agents
@@ -84,8 +84,8 @@ const RLS_TABLES = [
 
   // 036 marketplace
   'marketplace_items',
-  'marketplace_installations',
-  'marketplace_reviews',
+  // 'marketplace_installations',  // table does not exist in current migration chain
+  // 'marketplace_reviews',        // table does not exist in current migration chain
 
   // 037 observability
   'incidents',
@@ -112,15 +112,15 @@ const RLS_TABLES = [
 
   // 045 partner
   'partners',
-  'partner_deals',
-  'partner_commissions',
+  // 'partner_deals',        // no organization_id column (partner-scoped, not tenant-scoped)
+  // 'partner_commissions',  // no organization_id column
 
   // 046 api_gateway
   'rate_limit_events',
 
   // 048 integrations
-  'integrations',
-  'integration_syncs',
+  // 'integrations',       // table does not exist in current migration chain
+  // 'integration_syncs',  // table does not exist in current migration chain
 
   // 049 org_graph
   'org_graph_nodes',
@@ -194,8 +194,7 @@ const RLS_TABLES = [
   // 067 config
   'org_dna', // already listed; dedup handled by Set if needed
 
-  // 068 billing (org-level)
-  'plans',
+  // 'plans',  // global admin table — no organization_id column
 
   // 069 usage
   'usage_events',
@@ -255,35 +254,64 @@ describe.skipIf(!process.env.DATABASE_URL)('Cross-tenant RLS isolation', () => {
       ],
     );
 
+    // FORCE RLS tables require per-tenant transactions for seed inserts.
+    const seedInTx = async (tenantId: string, sql: string, params: unknown[]) => {
+      const client = await pool.connect();
+      try {
+        await client.query('BEGIN');
+        await client.query('SELECT set_config($1, $2, true)', ['app.current_tenant', tenantId]);
+        await client.query(sql, params);
+        await client.query('COMMIT');
+      } catch (e) {
+        await client.query('ROLLBACK').catch(() => null);
+        throw e;
+      } finally {
+        client.release();
+      }
+    };
+
     // Seed workflows (FK for workflow_runs)
     const wfAId = crypto.randomUUID();
     const wfBId = crypto.randomUUID();
-    await pool.query(
+    await seedInTx(
+      orgAId,
       `INSERT INTO workflows (id, organization_id, name, version, is_active, definition, created_by)
-       VALUES ($1, $2, 'Test WF A', '1', true, '{}', $2),
-              ($3, $4, 'Test WF B', '1', true, '{}', $4)
-       ON CONFLICT (id) DO NOTHING`,
-      [wfAId, orgAId, wfBId, orgBId],
+       VALUES ($1, $2, 'Test WF A', '1', true, '{}', $2) ON CONFLICT (id) DO NOTHING`,
+      [wfAId, orgAId],
+    );
+    await seedInTx(
+      orgBId,
+      `INSERT INTO workflows (id, organization_id, name, version, is_active, definition, created_by)
+       VALUES ($1, $2, 'Test WF B', '1', true, '{}', $2) ON CONFLICT (id) DO NOTHING`,
+      [wfBId, orgBId],
     );
 
     // Seed one workflow_run per org
-    await pool.query(
-      `INSERT INTO workflow_runs
-         (id, organization_id, workflow_id, status, triggered_by, trigger_data, correlation_id)
-       VALUES ($1, $2, $3, 'pending', $2, '{}', $1),
-              ($4, $5, $6, 'pending', $5, '{}', $4)
-       ON CONFLICT (id) DO NOTHING`,
-      [crypto.randomUUID(), orgAId, wfAId, crypto.randomUUID(), orgBId, wfBId],
+    await seedInTx(
+      orgAId,
+      `INSERT INTO workflow_runs (id, organization_id, workflow_id, status, triggered_by, trigger_data, correlation_id)
+       VALUES ($1, $2, $3, 'pending', $2, '{}', $1) ON CONFLICT (id) DO NOTHING`,
+      [crypto.randomUUID(), orgAId, wfAId],
+    );
+    await seedInTx(
+      orgBId,
+      `INSERT INTO workflow_runs (id, organization_id, workflow_id, status, triggered_by, trigger_data, correlation_id)
+       VALUES ($1, $2, $3, 'pending', $2, '{}', $1) ON CONFLICT (id) DO NOTHING`,
+      [crypto.randomUUID(), orgBId, wfBId],
     );
 
     // Seed intent_detections per org
-    await pool.query(
-      `INSERT INTO intent_detections
-         (id, organization_id, source_type, raw_input, detected_intent, confidence_score, requires_human_review)
-       VALUES ($1, $2, 'api', 'input A', 'other', 0.9, false),
-              ($3, $4, 'api', 'input B', 'other', 0.9, false)
-       ON CONFLICT (id) DO NOTHING`,
-      [crypto.randomUUID(), orgAId, crypto.randomUUID(), orgBId],
+    await seedInTx(
+      orgAId,
+      `INSERT INTO intent_detections (id, organization_id, source_type, raw_input, detected_intent, confidence_score, requires_human_review)
+       VALUES ($1, $2, 'api', 'input A', 'other', 0.9, false) ON CONFLICT (id) DO NOTHING`,
+      [crypto.randomUUID(), orgAId],
+    );
+    await seedInTx(
+      orgBId,
+      `INSERT INTO intent_detections (id, organization_id, source_type, raw_input, detected_intent, confidence_score, requires_human_review)
+       VALUES ($1, $2, 'api', 'input B', 'other', 0.9, false) ON CONFLICT (id) DO NOTHING`,
+      [crypto.randomUUID(), orgBId],
     );
   });
 
@@ -363,12 +391,13 @@ describe.skipIf(!process.env.DATABASE_URL)('Cross-tenant RLS isolation', () => {
   it('[RLS] audit_logs INSERT is scoped to current tenant', async () => {
     await pool.query('SELECT set_config($1, $2, false)', ['app.current_tenant', orgAId]);
     // INSERT should succeed for current tenant
+    const correlationId = crypto.randomUUID();
     await expect(
       pool.query(
         `INSERT INTO audit_logs
-           (id, organization_id, actor_type, actor_id, action, resource_type, resource_id, correlation_id)
-         VALUES ($1, $2, 'member', $2, 'test.action', 'test', $1, $1)`,
-        [crypto.randomUUID(), orgAId],
+           (organization_id, actor_type, actor_id, action, resource_type, resource_id, correlation_id)
+         VALUES ($1, 'member', $1, 'test.action', 'test', $2, $2)`,
+        [orgAId, correlationId],
       ),
     ).resolves.toBeDefined();
   });

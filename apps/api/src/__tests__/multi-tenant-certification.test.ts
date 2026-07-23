@@ -70,90 +70,118 @@ describe.skipIf(!DATABASE_URL)('Multi-Tenant Certification', () => {
     orgAWorkflowId = crypto.randomUUID();
     orgBWorkflowId = crypto.randomUUID();
 
-    await pool.query(
+    // FORCE RLS tables require per-tenant transactions for multi-org seed inserts.
+    // Each block: BEGIN → SET LOCAL tenant → INSERT → COMMIT.
+    const seedInTx = async (tenantId: string, sql: string, params: unknown[]) => {
+      const client = await pool.connect();
+      try {
+        await client.query('BEGIN');
+        await client.query('SELECT set_config($1, $2, true)', ['app.current_tenant', tenantId]);
+        await client.query(sql, params);
+        await client.query('COMMIT');
+      } catch (e) {
+        await client.query('ROLLBACK').catch(() => null);
+        throw e;
+      } finally {
+        client.release();
+      }
+    };
+
+    await seedInTx(
+      orgAId,
       `INSERT INTO workflows (id, organization_id, name, version, is_active, definition, created_by)
-       VALUES ($1, $2, 'Cert WF A', '1', true, '{}', $2),
-              ($3, $4, 'Cert WF B', '1', true, '{}', $4)
-       ON CONFLICT (id) DO NOTHING`,
-      [orgAWorkflowId, orgAId, orgBWorkflowId, orgBId],
+       VALUES ($1, $2, 'Cert WF A', '1', true, '{}', $2) ON CONFLICT (id) DO NOTHING`,
+      [orgAWorkflowId, orgAId],
+    );
+    await seedInTx(
+      orgBId,
+      `INSERT INTO workflows (id, organization_id, name, version, is_active, definition, created_by)
+       VALUES ($1, $2, 'Cert WF B', '1', true, '{}', $2) ON CONFLICT (id) DO NOTHING`,
+      [orgBWorkflowId, orgBId],
     );
 
     // ── Workflow runs ────────────────────────────────────────────────────────
     orgARunId = crypto.randomUUID();
     orgBRunId = crypto.randomUUID();
 
-    await pool.query(
-      `INSERT INTO workflow_runs
-         (id, organization_id, workflow_id, status, triggered_by, trigger_data, correlation_id)
-       VALUES ($1, $2, $3, 'pending', $2, '{}', $1),
-              ($4, $5, $6, 'pending', $5, '{}', $4)
-       ON CONFLICT (id) DO NOTHING`,
-      [orgARunId, orgAId, orgAWorkflowId, orgBRunId, orgBId, orgBWorkflowId],
+    await seedInTx(
+      orgAId,
+      `INSERT INTO workflow_runs (id, organization_id, workflow_id, status, triggered_by, trigger_data, correlation_id)
+       VALUES ($1, $2, $3, 'pending', $2, '{}', $1) ON CONFLICT (id) DO NOTHING`,
+      [orgARunId, orgAId, orgAWorkflowId],
+    );
+    await seedInTx(
+      orgBId,
+      `INSERT INTO workflow_runs (id, organization_id, workflow_id, status, triggered_by, trigger_data, correlation_id)
+       VALUES ($1, $2, $3, 'pending', $2, '{}', $1) ON CONFLICT (id) DO NOTHING`,
+      [orgBRunId, orgBId, orgBWorkflowId],
     );
 
-    // ── Audit logs ───────────────────────────────────────────────────────────
-    await setTenant(pool, orgAId);
-    await pool
-      .query(
-        `INSERT INTO audit_logs
-           (id, organization_id, actor_type, actor_id, action, resource_type, resource_id, correlation_id)
-         VALUES ($1, $2, 'member', $2, 'cert.action', 'cert', $1, $1)
-         ON CONFLICT (id) DO NOTHING`,
-        [crypto.randomUUID(), orgAId],
-      )
-      .catch(() => null);
+    // ── Audit logs (id is BIGINT SERIAL — omit from INSERT) ──────────────────
+    await seedInTx(
+      orgAId,
+      `INSERT INTO audit_logs
+         (organization_id, actor_type, actor_id, action, resource_type, resource_id, correlation_id)
+       VALUES ($1, 'member', $1, 'cert.action', 'cert', $2, $2)`,
+      [orgAId, crypto.randomUUID()],
+    ).catch(() => null);
 
-    await setTenant(pool, orgBId);
-    await pool
-      .query(
-        `INSERT INTO audit_logs
-           (id, organization_id, actor_type, actor_id, action, resource_type, resource_id, correlation_id)
-         VALUES ($1, $2, 'member', $2, 'cert.action', 'cert', $1, $1)
-         ON CONFLICT (id) DO NOTHING`,
-        [crypto.randomUUID(), orgBId],
-      )
-      .catch(() => null);
+    await seedInTx(
+      orgBId,
+      `INSERT INTO audit_logs
+         (organization_id, actor_type, actor_id, action, resource_type, resource_id, correlation_id)
+       VALUES ($1, 'member', $1, 'cert.action', 'cert', $2, $2)`,
+      [orgBId, crypto.randomUUID()],
+    ).catch(() => null);
 
     // ── Approvals ────────────────────────────────────────────────────────────
     orgAApprovalId = crypto.randomUUID();
     orgBApprovalId = crypto.randomUUID();
     const approverId = crypto.randomUUID();
 
-    await pool.query(
-      `INSERT INTO approvals
-         (id, organization_id, title, status, requested_by, current_step_order, data, correlation_id)
-       VALUES ($1, $2, 'Cert Approval A', 'pending', $3, 1, '{}', $1),
-              ($4, $5, 'Cert Approval B', 'pending', $3, 1, '{}', $4)
-       ON CONFLICT (id) DO NOTHING`,
-      [orgAApprovalId, orgAId, approverId, orgBApprovalId, orgBId],
+    await seedInTx(
+      orgAId,
+      `INSERT INTO approvals (id, organization_id, title, status, requested_by, current_step_order, data, correlation_id)
+       VALUES ($1, $2, 'Cert Approval A', 'pending', $3, 1, '{}', $1) ON CONFLICT (id) DO NOTHING`,
+      [orgAApprovalId, orgAId, approverId],
+    );
+    await seedInTx(
+      orgBId,
+      `INSERT INTO approvals (id, organization_id, title, status, requested_by, current_step_order, data, correlation_id)
+       VALUES ($1, $2, 'Cert Approval B', 'pending', $3, 1, '{}', $1) ON CONFLICT (id) DO NOTHING`,
+      [orgBApprovalId, orgBId, approverId],
     );
 
-    // ── Knowledge documents ──────────────────────────────────────────────────
+    // ── Knowledge documents (author_id, not created_by) ──────────────────────
     orgAKnowledgeDocId = crypto.randomUUID();
     orgBKnowledgeDocId = crypto.randomUUID();
 
-    await pool
-      .query(
-        `INSERT INTO knowledge_documents
-           (id, organization_id, title, content, status, created_by)
-         VALUES ($1, $2, 'Cert Doc A', 'content A', 'published', $2),
-                ($3, $4, 'Cert Doc B', 'content B', 'published', $4)
-         ON CONFLICT (id) DO NOTHING`,
-        [orgAKnowledgeDocId, orgAId, orgBKnowledgeDocId, orgBId],
-      )
-      .catch(() => null); // table may not exist in all environments
+    await seedInTx(
+      orgAId,
+      `INSERT INTO knowledge_documents (id, organization_id, title, content, status, author_id)
+       VALUES ($1, $2, 'Cert Doc A', 'content A', 'published', $2) ON CONFLICT (id) DO NOTHING`,
+      [orgAKnowledgeDocId, orgAId],
+    ).catch(() => null);
+    await seedInTx(
+      orgBId,
+      `INSERT INTO knowledge_documents (id, organization_id, title, content, status, author_id)
+       VALUES ($1, $2, 'Cert Doc B', 'content B', 'published', $2) ON CONFLICT (id) DO NOTHING`,
+      [orgBKnowledgeDocId, orgBId],
+    ).catch(() => null);
 
-    // ── Autonomous agents (agent_configs) ────────────────────────────────────
-    await pool
-      .query(
-        `INSERT INTO autonomous_agents
-           (id, organization_id, name, type, status, config, permissions)
-         VALUES ($1, $2, 'Cert Agent A', 'assistant', 'active', '{}', '{}'),
-                ($3, $4, 'Cert Agent B', 'assistant', 'active', '{}', '{}')
-         ON CONFLICT (id) DO NOTHING`,
-        [crypto.randomUUID(), orgAId, crypto.randomUUID(), orgBId],
-      )
-      .catch(() => null); // table may not exist in all environments
+    // ── Autonomous agents (agent_type column, not name/type/permissions) ─────
+    await seedInTx(
+      orgAId,
+      `INSERT INTO autonomous_agents (id, organization_id, agent_type, status, config)
+       VALUES ($1, $2, 'assistant', 'active', '{}') ON CONFLICT (id) DO NOTHING`,
+      [crypto.randomUUID(), orgAId],
+    ).catch(() => null);
+    await seedInTx(
+      orgBId,
+      `INSERT INTO autonomous_agents (id, organization_id, agent_type, status, config)
+       VALUES ($1, $2, 'assistant', 'active', '{}') ON CONFLICT (id) DO NOTHING`,
+      [crypto.randomUUID(), orgBId],
+    ).catch(() => null); // table may not exist in all environments
   });
 
   afterAll(async () => {
@@ -274,7 +302,7 @@ describe.skipIf(!DATABASE_URL)('Multi-Tenant Certification', () => {
         engine.startWorkflow({
           organizationId: orgAId,
           workflowId: orgBWorkflowId, // belongs to org B
-          triggeredBy: 'cert-test',
+          triggeredBy: crypto.randomUUID(),
           triggerData: {},
           correlationId: crypto.randomUUID(),
         }),
@@ -287,7 +315,7 @@ describe.skipIf(!DATABASE_URL)('Multi-Tenant Certification', () => {
       const run = await engine.startWorkflow({
         organizationId: orgAId,
         workflowId: orgAWorkflowId,
-        triggeredBy: 'cert-test',
+        triggeredBy: crypto.randomUUID(),
         triggerData: {},
         correlationId: crypto.randomUUID(),
       });
