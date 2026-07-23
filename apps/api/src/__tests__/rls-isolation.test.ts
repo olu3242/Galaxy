@@ -243,7 +243,7 @@ describe.skipIf(!process.env.DATABASE_URL)('Cross-tenant RLS isolation', () => {
     // Create two test organizations
     await pool.query(
       `INSERT INTO organizations (id, name, slug, tier, status)
-       VALUES ($1, $2, $3, 'free', 'active'), ($4, $5, $6, 'free', 'active')
+       VALUES ($1, $2, $3, 'starter', 'active'), ($4, $5, $6, 'starter', 'active')
        ON CONFLICT (id) DO NOTHING`,
       [
         orgAId,
@@ -270,8 +270,8 @@ describe.skipIf(!process.env.DATABASE_URL)('Cross-tenant RLS isolation', () => {
     await pool.query(
       `INSERT INTO workflow_runs
          (id, organization_id, workflow_id, status, triggered_by, trigger_data, correlation_id)
-       VALUES ($1, $2, $3, 'pending', 'test', '{}', $1),
-              ($4, $5, $6, 'pending', 'test', '{}', $4)
+       VALUES ($1, $2, $3, 'pending', $2, '{}', $1),
+              ($4, $5, $6, 'pending', $5, '{}', $4)
        ON CONFLICT (id) DO NOTHING`,
       [crypto.randomUUID(), orgAId, wfAId, crypto.randomUUID(), orgBId, wfBId],
     );
@@ -280,8 +280,8 @@ describe.skipIf(!process.env.DATABASE_URL)('Cross-tenant RLS isolation', () => {
     await pool.query(
       `INSERT INTO intent_detections
          (id, organization_id, source_type, raw_input, detected_intent, confidence_score, requires_human_review)
-       VALUES ($1, $2, 'test', 'input A', 'other', 0.9, false),
-              ($3, $4, 'test', 'input B', 'other', 0.9, false)
+       VALUES ($1, $2, 'api', 'input A', 'other', 0.9, false),
+              ($3, $4, 'api', 'input B', 'other', 0.9, false)
        ON CONFLICT (id) DO NOTHING`,
       [crypto.randomUUID(), orgAId, crypto.randomUUID(), orgBId],
     );
@@ -306,7 +306,7 @@ describe.skipIf(!process.env.DATABASE_URL)('Cross-tenant RLS isolation', () => {
 
   for (const table of UNIQUE_RLS_TABLES) {
     it(`[RLS] org A tenant cannot read org B rows in "${table}"`, async () => {
-      await pool.query('SELECT set_config($1, $2, true)', ['app.current_tenant', orgAId]);
+      await pool.query('SELECT set_config($1, $2, false)', ['app.current_tenant', orgAId]);
       const { rows } = await pool
         .query<{
           organization_id: string;
@@ -321,7 +321,7 @@ describe.skipIf(!process.env.DATABASE_URL)('Cross-tenant RLS isolation', () => {
   // ── Positive isolation checks for seeded tables ────────────────────────────
 
   it('[RLS] org A context sees its own workflow_runs', async () => {
-    await pool.query('SELECT set_config($1, $2, true)', ['app.current_tenant', orgAId]);
+    await pool.query('SELECT set_config($1, $2, false)', ['app.current_tenant', orgAId]);
     const { rows } = await pool.query<{ organization_id: string }>(
       `SELECT DISTINCT organization_id FROM workflow_runs WHERE organization_id IN ($1, $2)`,
       [orgAId, orgBId],
@@ -332,7 +332,7 @@ describe.skipIf(!process.env.DATABASE_URL)('Cross-tenant RLS isolation', () => {
   });
 
   it('[RLS] org B context cannot read org A workflow_runs', async () => {
-    await pool.query('SELECT set_config($1, $2, true)', ['app.current_tenant', orgBId]);
+    await pool.query('SELECT set_config($1, $2, false)', ['app.current_tenant', orgBId]);
     const { rows } = await pool.query<{ organization_id: string }>(
       `SELECT organization_id FROM workflow_runs WHERE organization_id = $1`,
       [orgAId],
@@ -341,7 +341,7 @@ describe.skipIf(!process.env.DATABASE_URL)('Cross-tenant RLS isolation', () => {
   });
 
   it('[RLS] org A context cannot read org B intent_detections', async () => {
-    await pool.query('SELECT set_config($1, $2, true)', ['app.current_tenant', orgAId]);
+    await pool.query('SELECT set_config($1, $2, false)', ['app.current_tenant', orgAId]);
     const { rows } = await pool.query<{ organization_id: string }>(
       `SELECT organization_id FROM intent_detections WHERE organization_id = $1`,
       [orgBId],
@@ -350,7 +350,7 @@ describe.skipIf(!process.env.DATABASE_URL)('Cross-tenant RLS isolation', () => {
   });
 
   it('[RLS] org B context sees its own intent_detections', async () => {
-    await pool.query('SELECT set_config($1, $2, true)', ['app.current_tenant', orgBId]);
+    await pool.query('SELECT set_config($1, $2, false)', ['app.current_tenant', orgBId]);
     const { rows } = await pool.query<{ organization_id: string }>(
       `SELECT DISTINCT organization_id FROM intent_detections WHERE organization_id IN ($1, $2)`,
       [orgAId, orgBId],
@@ -361,7 +361,7 @@ describe.skipIf(!process.env.DATABASE_URL)('Cross-tenant RLS isolation', () => {
 
   // ── audit_logs: INSERT-only policy (no SELECT for normal role) ─────────────
   it('[RLS] audit_logs INSERT is scoped to current tenant', async () => {
-    await pool.query('SELECT set_config($1, $2, true)', ['app.current_tenant', orgAId]);
+    await pool.query('SELECT set_config($1, $2, false)', ['app.current_tenant', orgAId]);
     // INSERT should succeed for current tenant
     await expect(
       pool.query(

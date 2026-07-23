@@ -27,14 +27,14 @@ const DATABASE_URL = process.env.DATABASE_URL ?? '';
 
 /** Set the RLS tenant context on a pool connection. */
 async function setTenant(pool: Pool, organizationId: string): Promise<void> {
-  await pool.query('SELECT set_config($1, $2, true)', ['app.current_tenant', organizationId]);
+  await pool.query('SELECT set_config($1, $2, false)', ['app.current_tenant', organizationId]);
 }
 
 /** Create a minimal organization row suitable for tests. */
 async function createOrg(pool: Pool, orgId: string, label: string): Promise<void> {
   await pool.query(
     `INSERT INTO organizations (id, name, slug, tier, status)
-     VALUES ($1, $2, $3, 'free', 'active')
+     VALUES ($1, $2, $3, 'starter', 'active')
      ON CONFLICT (id) DO NOTHING`,
     [orgId, `Cert Test Org ${label}`, `cert-${label.toLowerCase()}-${orgId.slice(0, 8)}`],
   );
@@ -85,8 +85,8 @@ describe.skipIf(!DATABASE_URL)('Multi-Tenant Certification', () => {
     await pool.query(
       `INSERT INTO workflow_runs
          (id, organization_id, workflow_id, status, triggered_by, trigger_data, correlation_id)
-       VALUES ($1, $2, $3, 'pending', 'cert-test', '{}', $1),
-              ($4, $5, $6, 'pending', 'cert-test', '{}', $4)
+       VALUES ($1, $2, $3, 'pending', $2, '{}', $1),
+              ($4, $5, $6, 'pending', $5, '{}', $4)
        ON CONFLICT (id) DO NOTHING`,
       [orgARunId, orgAId, orgAWorkflowId, orgBRunId, orgBId, orgBWorkflowId],
     );
