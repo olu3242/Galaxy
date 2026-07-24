@@ -90,3 +90,7 @@ export type { CustomerHealthScore } from './revenue/CustomerHealthService.js';
 // Workstream L — Commercial Readiness
 export { CommercialPolicyService } from './commercial/CommercialPolicyService.js';
 export type { CommercialPolicy } from './commercial/CommercialPolicyService.js';
+
+// Workstream M — WRF Runtime & Dependency Health
+export { WorkstreamRuntimeService } from './workstream/WorkstreamRuntimeService.js';
+export { DependencyHealthService } from './workstream/DependencyHealthService.js';

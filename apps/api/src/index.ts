@@ -50,6 +50,7 @@ import { missionControlRoutes } from './routes/mission-control.js';
 import { reliabilityRoutes } from './routes/reliability.js';
 import { platformRoutes } from './routes/platform.js';
 import { platformAdminV2Routes } from './routes/platform-admin-v2.js';
+import { wrfRoutes } from './routes/wrf.js';
 import { billingV2Routes } from './routes/billing-v2.js';
 import { loopRoutes } from './routes/loop.js';
 import { broadcastRoutes } from './routes/broadcast.js';
@@ -184,6 +185,7 @@ async function buildApp(): Promise<FastifyInstance> {
   await fastify.register(executiveRoutes, { prefix: '/api/v1' });
   await fastify.register(workflowGenRoutes, { prefix: '/api/v1' });
   await fastify.register(approvalRoutes, { prefix: '/api/v1' });
+  await fastify.register(wrfRoutes, { prefix: '/api/v1' });
 
   // Graceful shutdown
   fastify.addHook('onClose', async () => {
