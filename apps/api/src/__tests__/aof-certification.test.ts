@@ -26,8 +26,8 @@ const { Pool } = pg;
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
-const orgId = '00000000-aaaa-4000-8000-aof000000001';
-const orgIdB = '00000000-aaaa-4000-8000-aof000000002';
+const orgId = '00000000-aa00-4000-8000-a0f000000001';
+const orgIdB = '00000000-aa00-4000-8000-a0f000000002';
 const APP_ROLE = 'galaxy_rls_test_role';
 
 async function withTenantClient<T>(
@@ -48,9 +48,9 @@ async function withTenantClient<T>(
 beforeAll(async () => {
   // Create test organizations
   await pool.query(
-    `INSERT INTO organizations (id, name, slug, whatsapp_phone_number)
-     VALUES ($1, 'AOF Test Org A', 'aof-test-a', '+10000000001'),
-            ($2, 'AOF Test Org B', 'aof-test-b', '+10000000002')
+    `INSERT INTO organizations (id, name, slug, tier, status)
+     VALUES ($1, 'AOF Test Org A', 'aof-test-a', 'starter', 'active'),
+            ($2, 'AOF Test Org B', 'aof-test-b', 'starter', 'active')
      ON CONFLICT (id) DO NOTHING`,
     [orgId, orgIdB],
   );
@@ -81,6 +81,9 @@ afterAll(async () => {
     .catch(() => null);
   await pool
     .query(`DELETE FROM aof_observations WHERE organization_id IN ($1, $2)`, [orgId, orgIdB])
+    .catch(() => null);
+  await pool
+    .query(`DELETE FROM audit_logs WHERE organization_id IN ($1, $2)`, [orgId, orgIdB])
     .catch(() => null);
   await pool
     .query(`DELETE FROM organizations WHERE id IN ($1, $2)`, [orgId, orgIdB])
@@ -117,7 +120,7 @@ describe('AOF Certification', () => {
     const obs = await withTenantClient(orgId, (client) =>
       svc.ingestObservation(client, {
         organizationId: orgId,
-        eventId: '00000000-0000-4000-8000-aof000000010',
+        eventId: '00000000-0000-4000-8000-a0f000000010',
         eventType: 'workstream.completed',
         actorType: 'system',
         durationMs: 1200,
@@ -335,7 +338,7 @@ describe('AOF Certification', () => {
     await withTenantClient(orgId, (client) =>
       svc.ingestObservation(client, {
         organizationId: orgId,
-        eventId: '00000000-0000-4000-8000-aof000000020',
+        eventId: '00000000-0000-4000-8000-a0f000000020',
         eventType: 'agent.completed',
         actorType: 'agent',
         outcome: 'success',
