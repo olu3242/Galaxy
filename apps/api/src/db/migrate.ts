@@ -86,6 +86,12 @@ import * as migration085 from './migrations/085_force_rls_all_tenant_tables.js';
 import * as migration086 from './migrations/086_workflow_definitions.js';
 import * as migration087 from './migrations/087_workstream_checkpoints.js';
 import * as migration088 from './migrations/088_workstream_telemetry.js';
+import * as migration089 from './migrations/089_aof_observations.js';
+import * as migration090 from './migrations/090_aof_decisions.js';
+import * as migration091 from './migrations/091_aof_predictions.js';
+import * as migration092 from './migrations/092_aof_optimizations.js';
+import * as migration093 from './migrations/093_aof_learning_records.js';
+import * as migration094 from './migrations/094_aof_certifications.js';
 
 interface Migration {
   up: (pool: Pool) => Promise<void>;
@@ -180,6 +186,12 @@ const migrations: { name: string; migration: Migration }[] = [
   { name: '086_workflow_definitions', migration: migration086 },
   { name: '087_workstream_checkpoints', migration: migration087 },
   { name: '088_workstream_telemetry', migration: migration088 },
+  { name: '089_aof_observations', migration: migration089 },
+  { name: '090_aof_decisions', migration: migration090 },
+  { name: '091_aof_predictions', migration: migration091 },
+  { name: '092_aof_optimizations', migration: migration092 },
+  { name: '093_aof_learning_records', migration: migration093 },
+  { name: '094_aof_certifications', migration: migration094 },
 ];
 
 async function ensureMigrationsTable(pool: Pool): Promise<void> {
