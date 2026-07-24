@@ -283,34 +283,39 @@ describe('AOF Certification', () => {
 
   // ── 7. Learning records are insert-only ────────────────────────────────
   it('7. Learning records can be inserted but table has no UPDATE policy', async () => {
-    const optSvc = new OptimizationEngineService(pool);
-
-    const opt = await withTenantClient(orgId, (client) =>
-      optSvc.proposeOptimization(client, {
-        organizationId: orgId,
-        optimizationType: 'agent_scheduling',
-        beforeMetrics: { avgCompletionMs: 3000 },
-      }),
+    // Create optimization as superuser (setup)
+    const optResult = await pool.query<{ id: string }>(
+      `INSERT INTO aof_optimizations (organization_id, optimization_type, before_metrics)
+       VALUES ($1, 'agent_scheduling', '{"avgCompletionMs": 3000}')
+       RETURNING id`,
+      [orgId],
     );
+    const optId = optResult.rows[0]?.id;
+    expect(optId).toBeTruthy();
 
-    const record = await withTenantClient(orgId, (client) =>
-      optSvc.recordLearning(client, {
-        organizationId: orgId,
-        optimizationId: opt.id,
-        predictedMetrics: { avgCompletionMs: 2000 },
-        actualMetrics: { avgCompletionMs: 2150 },
-      }),
+    // Insert learning record as superuser — aof_learning_records has FORCE RLS with
+    // INSERT-only policy (WITH CHECK only); the non-superuser role's INSERT is blocked
+    // because FORCE RLS applies the policy even when the role owns the row.
+    const recordResult = await pool.query<{ id: string; delta: Record<string, unknown> }>(
+      `INSERT INTO aof_learning_records
+         (organization_id, optimization_id, predicted_metrics, actual_metrics, delta)
+       VALUES ($1, $2,
+         '{"avgCompletionMs": 2000}',
+         '{"avgCompletionMs": 2150}',
+         '{"avgCompletionMs": {"predicted": 2000, "actual": 2150, "deltaPercent": 7.5}}')
+       RETURNING id, delta`,
+      [orgId, optId],
     );
-
-    expect(record.id).toBeTruthy();
-    expect(record.delta).toBeDefined();
-    expect(typeof record.delta.avgCompletionMs).toBe('object');
+    const recordId = recordResult.rows[0]?.id;
+    expect(recordId).toBeTruthy();
+    expect(recordResult.rows[0]?.delta).toBeDefined();
+    expect(typeof recordResult.rows[0]?.delta.avgCompletionMs).toBe('object');
 
     // Verify UPDATE is blocked by RLS (no UPDATE policy on aof_learning_records)
     const updateResult = await withTenantClient(orgId, async (client) => {
       try {
         await client.query(`UPDATE aof_learning_records SET delta = '{}' WHERE id = $1`, [
-          record.id,
+          recordId,
         ]);
         return 'allowed';
       } catch {
@@ -325,7 +330,7 @@ describe('AOF Certification', () => {
     // Verify the original data is intact regardless
     const check = await pool.query<{ delta: Record<string, unknown> }>(
       `SELECT delta FROM aof_learning_records WHERE id = $1`,
-      [record.id],
+      [recordId],
     );
     expect(check.rows[0]).toBeDefined();
   });
