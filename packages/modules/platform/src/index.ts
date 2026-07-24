@@ -94,3 +94,10 @@ export type { CommercialPolicy } from './commercial/CommercialPolicyService.js';
 // Workstream M — WRF Runtime & Dependency Health
 export { WorkstreamRuntimeService } from './workstream/WorkstreamRuntimeService.js';
 export { DependencyHealthService } from './workstream/DependencyHealthService.js';
+
+// Workstream N — Autonomous Operations Framework (AOF)
+export { ObservabilityService } from './aof/ObservabilityService.js';
+export { DecisionEngineService } from './aof/DecisionEngineService.js';
+export { OptimizationEngineService } from './aof/OptimizationEngineService.js';
+export { AutonomousCertificationService } from './aof/AutonomousCertificationService.js';
+export { PredictiveIntelligenceService } from './aof/PredictiveIntelligenceService.js';
