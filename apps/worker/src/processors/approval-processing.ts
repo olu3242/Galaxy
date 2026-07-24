@@ -1,10 +1,11 @@
 import crypto from 'crypto';
-import type { Pool } from 'pg';
+import type { Pool, PoolClient } from 'pg';
 import type { Job } from 'bullmq';
 import { Queue } from 'bullmq';
 import { Redis } from 'ioredis';
 import { WhatsAppProvider } from '@galaxy/communication';
 import { withEngineLifecycle } from '../lib/withEngineLifecycle.js';
+import { withTenantClient } from '../lib/withTenantClient.js';
 
 function makeLoopQueue(): Queue {
   const redis = new Redis(process.env.REDIS_URL ?? 'redis://localhost:6379', {
@@ -15,7 +16,7 @@ function makeLoopQueue(): Queue {
 }
 
 async function writeAuditLog(
-  pool: Pool,
+  client: PoolClient,
   opts: {
     organizationId: string;
     actorType: 'member' | 'agent' | 'system';
@@ -26,7 +27,7 @@ async function writeAuditLog(
     correlationId: string;
   },
 ): Promise<void> {
-  await pool.query(
+  await client.query(
     `INSERT INTO audit_logs
        (organization_id, actor_type, actor_id, action, resource_type, resource_id, correlation_id)
      VALUES ($1, $2, $3, $4, $5, $6, $7)`,
@@ -72,7 +73,8 @@ export function createApprovalProcessor(pool: Pool): (job: Job) => Promise<void>
       const payload = job.data as ApprovalJobData;
       const { jobName, approvalId, workflowRunId, approverId } = payload;
 
-      // When coming from the WhatsApp webhook, organizationId is resolved here from the run
+      // When coming from the WhatsApp webhook, organizationId may need resolving from the run.
+      // This pre-RLS query is intentionally outside withTenantClient (no org context yet).
       let { organizationId } = payload;
       if (payload._resolveOrgFromRun && workflowRunId && !organizationId) {
         const orgRow = await pool.query<{ organization_id: string }>(
@@ -93,144 +95,140 @@ export function createApprovalProcessor(pool: Pool): (job: Job) => Promise<void>
         organizationId = resolved;
       }
 
-      await pool.query('SELECT set_config($1, $2, true)', ['app.current_tenant', organizationId]);
+      await withTenantClient(pool, organizationId, async (client) => {
+        switch (jobName) {
+          case 'post-approval-advance': {
+            if (!workflowRunId) break;
 
-      switch (jobName) {
-        case 'post-approval-advance': {
-          if (!workflowRunId) break;
+            const { rows } = await client.query<WorkflowRunRow>(
+              `SELECT id, organization_id, workflow_id, status, trigger_data
+               FROM workflow_runs
+               WHERE organization_id = $1 AND id = $2`,
+              [organizationId, workflowRunId],
+            );
+            const run = rows[0];
+            if (!run || run.status === 'completed' || run.status === 'failed') break;
 
-          const { rows } = await pool.query<WorkflowRunRow>(
-            `SELECT id, organization_id, workflow_id, status, trigger_data
-             FROM workflow_runs
-             WHERE organization_id = $1 AND id = $2`,
-            [organizationId, workflowRunId],
-          );
-          const run = rows[0];
-          if (!run || run.status === 'completed' || run.status === 'failed') break;
+            await client.query(
+              `UPDATE workflow_runs
+               SET status = 'completed', completed_at = NOW(), updated_at = NOW()
+               WHERE organization_id = $1 AND id = $2`,
+              [organizationId, workflowRunId],
+            );
 
-          await pool.query(
-            `UPDATE workflow_runs
-             SET status = 'completed', completed_at = NOW(), updated_at = NOW()
-             WHERE organization_id = $1 AND id = $2`,
-            [organizationId, workflowRunId],
-          );
-
-          await pool.query(
-            `INSERT INTO workflow_history
-               (organization_id, run_id, from_status, to_status, actor_type, actor_id, notes)
-             VALUES ($1, $2, 'running', 'completed', 'member', $3, $4)`,
-            [
-              organizationId,
-              workflowRunId,
-              approverId,
-              `Approval ${approvalId} fully approved — workflow completed`,
-            ],
-          );
-
-          const senderPhone = run.trigger_data.senderPhone;
-          const correlationId = payload.correlationId ?? crypto.randomUUID();
-
-          // Audit log — workflow.completed
-          await writeAuditLog(pool, {
-            organizationId,
-            actorType: 'member',
-            actorId: approverId,
-            action: 'workflow.completed',
-            resourceType: 'workflow_run',
-            resourceId: workflowRunId,
-            correlationId,
-          }).catch(() => null);
-
-          if (senderPhone) {
-            await whatsapp
-              .send(senderPhone, {
-                type: 'text',
-                text: 'Your leave request has been approved.',
-              })
-              .catch(() => {
-                // Non-fatal
-              });
-
-            // Trigger loop verification (non-blocking)
-            await loopQueue
-              .add('create-loop', {
-                jobName: 'create-loop',
+            await client.query(
+              `INSERT INTO workflow_history
+                 (organization_id, run_id, from_status, to_status, actor_type, actor_id, notes)
+               VALUES ($1, $2, 'running', 'completed', 'member', $3, $4)`,
+              [
                 organizationId,
                 workflowRunId,
-                senderPhone,
+                approverId,
+                `Approval ${approvalId} fully approved — workflow completed`,
+              ],
+            );
+
+            const senderPhone = run.trigger_data.senderPhone;
+            const correlationId = payload.correlationId ?? crypto.randomUUID();
+
+            await writeAuditLog(client, {
+              organizationId,
+              actorType: 'member',
+              actorId: approverId,
+              action: 'workflow.completed',
+              resourceType: 'workflow_run',
+              resourceId: workflowRunId,
+              correlationId,
+            }).catch(() => null);
+
+            if (senderPhone) {
+              await whatsapp
+                .send(senderPhone, {
+                  type: 'text',
+                  text: 'Your leave request has been approved.',
+                })
+                .catch(() => {
+                  // Non-fatal
+                });
+
+              await loopQueue
+                .add('create-loop', {
+                  jobName: 'create-loop',
+                  organizationId,
+                  workflowRunId,
+                  senderPhone,
+                  correlationId,
+                })
+                .catch(() => null);
+            }
+
+            await loopQueue
+              .add('run-compliance', {
+                jobName: 'run-compliance',
+                organizationId,
+                workflowRunId,
                 correlationId,
               })
               .catch(() => null);
+
+            break;
           }
 
-          // Compliance check (non-blocking)
-          await loopQueue
-            .add('run-compliance', {
-              jobName: 'run-compliance',
+          case 'post-rejection-notify': {
+            if (!workflowRunId) break;
+
+            const rejResult = await client.query<WorkflowRunRow>(
+              `UPDATE workflow_runs
+               SET status = 'failed', updated_at = NOW()
+               WHERE organization_id = $1 AND id = $2 AND status NOT IN ('completed', 'failed')
+               RETURNING id, organization_id, workflow_id, status, trigger_data`,
+              [organizationId, workflowRunId],
+            );
+
+            await client.query(
+              `INSERT INTO workflow_history
+                 (organization_id, run_id, from_status, to_status, actor_type, actor_id, notes)
+               VALUES ($1, $2, 'running', 'failed', 'member', $3, $4)`,
+              [
+                organizationId,
+                workflowRunId,
+                approverId,
+                `Approval ${approvalId} rejected — workflow failed`,
+              ],
+            );
+
+            const rejRun = rejResult.rows[0];
+            const rejCorrelationId = payload.correlationId ?? crypto.randomUUID();
+
+            await writeAuditLog(client, {
               organizationId,
-              workflowRunId,
-              correlationId,
-            })
-            .catch(() => null);
+              actorType: 'member',
+              actorId: approverId,
+              action: 'workflow.rejected',
+              resourceType: 'workflow_run',
+              resourceId: workflowRunId,
+              correlationId: rejCorrelationId,
+            }).catch(() => null);
 
-          break;
-        }
-
-        case 'post-rejection-notify': {
-          if (!workflowRunId) break;
-
-          const rejResult = await pool.query<WorkflowRunRow>(
-            `UPDATE workflow_runs
-             SET status = 'failed', updated_at = NOW()
-             WHERE organization_id = $1 AND id = $2 AND status NOT IN ('completed', 'failed')
-             RETURNING id, organization_id, workflow_id, status, trigger_data`,
-            [organizationId, workflowRunId],
-          );
-
-          await pool.query(
-            `INSERT INTO workflow_history
-               (organization_id, run_id, from_status, to_status, actor_type, actor_id, notes)
-             VALUES ($1, $2, 'running', 'failed', 'member', $3, $4)`,
-            [
-              organizationId,
-              workflowRunId,
-              approverId,
-              `Approval ${approvalId} rejected — workflow failed`,
-            ],
-          );
-
-          const rejRun = rejResult.rows[0];
-          const rejCorrelationId = payload.correlationId ?? crypto.randomUUID();
-
-          // Audit log — workflow.rejected
-          await writeAuditLog(pool, {
-            organizationId,
-            actorType: 'member',
-            actorId: approverId,
-            action: 'workflow.rejected',
-            resourceType: 'workflow_run',
-            resourceId: workflowRunId,
-            correlationId: rejCorrelationId,
-          }).catch(() => null);
-
-          const rejSenderPhone = rejRun?.trigger_data.senderPhone;
-          if (rejSenderPhone) {
-            await whatsapp
-              .send(rejSenderPhone, {
-                type: 'text',
-                text: 'Your leave request has been rejected.',
-              })
-              .catch(() => {
-                // Non-fatal
-              });
+            const rejSenderPhone = rejRun?.trigger_data.senderPhone;
+            if (rejSenderPhone) {
+              await whatsapp
+                .send(rejSenderPhone, {
+                  type: 'text',
+                  text: 'Your leave request has been rejected.',
+                })
+                .catch(() => {
+                  // Non-fatal
+                });
+            }
+            break;
           }
-          break;
-        }
 
-        default: {
-          const _never: never = jobName;
-          throw new Error(`Unknown approval job: ${String(_never)}`);
+          default: {
+            const _never: never = jobName;
+            throw new Error(`Unknown approval job: ${String(_never)}`);
+          }
         }
-      }
+      });
     });
 }
