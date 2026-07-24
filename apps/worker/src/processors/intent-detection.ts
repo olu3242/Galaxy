@@ -276,10 +276,39 @@ Respond with exactly this JSON structure:
           : undefined;
 
       if (workflowName) {
-        const workflowRow = await pool.query<{ id: string }>(
+        // Find or auto-instantiate the workflow for this org from the global template catalog.
+        // This lets orgs pick up new templates without a manual onboarding step.
+        let workflowRow = await pool.query<{ id: string }>(
           `SELECT id FROM workflows WHERE organization_id = $1 AND name = $2 AND is_active = true LIMIT 1`,
           [organizationId, workflowName],
         );
+        if (!workflowRow.rows[0]) {
+          const defRow = await pool.query<{
+            id: string;
+            description: string | null;
+            definition: unknown;
+          }>(
+            `SELECT id, description, definition FROM workflow_definitions WHERE name = $1 AND is_active = true LIMIT 1`,
+            [workflowName],
+          );
+          const def = defRow.rows[0];
+          if (def) {
+            workflowRow = await pool.query<{ id: string }>(
+              `INSERT INTO workflows (organization_id, name, description, version, is_active, definition, created_by)
+               VALUES ($1, $2, $3, 1, true, $4, $1)
+               ON CONFLICT DO NOTHING
+               RETURNING id`,
+              [organizationId, workflowName, def.description ?? '', JSON.stringify(def.definition)],
+            );
+            if (!workflowRow.rows[0]) {
+              // Concurrent insert race — re-query
+              workflowRow = await pool.query<{ id: string }>(
+                `SELECT id FROM workflows WHERE organization_id = $1 AND name = $2 AND is_active = true LIMIT 1`,
+                [organizationId, workflowName],
+              );
+            }
+          }
+        }
         const workflow = workflowRow.rows[0];
         if (workflow) {
           const runResult = await pool.query<{ id: string }>(

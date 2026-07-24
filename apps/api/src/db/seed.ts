@@ -1,6 +1,7 @@
 import { scrypt, randomBytes } from 'node:crypto';
 import { promisify } from 'node:util';
 import { Pool } from 'pg';
+import { seedWorkflowTemplates } from './seeds/workflow-templates.js';
 
 const scryptAsync = promisify(scrypt);
 
@@ -94,6 +95,11 @@ async function seed(): Promise<void> {
     console.warn('[seed] Membership created');
 
     await client.query('COMMIT');
+
+    // Seed global workflow templates (uses its own connection; safe to run after commit)
+    await seedWorkflowTemplates(pool);
+    console.warn('[seed] Workflow templates seeded');
+
     console.warn('[seed] Done');
   } catch (err) {
     await client.query('ROLLBACK');

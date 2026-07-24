@@ -83,6 +83,7 @@ import * as migration081 from './migrations/081_agent_lifecycle_traces.js';
 import * as migration083 from './migrations/083_shared_org_memory.js';
 import * as migration084 from './migrations/084_loop_telemetry.js';
 import * as migration085 from './migrations/085_force_rls_all_tenant_tables.js';
+import * as migration086 from './migrations/086_workflow_definitions.js';
 
 interface Migration {
   up: (pool: Pool) => Promise<void>;
@@ -174,6 +175,7 @@ const migrations: { name: string; migration: Migration }[] = [
   { name: '083_shared_org_memory', migration: migration083 },
   { name: '084_loop_telemetry', migration: migration084 },
   { name: '085_force_rls_all_tenant_tables', migration: migration085 },
+  { name: '086_workflow_definitions', migration: migration086 },
 ];
 
 async function ensureMigrationsTable(pool: Pool): Promise<void> {
