@@ -548,9 +548,10 @@ describe.skipIf(!DATABASE_URL)('Workstream Runtime Certification', () => {
       );
     });
 
-    const result = await withAppRole(
-      pool,
-      orgId,
+    // audit_logs has INSERT-only RLS — no SELECT policy exists for non-superuser
+    // roles under FORCE RLS, so the read must use the superuser pool connection
+    // directly (the write path is already certified by the INSERT not throwing).
+    const result = await pool.query<Record<string, unknown>>(
       `SELECT action, correlation_id
        FROM audit_logs
        WHERE organization_id = $1
