@@ -36,7 +36,7 @@ async function withTenantClient<T>(
 ): Promise<T> {
   const client = await pool.connect();
   try {
-    await client.query('SELECT set_config($1, $2, true)', ['app.current_tenant', organizationId]);
+    await client.query('SELECT set_config($1, $2, false)', ['app.current_tenant', organizationId]);
     await client.query(`SET ROLE ${APP_ROLE}`);
     return await fn(client);
   } finally {
