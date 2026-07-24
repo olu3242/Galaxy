@@ -119,7 +119,7 @@ describe.skipIf(!DATABASE_URL)('Workstream Runtime Certification', () => {
 
     await createOrg(pool, orgId, 'Cert');
 
-    // Ensure the non-superuser role exists — graceful if it does not.
+    // Ensure the non-superuser role exists and has table access.
     await pool
       .query(
         `
@@ -132,6 +132,12 @@ describe.skipIf(!DATABASE_URL)('Workstream Runtime Certification', () => {
     `,
       )
       .catch(() => null);
+    // Grant SELECT + INSERT + UPDATE on all tables so withAppRole queries succeed.
+    await pool
+      .query(`GRANT SELECT, INSERT, UPDATE ON ALL TABLES IN SCHEMA public TO ${APP_ROLE}`)
+      .catch(() => null);
+    // Allow the connection role to SET ROLE to galaxy_rls_test_role.
+    await pool.query(`GRANT ${APP_ROLE} TO CURRENT_USER`).catch(() => null);
 
     // Seed a workflow_definitions row (Leave Request) for certification.
     const defResult = await pool.query<{ id: string }>(
@@ -152,15 +158,32 @@ describe.skipIf(!DATABASE_URL)('Workstream Runtime Certification', () => {
   });
 
   afterAll(async () => {
-    // Clean up test data — deletions cascade where FK constraints exist.
+    // Clean up in dependency order — each statement is a separate query.
     await pool
-      .query(
-        `DELETE FROM workstream_telemetry     WHERE organization_id = $1;
-         DELETE FROM workstream_checkpoints   WHERE organization_id = $1;`,
-        [orgId],
-      )
+      .query(`DELETE FROM workstream_telemetry   WHERE organization_id = $1`, [orgId])
       .catch(() => null);
-    await pool.query(`DELETE FROM organizations WHERE id = $1`, [orgId]).catch(() => null);
+    await pool
+      .query(`DELETE FROM workstream_checkpoints WHERE organization_id = $1`, [orgId])
+      .catch(() => null);
+    await pool
+      .query(`DELETE FROM org_memories           WHERE organization_id = $1`, [orgId])
+      .catch(() => null);
+    await pool
+      .query(`DELETE FROM audit_logs             WHERE organization_id = $1`, [orgId])
+      .catch(() => null);
+    await pool
+      .query(`DELETE FROM intent_detections      WHERE organization_id = $1`, [orgId])
+      .catch(() => null);
+    await pool
+      .query(`DELETE FROM workflow_runs          WHERE organization_id = $1`, [orgId])
+      .catch(() => null);
+    await pool
+      .query(`DELETE FROM workflows              WHERE organization_id = $1`, [orgId])
+      .catch(() => null);
+    await pool
+      .query(`DELETE FROM users                  WHERE organization_id = $1`, [orgId])
+      .catch(() => null);
+    await pool.query(`DELETE FROM organizations          WHERE id = $1`, [orgId]).catch(() => null);
     await pool.end();
   });
 
