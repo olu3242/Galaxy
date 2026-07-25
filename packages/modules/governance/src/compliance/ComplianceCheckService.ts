@@ -98,21 +98,24 @@ export class ComplianceCheckService {
     organizationId: string,
     runBy: string,
   ): Promise<ComplianceCheck> {
-    const result = await this.pool.query<{ id: string; name: string }>(
-      `SELECT id, name FROM workflows
-       WHERE organization_id = $1
-         AND requires_approval = true
-         AND status = 'completed'
-         AND id NOT IN (
-           SELECT DISTINCT workflow_id FROM approvals
-           WHERE organization_id = $1 AND status = 'approved'
+    const result = await this.pool.query<{ run_id: string; workflow_name: string }>(
+      `SELECT wr.id AS run_id, w.name AS workflow_name
+       FROM workflow_runs wr
+       JOIN workflows w ON w.id = wr.workflow_id
+       WHERE wr.organization_id = $1
+         AND wr.status = 'completed'
+         AND wr.id NOT IN (
+           SELECT DISTINCT workflow_run_id FROM approvals
+           WHERE organization_id = $1
+             AND status = 'approved'
+             AND workflow_run_id IS NOT NULL
          )
        LIMIT 50`,
       [organizationId],
     );
 
     const violations = result.rows.map(
-      (r) => `Workflow "${r.name}" (${r.id}) completed without approval`,
+      (r) => `Workflow run "${r.workflow_name}" (${r.run_id}) completed without approval`,
     );
     const status: ComplianceStatus = violations.length === 0 ? 'pass' : 'fail';
 
