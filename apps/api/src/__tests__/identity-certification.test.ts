@@ -38,6 +38,13 @@ beforeAll(async () => {
     [orgId, orgIdB],
   );
 
+  await pool.query(
+    `INSERT INTO users (id, organization_id, display_name, status)
+     VALUES ($1, $2, 'Identity Test User', 'active')
+     ON CONFLICT (id) DO NOTHING`,
+    [userId, orgId],
+  );
+
   const roleSvc = new RoleService(pool);
   const role = await roleSvc.createRole({
     organizationId: orgId,
@@ -63,6 +70,7 @@ afterAll(async () => {
   await pool
     .query(`DELETE FROM memberships WHERE organization_id IN ($1, $2)`, [orgId, orgIdB])
     .catch(() => null);
+  await pool.query(`DELETE FROM users WHERE id = $1`, [userId]).catch(() => null);
   await pool
     .query(`DELETE FROM roles WHERE organization_id IN ($1, $2)`, [orgId, orgIdB])
     .catch(() => null);

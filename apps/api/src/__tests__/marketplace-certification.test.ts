@@ -34,6 +34,7 @@ const actorId = '00000000-2401-4000-8000-240000000010';
 
 let sharedPublisherId: string;
 let sharedItemId: string;
+let billingItemId: string;
 
 beforeAll(async () => {
   await pool.query(
@@ -70,6 +71,22 @@ beforeAll(async () => {
     metadata: {},
   });
   sharedItemId = item.id;
+
+  // Second item for billing test (different item avoids unique-install constraint)
+  const billingItem = await itemSvc.createItem({
+    organizationId: orgId,
+    publisherId: sharedPublisherId,
+    name: 'Billing Cert Item',
+    slug: `billing-cert-item-${crypto.randomUUID().slice(0, 8)}`,
+    description: 'Item used in billing certification test',
+    category: 'agent',
+    pricingModel: 'subscription',
+    priceAmount: 2900,
+    priceCurrency: 'USD',
+    tags: ['billing'],
+    metadata: {},
+  });
+  billingItemId = billingItem.id;
 });
 
 afterAll(async () => {
@@ -251,7 +268,7 @@ describe('Marketplace OS Certification', () => {
 
     const installation = await installSvc.installItem({
       organizationId: orgId,
-      marketplaceItemId: sharedItemId,
+      marketplaceItemId: billingItemId,
       installedBy: actorId,
       config: {},
     });
@@ -260,7 +277,7 @@ describe('Marketplace OS Certification', () => {
     const billing = await billingSvc.recordUsage({
       organizationId: orgId,
       installationId: installation.id,
-      marketplaceItemId: sharedItemId,
+      marketplaceItemId: billingItemId,
       periodStart: new Date(now.getTime() - 30 * 86400000).toISOString(),
       periodEnd: now.toISOString(),
       usageUnits: 1,

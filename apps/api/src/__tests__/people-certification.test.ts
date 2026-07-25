@@ -25,8 +25,10 @@ const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 const orgId = '00000000-2701-4000-8000-270000000001';
 const orgIdB = '00000000-2701-4000-8000-270000000002';
 const actorId = '00000000-2701-4000-8000-270000000010';
+const userId = '00000000-2701-4000-8000-270000000020';
 
 let sharedDeptId: string;
+let sharedMembershipId: string;
 
 beforeAll(async () => {
   await pool.query(
@@ -36,6 +38,22 @@ beforeAll(async () => {
      ON CONFLICT (id) DO NOTHING`,
     [orgId, orgIdB],
   );
+
+  // Create a user and membership so team_members FK is satisfiable
+  await pool.query(
+    `INSERT INTO users (id, organization_id, display_name, status)
+     VALUES ($1, $2, 'People Test User', 'active')
+     ON CONFLICT (id) DO NOTHING`,
+    [userId, orgId],
+  );
+  const memberResult = await pool.query<{ id: string }>(
+    `INSERT INTO memberships (organization_id, user_id)
+     VALUES ($1, $2)
+     ON CONFLICT (organization_id, user_id) DO UPDATE SET status = 'active'
+     RETURNING id`,
+    [orgId, userId],
+  );
+  sharedMembershipId = memberResult.rows[0]?.id ?? '';
 
   const deptSvc = new DepartmentService(pool);
   const dept = await deptSvc.create({
@@ -51,6 +69,10 @@ afterAll(async () => {
   await pool
     .query(`DELETE FROM team_members WHERE organization_id IN ($1, $2)`, [orgId, orgIdB])
     .catch(() => null);
+  await pool
+    .query(`DELETE FROM memberships WHERE organization_id IN ($1, $2)`, [orgId, orgIdB])
+    .catch(() => null);
+  await pool.query(`DELETE FROM users WHERE id = $1`, [userId]).catch(() => null);
   await pool
     .query(`DELETE FROM teams WHERE organization_id IN ($1, $2)`, [orgId, orgIdB])
     .catch(() => null);
@@ -152,11 +174,11 @@ describe('People OS Certification', () => {
       actorId,
     });
 
-    await svc.addMember(orgId, team.id, actorId);
+    await svc.addMember(orgId, team.id, sharedMembershipId);
 
     const members = await svc.getTeamMembers(orgId, team.id);
     expect(Array.isArray(members)).toBe(true);
-    expect(members.some((m) => m.membershipId === actorId)).toBe(true);
+    expect(members.some((m) => m.membershipId === sharedMembershipId)).toBe(true);
   });
 
   // ── 7. Team listing by department ─────────────────────────────────────────

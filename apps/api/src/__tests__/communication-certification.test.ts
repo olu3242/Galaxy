@@ -38,8 +38,7 @@ const noopPublisher = {
 } as unknown as EventPublisher;
 
 const noopAudit = {
-  log: () => Promise.resolve(),
-  logEvent: () => Promise.resolve(),
+  record: () => Promise.resolve({}),
 } as unknown as AuditService;
 
 beforeAll(async () => {
@@ -97,7 +96,7 @@ describe('Communication OS Certification', () => {
       organizationId: orgId,
       name: 'general',
       description: 'General discussion',
-      channelType: 'public',
+      channelType: 'group',
       createdBy: memberId,
       correlationId: crypto.randomUUID(),
     });
@@ -141,7 +140,7 @@ describe('Communication OS Certification', () => {
     const channel = await chanSvc.create({
       organizationId: orgId,
       name: `msg-chan-${crypto.randomUUID().slice(0, 8)}`,
-      channelType: 'public',
+      channelType: 'group',
       createdBy: memberId,
       correlationId: crypto.randomUUID(),
     });
@@ -169,7 +168,7 @@ describe('Communication OS Certification', () => {
     const channel = await chanSvc.create({
       organizationId: orgId,
       name: `list-chan-${crypto.randomUUID().slice(0, 8)}`,
-      channelType: 'public',
+      channelType: 'group',
       createdBy: memberId,
       correlationId: crypto.randomUUID(),
     });
@@ -267,7 +266,7 @@ describe('Communication OS Certification', () => {
     await svc.create({
       organizationId: orgId,
       name: `isolation-${crypto.randomUUID().slice(0, 8)}`,
-      channelType: 'public',
+      channelType: 'group',
       createdBy: memberId,
       correlationId: crypto.randomUUID(),
     });
