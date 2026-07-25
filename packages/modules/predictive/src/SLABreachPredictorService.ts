@@ -5,7 +5,7 @@ interface WorkflowRunRow {
   id: string;
   workflow_id: string;
   created_at: string;
-  sla_deadline: string | null;
+  sla_due_at: string | null;
   status: string;
 }
 
@@ -19,19 +19,19 @@ export class SLABreachPredictorService {
     ]);
 
     const result = await this.pool.query<WorkflowRunRow>(
-      `SELECT id, workflow_id, created_at, sla_deadline, status
+      `SELECT id, workflow_id, created_at, sla_due_at, status
        FROM workflow_runs
        WHERE organization_id = $1
          AND status IN ('pending', 'in_progress')
-         AND sla_deadline IS NOT NULL
-       ORDER BY sla_deadline ASC
+         AND sla_due_at IS NOT NULL
+       ORDER BY sla_due_at ASC
        LIMIT 100`,
       [organizationId],
     );
 
     const now = Date.now();
     return result.rows.map((row) => {
-      const deadline = new Date(row.sla_deadline ?? '').getTime();
+      const deadline = new Date(row.sla_due_at ?? '').getTime();
       const created = new Date(row.created_at).getTime();
       const totalWindow = deadline - created;
       const elapsed = now - created;
@@ -43,8 +43,8 @@ export class SLABreachPredictorService {
         workflowId: row.workflow_id,
         organizationId,
         breachProbability: Math.round(breachProbability * 100) / 100,
-        estimatedBreachAt: row.sla_deadline,
-        slaDeadline: row.sla_deadline ?? '',
+        estimatedBreachAt: row.sla_due_at,
+        slaDeadline: row.sla_due_at ?? '',
         factors: { timeRatio: Math.round(timeRatio * 100) / 100, status: row.status },
       };
     });
