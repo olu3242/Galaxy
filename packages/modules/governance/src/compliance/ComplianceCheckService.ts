@@ -198,14 +198,7 @@ export class ComplianceCheckService {
         (organization_id, check_type, status, details, violations, run_by)
        VALUES ($1, $2, $3, $4, $5, $6)
        RETURNING *`,
-      [
-        organizationId,
-        checkType,
-        status,
-        JSON.stringify(details),
-        JSON.stringify(violations),
-        runBy,
-      ],
+      [organizationId, checkType, status, JSON.stringify(details), violations, runBy],
     );
 
     const row = result.rows[0];
