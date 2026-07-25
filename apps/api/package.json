@@ -53,6 +53,7 @@
     "@galaxy/knowledge": "workspace:*",
     "@galaxy/loop": "workspace:*",
     "@galaxy/marketplace": "workspace:*",
+    "@galaxy/notifications": "workspace:*",
     "@galaxy/mission-control": "workspace:*",
     "@galaxy/observability": "workspace:*",
     "@galaxy/org-dna": "workspace:*",
