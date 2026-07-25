@@ -146,7 +146,7 @@ describe('Organization OS Certification', () => {
       delegateeId,
       roleId,
       permissions: ['approval:submit', 'workflow:start'],
-      reason: 'Annual leave coverage',
+      reason: 'vacation',
       startAt: now.toISOString(),
       endAt: new Date(now.getTime() + 7 * 86400000).toISOString(),
       approvedBy: approvedById,
@@ -178,7 +178,7 @@ describe('Organization OS Certification', () => {
       delegatorId,
       delegateeId,
       permissions: ['report:read'],
-      reason: 'Temporary access for audit',
+      reason: 'other',
       startAt: now.toISOString(),
       endAt: new Date(now.getTime() + 3 * 86400000).toISOString(),
     });
@@ -186,7 +186,7 @@ describe('Organization OS Certification', () => {
     await svc.revoke(orgId, delegation.id);
 
     const active = await svc.getActive(orgId, delegateeId);
-    const stillActive = active.some((d) => d.id === delegation.id && d.status === 'active');
+    const stillActive = active.some((d) => d.id === delegation.id && d.isActive);
     expect(stillActive).toBe(false);
   });
 
@@ -203,7 +203,7 @@ describe('Organization OS Certification', () => {
       accessibleKnowledgeSources: ['hr-policies'],
       writableResources: ['workflow_runs'],
       approvalLimits: { maxAmount: 5000 },
-      escalationRules: { threshold: 10000 },
+      escalationRules: [{ condition: 'amount > 10000', escalateTo: 'manager', priority: 'high' }],
     });
 
     expect(perm.id).toBeTruthy();
@@ -224,7 +224,7 @@ describe('Organization OS Certification', () => {
       accessibleKnowledgeSources: [],
       writableResources: ['tasks'],
       approvalLimits: {},
-      escalationRules: {},
+      escalationRules: [],
     });
 
     const canWrite = await svc.canWrite(orgId, agentType, 'tasks');

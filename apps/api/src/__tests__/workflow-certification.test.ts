@@ -48,8 +48,10 @@ beforeAll(async () => {
     organizationId: orgId,
     name: 'Shared Cert Workflow',
     automationDomain: 'hr',
-    flowType: 'sequential',
+    flowType: 'automated',
     ownerId: actorId,
+    createdBy: actorId,
+    correlationId: crypto.randomUUID(),
   });
   sharedWorkflowId = wf.id;
   await defSvc.activateWorkflow(orgId, sharedWorkflowId);
@@ -104,16 +106,18 @@ describe('Workflow OS Certification', () => {
       name: 'Leave Request Workflow',
       description: 'Handles leave request approvals',
       automationDomain: 'hr',
-      flowType: 'sequential',
+      flowType: 'automated',
       ownerId: actorId,
       slaDurationHours: 48,
       tags: ['hr', 'leave'],
+      createdBy: actorId,
+      correlationId: crypto.randomUUID(),
     });
 
     expect(wf.id).toBeTruthy();
     expect(wf.organizationId).toBe(orgId);
     expect(wf.name).toBe('Leave Request Workflow');
-    expect(wf.status).toBe('draft');
+    expect(wf.isActive).toBe(false);
   });
 
   // ── 3. Workflow activation ────────────────────────────────────────────────
@@ -123,13 +127,15 @@ describe('Workflow OS Certification', () => {
     const wf = await svc.createWorkflow({
       organizationId: orgId,
       name: `Activation Test ${crypto.randomUUID().slice(0, 8)}`,
-      automationDomain: 'operations',
-      flowType: 'parallel',
+      automationDomain: 'governance',
+      flowType: 'record_trigger',
       ownerId: actorId,
+      createdBy: actorId,
+      correlationId: crypto.randomUUID(),
     });
 
     const activated = await svc.activateWorkflow(orgId, wf.id);
-    expect(activated.status).toBe('active');
+    expect(activated.isActive).toBe(true);
   });
 
   // ── 4. Workflow run start ─────────────────────────────────────────────────
@@ -162,7 +168,12 @@ describe('Workflow OS Certification', () => {
       correlationId: crypto.randomUUID(),
     });
 
-    const completed = await engineSvc.completeWorkflowRun(orgId, run.id, { outcome: 'success' });
+    const completed = await engineSvc.completeWorkflowRun(
+      orgId,
+      run.id,
+      { outcome: 'success' },
+      actorId,
+    );
     expect(completed.status).toBe('completed');
   });
 
@@ -176,7 +187,7 @@ describe('Workflow OS Certification', () => {
       requestedBy: actorId,
       dueAt: new Date(Date.now() + 48 * 3600000).toISOString(),
       data: { leaveType: 'annual', days: 5 },
-      steps: [{ approverId, order: 1 }],
+      steps: [{ approverId, approverType: 'member' }],
       correlationId: crypto.randomUUID(),
     });
 
@@ -195,17 +206,19 @@ describe('Workflow OS Certification', () => {
       title: `Decision Test ${crypto.randomUUID().slice(0, 8)}`,
       requestedBy: actorId,
       data: { type: 'expense', amount: 1000 },
-      steps: [{ approverId, order: 1 }],
+      steps: [{ approverId, approverType: 'member' }],
       correlationId: crypto.randomUUID(),
     });
 
     const steps = await svc.getApprovalSteps(orgId, approval.id);
     if (steps.length === 0) return;
+    const firstStep = steps[0];
+    if (!firstStep) return;
 
     const decision = await svc.submitDecision({
       organizationId: orgId,
       approvalId: approval.id,
-      stepId: steps[0].id,
+      stepId: firstStep.id,
       approverId,
       decision: 'approved',
       comment: 'Looks good',

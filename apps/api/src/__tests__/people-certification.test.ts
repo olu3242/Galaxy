@@ -152,17 +152,11 @@ describe('People OS Certification', () => {
       actorId,
     });
 
-    await svc.addMember({
-      organizationId: orgId,
-      teamId: team.id,
-      memberId: actorId,
-      correlationId: crypto.randomUUID(),
-      actorId,
-    });
+    await svc.addMember(orgId, team.id, actorId);
 
     const members = await svc.getTeamMembers(orgId, team.id);
     expect(Array.isArray(members)).toBe(true);
-    expect(members.some((m) => m.memberId === actorId)).toBe(true);
+    expect(members.some((m) => m.membershipId === actorId)).toBe(true);
   });
 
   // ── 7. Team listing by department ─────────────────────────────────────────

@@ -223,7 +223,7 @@ describe('Communication OS Certification', () => {
       correlationId: crypto.randomUUID(),
     });
 
-    const sent = await svc.send(orgId, broadcast.id);
+    const sent = await svc.send(orgId, broadcast.id, memberId, crypto.randomUUID());
     expect(['sent', 'sending', 'scheduled']).toContain(sent.status);
   });
 
@@ -256,7 +256,7 @@ describe('Communication OS Certification', () => {
       correlationId: crypto.randomUUID(),
     });
 
-    const published = await svc.publish(orgId, announcement.id, memberId);
+    const published = await svc.publish(orgId, announcement.id, memberId, crypto.randomUUID());
     expect(published.status).toBe('published');
   });
 
