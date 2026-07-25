@@ -98,8 +98,8 @@ export class ComplianceCheckService {
     organizationId: string,
     runBy: string,
   ): Promise<ComplianceCheck> {
-    const result = await this.pool.query<{ id: string; title: string }>(
-      `SELECT id, title FROM workflows
+    const result = await this.pool.query<{ id: string; name: string }>(
+      `SELECT id, name FROM workflows
        WHERE organization_id = $1
          AND requires_approval = true
          AND status = 'completed'
@@ -112,7 +112,7 @@ export class ComplianceCheckService {
     );
 
     const violations = result.rows.map(
-      (r) => `Workflow "${r.title}" (${r.id}) completed without approval`,
+      (r) => `Workflow "${r.name}" (${r.id}) completed without approval`,
     );
     const status: ComplianceStatus = violations.length === 0 ? 'pass' : 'fail';
 

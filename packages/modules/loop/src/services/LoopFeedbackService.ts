@@ -22,10 +22,16 @@ export class LoopFeedbackService {
 
       const insertResult = await client.query(
         `INSERT INTO loop_feedback
-           (loop_instance_id, submitted_by, score, comment, submitted_at)
-         VALUES ($1, $2, $3, $4, NOW())
+           (organization_id, loop_instance_id, submitted_by, score, comment, submitted_at)
+         VALUES ($1, $2, $3, $4, $5, NOW())
          RETURNING *`,
-        [input.loopInstanceId, input.submittedBy, input.score, input.comment ?? null],
+        [
+          organizationId,
+          input.loopInstanceId,
+          input.submittedBy,
+          input.score,
+          input.comment ?? null,
+        ],
       );
 
       await client.query(
