@@ -44,14 +44,14 @@ export class ContextAggregator {
             COUNT(*) FILTER (WHERE status IN ('active', 'running'))::text AS active,
             COUNT(*) FILTER (
               WHERE status IN ('active', 'running')
-                AND due_at IS NOT NULL
-                AND due_at < NOW() + INTERVAL '24 hours'
-                AND due_at > NOW()
+                AND sla_due_at IS NOT NULL
+                AND sla_due_at < NOW() + INTERVAL '24 hours'
+                AND sla_due_at > NOW()
             )::text AS near_sla,
             COUNT(*) FILTER (
               WHERE status IN ('active', 'running')
-                AND due_at IS NOT NULL
-                AND due_at < NOW()
+                AND sla_due_at IS NOT NULL
+                AND sla_due_at < NOW()
             )::text AS breached
           FROM workflow_runs
           WHERE organization_id = $1`,
@@ -68,7 +68,7 @@ export class ContextAggregator {
               EXTRACT(DAY FROM NOW() - MIN(created_at) FILTER (WHERE status = 'pending'))::text,
               '0'
             ) AS oldest_days
-          FROM approval_requests
+          FROM approvals
           WHERE organization_id = $1`,
           [orgId],
         ),

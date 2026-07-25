@@ -233,10 +233,10 @@ describe('AI Economy Certification', () => {
       orgId,
       crypto.randomUUID(),
       50,
-      'Workflow pack installation royalty',
+      crypto.randomUUID(),
     );
     expect(tx.organizationId).toBe(orgId);
     expect(tx.amount).toBeGreaterThan(0);
-    expect(tx.transactionType).toBe('royalty');
+    expect(tx.transactionType).toBe('earn');
   });
 });
