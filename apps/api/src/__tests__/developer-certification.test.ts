@@ -163,7 +163,7 @@ describe('Developer OS Certification', () => {
     expect(webhook.id).toBeTruthy();
     expect(webhook.organizationId).toBe(orgId);
     expect(webhook.name).toBe('My Workflow Hook');
-    expect(webhook.isActive).toBe(true);
+    expect(webhook.status).toBe('active');
   });
 
   // ── 8. Webhook listing ────────────────────────────────────────────────────
