@@ -38,7 +38,7 @@ beforeAll(async () => {
   const svc = new HealingIncidentService(pool);
   const incident = await svc.detectIncident(
     orgId,
-    'system',
+    'workflow',
     'Shared cert incident',
     'workflow',
     'wf-cert-001',
@@ -80,7 +80,7 @@ describe('Self-Healing OS Certification', () => {
 
     const incident = await svc.detectIncident(
       orgId,
-      'process',
+      'queue',
       'Approval queue backlog detected',
       'approval_queue',
       'aq-cert-001',
@@ -88,7 +88,7 @@ describe('Self-Healing OS Certification', () => {
 
     expect(incident.id).toBeTruthy();
     expect(incident.organizationId).toBe(orgId);
-    expect(incident.level).toBe('process');
+    expect(incident.level).toBe('queue');
     expect(incident.description).toBe('Approval queue backlog detected');
     expect(incident.status).toBe('detected');
   });
@@ -118,10 +118,10 @@ describe('Self-Healing OS Certification', () => {
   it('5. Incident listing filters by level', async () => {
     const svc = new HealingIncidentService(pool);
 
-    const incidents = await svc.listIncidents(orgId, 'system');
+    const incidents = await svc.listIncidents(orgId, 'workflow');
     expect(Array.isArray(incidents)).toBe(true);
     for (const i of incidents) {
-      expect(i.level).toBe('system');
+      expect(i.level).toBe('workflow');
     }
   });
 
@@ -154,7 +154,7 @@ describe('Self-Healing OS Certification', () => {
 
     const rule = await svc.createRule(
       orgId,
-      'process',
+      'queue',
       'Auto-restart on backlog',
       { metric: 'queue_depth', threshold: 100 },
       'restart_processor',

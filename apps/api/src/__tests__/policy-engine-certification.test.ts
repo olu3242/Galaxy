@@ -40,7 +40,7 @@ beforeAll(async () => {
     orgId,
     'Shared Cert Policy',
     'Certification shared policy',
-    'enforcing',
+    'enforce',
   );
   sharedPolicyId = policy.id;
 });
@@ -81,13 +81,13 @@ describe('Policy Engine OS Certification', () => {
       orgId,
       'Expense Approval Policy',
       'Requires approval for expenses over $500',
-      'enforcing',
+      'enforce',
     );
 
     expect(policy.id).toBeTruthy();
     expect(policy.organizationId).toBe(orgId);
     expect(policy.name).toBe('Expense Approval Policy');
-    expect(policy.enforcementMode).toBe('enforcing');
+    expect(policy.enforcementMode).toBe('enforce');
   });
 
   // ── 3. Policy retrieval ───────────────────────────────────────────────────
@@ -135,7 +135,7 @@ describe('Policy Engine OS Certification', () => {
       orgId,
       sharedPolicyId,
       'amount',
-      'gt',
+      'greater_than',
       500,
       'require_approval',
       10,
@@ -145,7 +145,7 @@ describe('Policy Engine OS Certification', () => {
     expect(rule.organizationId).toBe(orgId);
     expect(rule.policyId).toBe(sharedPolicyId);
     expect(rule.field).toBe('amount');
-    expect(rule.operator).toBe('gt');
+    expect(rule.operator).toBe('greater_than');
     expect(rule.action).toBe('require_approval');
   });
 
