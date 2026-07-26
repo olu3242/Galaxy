@@ -81,7 +81,7 @@ describe('AI Deployment OS Certification', () => {
     expect(plan.id).toBeTruthy();
     expect(plan.organizationId).toBe(orgId);
     expect(plan.naturalLanguageDescription).toBe('Expense approval workflow deployment');
-    expect(plan.status).toBe('draft');
+    expect(plan.status).toBe('pending');
   });
 
   // ── 3. Plan retrieval ─────────────────────────────────────────────────────
