@@ -113,7 +113,7 @@ describe('Communication OS Certification', () => {
     const channel = await svc.create({
       organizationId: orgId,
       name: `members-test-${crypto.randomUUID().slice(0, 8)}`,
-      channelType: 'private',
+      channelType: 'group',
       createdBy: memberId,
       correlationId: crypto.randomUUID(),
     });

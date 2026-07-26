@@ -254,7 +254,7 @@ describe('Workflow OS Certification', () => {
     expect(task.id).toBeTruthy();
     expect(task.organizationId).toBe(orgId);
     expect(task.title).toBe('Review Q3 report');
-    expect(task.status).toBe('open');
+    expect(task.status).toBe('pending');
 
     const completed = await svc.completeTask(orgId, task.id, actorId);
     expect(completed.status).toBe('completed');
