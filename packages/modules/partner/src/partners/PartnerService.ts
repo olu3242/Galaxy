@@ -79,8 +79,8 @@ export class PartnerService {
 
   async listPartners(adminOrgId: string, options: ListPartnersOptions = {}): Promise<Partner[]> {
     await this.setTenantContext(adminOrgId);
-    const conditions: string[] = [];
-    const params: unknown[] = [];
+    const params: unknown[] = [adminOrgId];
+    const conditions: string[] = ['organization_id = $1'];
 
     if (options.type !== undefined) {
       params.push(options.type);
@@ -95,7 +95,6 @@ export class PartnerService {
       conditions.push(`status = $${String(params.length)}`);
     }
 
-    const where = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
     const limit = options.limit ?? 50;
     const offset = options.offset ?? 0;
     params.push(limit);
@@ -104,7 +103,7 @@ export class PartnerService {
     const offsetIdx = params.length;
 
     const result = await this.pool.query<PartnerRow>(
-      `SELECT * FROM partners ${where} ORDER BY created_at DESC LIMIT $${String(limitIdx)} OFFSET $${String(offsetIdx)}`,
+      `SELECT * FROM partners WHERE ${conditions.join(' AND ')} ORDER BY created_at DESC LIMIT $${String(limitIdx)} OFFSET $${String(offsetIdx)}`,
       params,
     );
     return result.rows.map(rowToPartner);
