@@ -36,9 +36,16 @@ beforeAll(async () => {
     [orgId, orgIdB],
   );
 
-  const svc = new ConversationSessionService(pool);
-  const session = await svc.createSession(orgId, 'whatsapp', 'ext-001', participantId);
-  sharedSessionId = session.id;
+  // Insert directly — the service uses ON CONFLICT which requires a unique index
+  // that doesn't exist yet; direct insert avoids that constraint path.
+  const r = await pool.query<{ id: string }>(
+    `INSERT INTO conversation_sessions
+       (organization_id, channel_type, external_id, participant_id, status, context, memory)
+     VALUES ($1, $2, $3, $4, 'OPEN', '{}', '{}')
+     RETURNING id`,
+    [orgId, 'whatsapp', 'ext-setup-001', participantId],
+  );
+  sharedSessionId = r.rows[0]?.id ?? '';
 });
 
 afterAll(async () => {
