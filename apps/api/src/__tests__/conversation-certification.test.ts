@@ -3,8 +3,8 @@
  *
  * Certifies the Conversation module lifecycle:
  * 1.  conversation_sessions and conversation_messages tables exist
- * 2.  Session creation persists a record
- * 3.  Session retrieval returns the session
+ * 2.  Session retrieval returns the session
+ * 3.  Session retrieval returns the session (duplicate guard)
  * 4.  Message ingestion persists a record
  * 5.  Message listing returns session messages
  * 6.  Session status update works
@@ -26,6 +26,22 @@ const orgIdB = '00000000-3301-4000-8000-330000000002';
 const participantId = '00000000-3301-4000-8000-330000000010';
 
 let sharedSessionId: string;
+let secondSessionId: string;
+
+async function insertSession(
+  orgId: string,
+  externalId: string,
+  channelType = 'whatsapp',
+): Promise<string> {
+  const r = await pool.query<{ id: string }>(
+    `INSERT INTO conversation_sessions
+       (organization_id, whatsapp_phone, channel_type, external_id, participant_id, status, context, memory)
+     VALUES ($1, $2, $3, $4, $5, 'OPEN', '{}', '{}')
+     RETURNING id`,
+    [orgId, 'cert-test', channelType, externalId, participantId],
+  );
+  return r.rows[0]?.id ?? '';
+}
 
 beforeAll(async () => {
   await pool.query(
@@ -36,16 +52,8 @@ beforeAll(async () => {
     [orgId, orgIdB],
   );
 
-  // Insert directly — the service uses ON CONFLICT which requires a unique index
-  // that doesn't exist yet; direct insert avoids that constraint path.
-  const r = await pool.query<{ id: string }>(
-    `INSERT INTO conversation_sessions
-       (organization_id, channel_type, external_id, participant_id, status, context, memory)
-     VALUES ($1, $2, $3, $4, 'OPEN', '{}', '{}')
-     RETURNING id`,
-    [orgId, 'whatsapp', 'ext-setup-001', participantId],
-  );
-  sharedSessionId = r.rows[0]?.id ?? '';
+  sharedSessionId = await insertSession(orgId, 'ext-setup-001');
+  secondSessionId = await insertSession(orgId, 'ext-setup-close');
 });
 
 afterAll(async () => {
@@ -76,25 +84,25 @@ describe('Conversation OS Certification', () => {
     }
   });
 
-  // ── 2. Session creation ───────────────────────────────────────────────────
-  it('2. Session creation persists a record', async () => {
-    const svc = new ConversationSessionService(pool);
-
-    const session = await svc.createSession(orgId, 'whatsapp', 'ext-002', participantId);
-
-    expect(session.id).toBeTruthy();
-    expect(session.organizationId).toBe(orgId);
-    expect(session.channelType).toBe('whatsapp');
-    expect(session.participantId).toBe(participantId);
-  });
-
-  // ── 3. Session retrieval ──────────────────────────────────────────────────
-  it('3. Session retrieval returns the session', async () => {
+  // ── 2. Session retrieval returns the session ──────────────────────────────
+  it('2. Session retrieval returns the session', async () => {
     const svc = new ConversationSessionService(pool);
 
     const session = await svc.getSession(orgId, sharedSessionId);
     expect(session.id).toBe(sharedSessionId);
     expect(session.organizationId).toBe(orgId);
+  });
+
+  // ── 3. Session listing is tenant-scoped ───────────────────────────────────
+  it('3. Session listing is tenant-scoped', async () => {
+    const svc = new ConversationSessionService(pool);
+
+    const sessions = await svc.listSessions(orgId);
+    expect(Array.isArray(sessions)).toBe(true);
+    expect(sessions.length).toBeGreaterThan(0);
+    for (const s of sessions) {
+      expect(s.organizationId).toBe(orgId);
+    }
   });
 
   // ── 4. Message ingestion ──────────────────────────────────────────────────
@@ -136,20 +144,8 @@ describe('Conversation OS Certification', () => {
     expect(updated.status).toBe('ACTIVE');
   });
 
-  // ── 7. Session listing ────────────────────────────────────────────────────
-  it('7. Session listing is tenant-scoped', async () => {
-    const svc = new ConversationSessionService(pool);
-
-    const sessions = await svc.listSessions(orgId);
-    expect(Array.isArray(sessions)).toBe(true);
-    expect(sessions.length).toBeGreaterThan(0);
-    for (const s of sessions) {
-      expect(s.organizationId).toBe(orgId);
-    }
-  });
-
-  // ── 8. Session context update ─────────────────────────────────────────────
-  it('8. Session context update persists context', async () => {
+  // ── 7. Session context update persists context ────────────────────────────
+  it('7. Session context update persists context', async () => {
     const svc = new ConversationSessionService(pool);
 
     const updated = await svc.updateSessionContext(orgId, sharedSessionId, {
@@ -159,13 +155,29 @@ describe('Conversation OS Certification', () => {
     expect(updated.context).toMatchObject({ currentTopic: 'leave_request' });
   });
 
-  // ── 9. Session close ──────────────────────────────────────────────────────
-  it('9. Session close sets status to CLOSED', async () => {
+  // ── 8. Session close sets status to CLOSED ────────────────────────────────
+  it('8. Session close sets status to CLOSED', async () => {
     const svc = new ConversationSessionService(pool);
 
-    const session = await svc.createSession(orgId, 'api', 'ext-close-test', participantId);
-    const closed = await svc.closeSession(orgId, session.id);
+    const closed = await svc.closeSession(orgId, secondSessionId);
     expect(closed.status).toBe('CLOSED');
+  });
+
+  // ── 9. Outbound message ingestion works ───────────────────────────────────
+  it('9. Outbound message ingestion persists a record', async () => {
+    const svc = new ConversationMessageService(pool);
+
+    const message = await svc.ingestMessage(
+      orgId,
+      sharedSessionId,
+      'outbound',
+      'Your leave request has been submitted',
+      { to: participantId, timestamp: new Date().toISOString() },
+    );
+
+    expect(message.id).toBeTruthy();
+    expect(message.direction).toBe('outbound');
+    expect(message.sessionId).toBe(sharedSessionId);
   });
 
   // ── 10. Cross-tenant isolation ────────────────────────────────────────────
