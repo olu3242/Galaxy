@@ -39,6 +39,7 @@
     "@galaxy/communication": "workspace:*",
     "@galaxy/config": "workspace:*",
     "@galaxy/conversation": "workspace:*",
+    "@galaxy/cognitive-engine": "workspace:*",
     "@galaxy/coo": "workspace:*",
     "@galaxy/developer": "workspace:*",
     "@galaxy/digital-twin": "workspace:*",
