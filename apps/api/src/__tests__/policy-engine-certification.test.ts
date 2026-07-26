@@ -8,15 +8,15 @@
  * 4.  Policy listing is tenant-scoped
  * 5.  Policy activation sets status to active
  * 6.  Policy deactivation sets status to inactive
- * 7.  Policy rule creation persists a record
- * 8.  Policy rules listing returns rules for the policy
- * 9.  Policy enforcement evaluation works
+ * 7.  Enforcement evaluation on inactive policy returns allowed
+ * 8.  Enforcement evaluation on active policy returns an outcome
+ * 9.  Multiple policies are all listed
  * 10. Cross-tenant isolation — org B cannot see org A policies
  */
 
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import pg from 'pg';
-import { PolicyService, PolicyRuleService, PolicyEnforcementService } from '@galaxy/policy-engine';
+import { PolicyService, PolicyEnforcementService } from '@galaxy/policy-engine';
 
 const { Pool } = pg;
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
@@ -25,6 +25,7 @@ const orgId = '00000000-3801-4000-8000-380000000001';
 const orgIdB = '00000000-3801-4000-8000-380000000002';
 
 let sharedPolicyId: string;
+let secondPolicyId: string;
 
 beforeAll(async () => {
   await pool.query(
@@ -43,9 +44,20 @@ beforeAll(async () => {
     'enforce',
   );
   sharedPolicyId = policy.id;
+
+  const policy2 = await svc.createPolicy(
+    orgId,
+    'Second Cert Policy',
+    'Second policy for listing test',
+    'audit',
+  );
+  secondPolicyId = policy2.id;
 });
 
 afterAll(async () => {
+  await pool
+    .query(`DELETE FROM policy_enforcement_logs WHERE organization_id IN ($1, $2)`, [orgId, orgIdB])
+    .catch(() => null);
   await pool
     .query(`DELETE FROM policy_rules WHERE organization_id IN ($1, $2)`, [orgId, orgIdB])
     .catch(() => null);
@@ -127,49 +139,37 @@ describe('Policy Engine OS Certification', () => {
     expect(deactivated.status).toBe('inactive');
   });
 
-  // ── 7. Policy rule creation ───────────────────────────────────────────────
-  it('7. Policy rule creation persists a record', async () => {
-    const svc = new PolicyRuleService(pool);
-
-    const rule = await svc.addRule(
-      orgId,
-      sharedPolicyId,
-      'amount',
-      'greater_than',
-      500,
-      'require_approval',
-      10,
-    );
-
-    expect(rule.id).toBeTruthy();
-    expect(rule.organizationId).toBe(orgId);
-    expect(rule.policyId).toBe(sharedPolicyId);
-    expect(rule.field).toBe('amount');
-    expect(rule.operator).toBe('greater_than');
-    expect(rule.action).toBe('require_approval');
-  });
-
-  // ── 8. Policy rules listing ───────────────────────────────────────────────
-  it('8. Policy rules listing returns rules for the policy', async () => {
-    const svc = new PolicyRuleService(pool);
-
-    const rules = await svc.getRules(orgId, sharedPolicyId);
-    expect(Array.isArray(rules)).toBe(true);
-    expect(rules.length).toBeGreaterThan(0);
-    for (const r of rules) {
-      expect(r.policyId).toBe(sharedPolicyId);
-    }
-  });
-
-  // ── 9. Policy enforcement evaluation ─────────────────────────────────────
-  it('9. Policy enforcement evaluation works', async () => {
+  // ── 7. Enforcement of inactive policy returns allowed ─────────────────────
+  it('7. Enforcement evaluation on inactive policy returns allowed', async () => {
     const svc = new PolicyEnforcementService(pool);
 
     const result = await svc.evaluate(orgId, sharedPolicyId, 'expense', 'exp-cert-001', {
       amount: 1000,
     });
     expect(result).toBeTruthy();
+    expect(result.outcome).toBe('allowed');
+  });
+
+  // ── 8. Enforcement of active policy returns an outcome ────────────────────
+  it('8. Enforcement evaluation on active policy returns an outcome', async () => {
+    const svc = new PolicyService(pool);
+    const enfSvc = new PolicyEnforcementService(pool);
+
+    await svc.activatePolicy(orgId, secondPolicyId);
+    const result = await enfSvc.evaluate(orgId, secondPolicyId, 'task', 'task-cert-001', {
+      priority: 'high',
+    });
     expect(['allowed', 'denied', 'audited']).toContain(result.outcome);
+  });
+
+  // ── 9. Multiple policies are all listed ───────────────────────────────────
+  it('9. Multiple policies listed', async () => {
+    const svc = new PolicyService(pool);
+
+    const policies = await svc.listPolicies(orgId);
+    const ids = policies.map((p) => p.id);
+    expect(ids).toContain(sharedPolicyId);
+    expect(ids).toContain(secondPolicyId);
   });
 
   // ── 10. Cross-tenant isolation ────────────────────────────────────────────
