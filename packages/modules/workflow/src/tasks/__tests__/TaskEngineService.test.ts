@@ -39,7 +39,7 @@ function taskRow(
     status: overrides.status ?? 'pending',
     priority: 'medium',
     assigned_to: overrides.assigned_to ?? null,
-    reporter_id: REPORTER_ID,
+    created_by: REPORTER_ID,
     due_at: null,
     completed_at: overrides.completed_at ?? null,
     correlation_id: CORR_ID,

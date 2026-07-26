@@ -10,7 +10,7 @@ interface TaskRow {
   status: string;
   priority: string;
   assigned_to: string | null;
-  reporter_id: string;
+  created_by: string;
   due_at: string | null;
   completed_at: string | null;
   correlation_id: string;
@@ -26,7 +26,7 @@ function rowToTask(row: TaskRow): Task {
     title: row.title,
     status: row.status as TaskStatus,
     priority: row.priority as Task['priority'],
-    reporterId: row.reporter_id,
+    reporterId: row.created_by,
     correlationId: row.correlation_id,
     data: row.data,
     createdAt: row.created_at,
@@ -54,7 +54,7 @@ export class TaskEngineService {
     const result = await this.pool.query<TaskRow>(
       `INSERT INTO tasks
          (organization_id, workflow_run_id, title, description, status, priority,
-          assigned_to, reporter_id, due_at, data, correlation_id)
+          assigned_to, created_by, due_at, data, correlation_id)
        VALUES ($1, $2, $3, $4, 'pending', $5, $6, $7, $8, $9, $10)
        RETURNING *`,
       [
