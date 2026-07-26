@@ -78,7 +78,7 @@ describe('Org Health OS Certification', () => {
   it('3. Score ≥ 70 resolves to status healthy', async () => {
     const svc = new HealthScoringService(pool);
 
-    const score = await svc.recordScore(orgId, 'people', 80, {}, []);
+    const score = await svc.recordScore(orgId, 'team', 80, {}, []);
     expect(score.status).toBe('healthy');
   });
 
@@ -86,7 +86,7 @@ describe('Org Health OS Certification', () => {
   it('4. Score < 40 resolves to status critical', async () => {
     const svc = new HealthScoringService(pool);
 
-    const score = await svc.recordScore(orgId, 'financial', 25, {}, ['Urgent: budget overrun']);
+    const score = await svc.recordScore(orgId, 'knowledge', 25, {}, ['Urgent: knowledge gaps']);
     expect(score.status).toBe('critical');
   });
 
@@ -94,7 +94,7 @@ describe('Org Health OS Certification', () => {
   it('5. Score between 40–69 resolves to status at_risk', async () => {
     const svc = new HealthScoringService(pool);
 
-    const score = await svc.recordScore(orgId, 'compliance', 55, {}, ['Review pending items']);
+    const score = await svc.recordScore(orgId, 'communication', 55, {}, ['Review pending items']);
     expect(score.status).toBe('at_risk');
   });
 
@@ -119,7 +119,7 @@ describe('Org Health OS Certification', () => {
     expect(scores.length).toBeGreaterThan(0);
     const dimensions = scores.map((s) => s.dimension);
     expect(dimensions).toContain('workflow');
-    expect(dimensions).toContain('people');
+    expect(dimensions).toContain('team');
   });
 
   // ── 8. getTrend returns trend data ────────────────────────────────────────
