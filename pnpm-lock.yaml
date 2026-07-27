@@ -87,6 +87,9 @@ importers:
       '@galaxy/billing':
         specifier: workspace:*
         version: link:../../packages/modules/billing
+      '@galaxy/chaos':
+        specifier: workspace:*
+        version: link:../../packages/chaos
       '@galaxy/cognitive-engine':
         specifier: workspace:*
         version: link:../../packages/modules/cognitive-engine
