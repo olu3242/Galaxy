@@ -41,7 +41,7 @@ export class EntitlementService {
 
   async getEntitlementsForPlan(planTier: string): Promise<Entitlement[]> {
     const result = await this.pool.query<EntitlementRow>(
-      'SELECT * FROM feature_entitlements WHERE plan_tier = $1 ORDER BY feature_key ASC',
+      'SELECT * FROM plan_feature_entitlements WHERE plan_tier = $1 ORDER BY feature_key ASC',
       [planTier],
     );
     return result.rows.map((row) => this.rowToEntitlement(row));
@@ -49,7 +49,7 @@ export class EntitlementService {
 
   async isFeatureEntitled(planTier: string, featureKey: string): Promise<boolean> {
     const result = await this.pool.query<EntitlementRow>(
-      'SELECT * FROM feature_entitlements WHERE plan_tier = $1 AND feature_key = $2 LIMIT 1',
+      'SELECT * FROM plan_feature_entitlements WHERE plan_tier = $1 AND feature_key = $2 LIMIT 1',
       [planTier, featureKey],
     );
     return result.rows[0]?.is_enabled ?? false;
@@ -62,7 +62,7 @@ export class EntitlementService {
     config?: Record<string, unknown>,
   ): Promise<Entitlement> {
     const result = await this.pool.query<EntitlementRow>(
-      `INSERT INTO feature_entitlements (plan_tier, feature_key, is_enabled, config)
+      `INSERT INTO plan_feature_entitlements (plan_tier, feature_key, is_enabled, config)
        VALUES ($1, $2, $3, $4)
        ON CONFLICT (plan_tier, feature_key) DO UPDATE SET
          is_enabled = EXCLUDED.is_enabled,
