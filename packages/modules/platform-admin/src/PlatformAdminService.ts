@@ -67,7 +67,7 @@ export class PlatformAdminService {
     }
 
     const result = await this.pool.query<OrgRow>(
-      `SELECT o.id, o.name, o.slug, o.status, o.plan,
+      `SELECT o.id, o.name, o.slug, o.status, o.tier AS plan,
               COUNT(DISTINCT m.id)::text AS member_count,
               COUNT(DISTINCT w.id)::text AS workflow_count,
               o.created_at

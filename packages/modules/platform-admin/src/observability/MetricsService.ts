@@ -53,7 +53,7 @@ export class MetricsService {
       `SELECT
          COUNT(DISTINCT m.id)::text AS member_count,
          COUNT(DISTINCT w.id)::text AS workflow_count,
-         COUNT(DISTINCT w.id) FILTER (WHERE w.status = 'active')::text AS active_workflows,
+         COUNT(DISTINCT w.id) FILTER (WHERE w.is_active = true)::text AS active_workflows,
          COUNT(DISTINCT al.id)::text AS audit_count
        FROM organizations o
        LEFT JOIN members m ON m.organization_id = o.id
