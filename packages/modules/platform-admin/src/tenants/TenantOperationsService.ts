@@ -40,7 +40,7 @@ interface OrgRow {
   name: string;
   slug: string;
   status: string;
-  plan: string;
+  tier: string;
   settings: Record<string, unknown>;
   created_at: string;
   updated_at: string;
@@ -90,8 +90,8 @@ export class TenantOperationsService {
     const limits = { ...defaultLimits(input.plan), ...input.limits };
 
     const result = await this.pool.query<OrgRow>(
-      `INSERT INTO organizations (name, slug, status, plan, settings)
-       VALUES ($1, $2, 'provisioning', $3, $4)
+      `INSERT INTO organizations (name, slug, status, tier, settings)
+       VALUES ($1, $2, 'active', $3, $4)
        RETURNING *`,
       [input.name, input.slug, input.plan, JSON.stringify({ adminEmail: input.adminEmail })],
     );
@@ -100,7 +100,7 @@ export class TenantOperationsService {
     if (!row) throw new Error('Failed to create tenant');
 
     await this.pool.query(
-      `INSERT INTO tenant_limits (organization_id, max_members, max_workflows, max_agents, api_calls_per_month, storage_mb)
+      `INSERT INTO org_tenant_limits (organization_id, max_members, max_workflows, max_agents, api_calls_per_month, storage_mb)
        VALUES ($1, $2, $3, $4, $5, $6)
        ON CONFLICT (organization_id) DO UPDATE SET
          max_members = EXCLUDED.max_members,
@@ -197,7 +197,7 @@ export class TenantOperationsService {
       max_agents: number;
       api_calls_per_month: number;
       storage_mb: number;
-    }>('SELECT * FROM tenant_limits WHERE organization_id = $1', [orgId]);
+    }>('SELECT * FROM org_tenant_limits WHERE organization_id = $1', [orgId]);
     const row = result.rows[0];
     if (!row) return defaultLimits('starter');
     return {
@@ -215,7 +215,7 @@ export class TenantOperationsService {
       name: row.name,
       slug: row.slug,
       status: row.status as TenantLifecycleStatus,
-      plan: row.plan,
+      plan: row.tier,
       settings: row.settings,
       limits,
       createdAt: row.created_at,

@@ -62,7 +62,7 @@ export class TenantHealthService {
 
   async getTenantLimits(tenantId: string): Promise<TenantLimit[]> {
     const result = await this.pool.query<TenantLimitRow>(
-      `SELECT * FROM tenant_limits WHERE tenant_id = $1`,
+      `SELECT * FROM platform_tenant_limits WHERE tenant_id = $1`,
       [tenantId],
     );
     return result.rows.map((r) => this.mapLimit(r));
@@ -75,11 +75,11 @@ export class TenantHealthService {
     currentValue?: number;
   }): Promise<TenantLimit> {
     const result = await this.pool.query<TenantLimitRow>(
-      `INSERT INTO tenant_limits (tenant_id, resource_type, limit_value, current_value)
+      `INSERT INTO platform_tenant_limits (tenant_id, resource_type, limit_value, current_value)
        VALUES ($1, $2, $3, $4)
        ON CONFLICT (tenant_id, resource_type) DO UPDATE
          SET limit_value = EXCLUDED.limit_value,
-             current_value = COALESCE(EXCLUDED.current_value, tenant_limits.current_value)
+             current_value = COALESCE(EXCLUDED.current_value, platform_tenant_limits.current_value)
        RETURNING *`,
       [input.tenantId, input.resourceType, input.limitValue, input.currentValue ?? 0],
     );
