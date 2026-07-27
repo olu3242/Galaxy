@@ -21,8 +21,8 @@ import { WorkflowGeneratorService } from '@galaxy/workflow-generator';
 const { Pool } = pg;
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
-const orgId = '00000000-4501-4000-8000-450000000001';
-const orgIdB = '00000000-4501-4000-8000-450000000002';
+const orgId = '00000000-5901-4000-8000-590000000001';
+const orgIdB = '00000000-5901-4000-8000-590000000002';
 
 let sharedRequestId: string;
 let secondRequestId: string;
@@ -30,8 +30,8 @@ let secondRequestId: string;
 beforeAll(async () => {
   await pool.query(
     `INSERT INTO organizations (id, name, slug, tier, status)
-     VALUES ($1, 'WFGen Test Org A', 'wfgen-test-a', 'starter', 'active'),
-            ($2, 'WFGen Test Org B', 'wfgen-test-b', 'starter', 'active')
+     VALUES ($1, 'WF Generator Phase 59 Org A', 'wfgen-phase59-a', 'starter', 'active'),
+            ($2, 'WF Generator Phase 59 Org B', 'wfgen-phase59-b', 'starter', 'active')
      ON CONFLICT (id) DO NOTHING`,
     [orgId, orgIdB],
   );

@@ -21,8 +21,8 @@ import { PolicyService, PolicyEnforcementService } from '@galaxy/policy-engine';
 const { Pool } = pg;
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
-const orgId = '00000000-3801-4000-8000-380000000001';
-const orgIdB = '00000000-3801-4000-8000-380000000002';
+const orgId = '00000000-5601-4000-8000-560000000001';
+const orgIdB = '00000000-5601-4000-8000-560000000002';
 
 let sharedPolicyId: string;
 let secondPolicyId: string;
@@ -30,8 +30,8 @@ let secondPolicyId: string;
 beforeAll(async () => {
   await pool.query(
     `INSERT INTO organizations (id, name, slug, tier, status)
-     VALUES ($1, 'Policy Test Org A', 'policy-test-a', 'starter', 'active'),
-            ($2, 'Policy Test Org B', 'policy-test-b', 'starter', 'active')
+     VALUES ($1, 'Policy Engine Phase 56 Org A', 'pe-phase56-a', 'starter', 'active'),
+            ($2, 'Policy Engine Phase 56 Org B', 'pe-phase56-b', 'starter', 'active')
      ON CONFLICT (id) DO NOTHING`,
     [orgId, orgIdB],
   );

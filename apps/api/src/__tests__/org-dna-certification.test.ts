@@ -21,14 +21,14 @@ import { OrgDNAService } from '@galaxy/org-dna';
 const { Pool } = pg;
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
-const orgId = '00000000-4301-4000-8000-430000000001';
-const orgIdB = '00000000-4301-4000-8000-430000000002';
+const orgId = '00000000-5701-4000-8000-570000000001';
+const orgIdB = '00000000-5701-4000-8000-570000000002';
 
 beforeAll(async () => {
   await pool.query(
     `INSERT INTO organizations (id, name, slug, tier, status)
-     VALUES ($1, 'OrgDNA Test Org A', 'orgdna-test-a', 'starter', 'active'),
-            ($2, 'OrgDNA Test Org B', 'orgdna-test-b', 'starter', 'active')
+     VALUES ($1, 'Org DNA Phase 57 Org A', 'orgdna-phase57-a', 'starter', 'active'),
+            ($2, 'Org DNA Phase 57 Org B', 'orgdna-phase57-b', 'starter', 'active')
      ON CONFLICT (id) DO NOTHING`,
     [orgId, orgIdB],
   );

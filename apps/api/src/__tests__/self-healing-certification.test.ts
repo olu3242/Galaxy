@@ -21,16 +21,16 @@ import { HealingIncidentService, HealingRuleService } from '@galaxy/self-healing
 const { Pool } = pg;
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
-const orgId = '00000000-3901-4000-8000-390000000001';
-const orgIdB = '00000000-3901-4000-8000-390000000002';
+const orgId = '00000000-6001-4000-8000-600000000001';
+const orgIdB = '00000000-6001-4000-8000-600000000002';
 
 let sharedIncidentId: string;
 
 beforeAll(async () => {
   await pool.query(
     `INSERT INTO organizations (id, name, slug, tier, status)
-     VALUES ($1, 'Self-Heal Test Org A', 'heal-test-a', 'starter', 'active'),
-            ($2, 'Self-Heal Test Org B', 'heal-test-b', 'starter', 'active')
+     VALUES ($1, 'Self-Healing Phase 60 Org A', 'selfheal-phase60-a', 'starter', 'active'),
+            ($2, 'Self-Healing Phase 60 Org B', 'selfheal-phase60-b', 'starter', 'active')
      ON CONFLICT (id) DO NOTHING`,
     [orgId, orgIdB],
   );

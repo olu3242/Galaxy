@@ -21,14 +21,14 @@ import { HealthScoringService } from '@galaxy/org-health';
 const { Pool } = pg;
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
-const orgId = '00000000-4401-4000-8000-440000000001';
-const orgIdB = '00000000-4401-4000-8000-440000000002';
+const orgId = '00000000-5801-4000-8000-580000000001';
+const orgIdB = '00000000-5801-4000-8000-580000000002';
 
 beforeAll(async () => {
   await pool.query(
     `INSERT INTO organizations (id, name, slug, tier, status)
-     VALUES ($1, 'OrgHealth Test Org A', 'orghealth-test-a', 'starter', 'active'),
-            ($2, 'OrgHealth Test Org B', 'orghealth-test-b', 'starter', 'active')
+     VALUES ($1, 'Org Health Phase 58 Org A', 'orghealth-phase58-a', 'starter', 'active'),
+            ($2, 'Org Health Phase 58 Org B', 'orghealth-phase58-b', 'starter', 'active')
      ON CONFLICT (id) DO NOTHING`,
     [orgId, orgIdB],
   );
