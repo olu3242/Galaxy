@@ -41,7 +41,7 @@ export class EventRegistry {
     const schema = this.schemas.get(eventType);
 
     if (!schema) {
-      return { success: true }; // No schema registered — allow through
+      return { success: false, error: `No schema registered for event type "${eventType}"` };
     }
 
     const result = schema.safeParse(payload);
