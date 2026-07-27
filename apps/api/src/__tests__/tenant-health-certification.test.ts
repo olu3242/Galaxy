@@ -3,7 +3,7 @@
  *
  * Certifies TenantHealthService from @galaxy/platform:
  * 1.  recordHealth creates a health snapshot
- * 2.  recordHealth stores the tenantId correctly
+ * 2.  recorded health has correct tenantId and score
  * 3.  getLatestHealth returns the most recent snapshot
  * 4.  getLatestHealth returns null for unknown tenant
  * 5.  setTenantLimit creates a limit record
@@ -16,39 +16,42 @@
 
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import pg from 'pg';
-import { TenantHealthService } from '@galaxy/platform';
+import { TenantHealthService, TenantOperationsService } from '@galaxy/platform';
 
 const { Pool } = pg;
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
-const orgId = '00000000-7901-4000-8000-790100000001';
-const orgIdB = '00000000-7901-4000-8000-790100000002';
-const orgIdC = '00000000-7901-4000-8000-790100000003';
+let tenantId: string;
+let tenantIdB: string;
+let tenantIdC: string;
 
 beforeAll(async () => {
-  await pool.query(
-    `INSERT INTO organizations (id, name, slug, tier, status)
-     VALUES ($1, 'TenantHealth Phase 79 Org A', 'tenanthealth-phase79-a', 'starter', 'active'),
-            ($2, 'TenantHealth Phase 79 Org B', 'tenanthealth-phase79-b', 'starter', 'active'),
-            ($3, 'TenantHealth Phase 79 Org C', 'tenanthealth-phase79-c', 'starter', 'active')
-     ON CONFLICT (id) DO NOTHING`,
-    [orgId, orgIdB, orgIdC],
-  );
+  const svc = new TenantOperationsService(pool);
+  const a = await svc.createTenant({ name: 'TenantHealth Phase 79 A', status: 'active' });
+  const b = await svc.createTenant({ name: 'TenantHealth Phase 79 B', status: 'active' });
+  const c = await svc.createTenant({ name: 'TenantHealth Phase 79 C', status: 'active' });
+  tenantId = a.id;
+  tenantIdB = b.id;
+  tenantIdC = c.id;
 });
 
 afterAll(async () => {
   await pool
-    .query(`DELETE FROM platform_tenant_limits WHERE tenant_id IN ($1, $2, $3)`, [
-      orgId,
-      orgIdB,
-      orgIdC,
+    .query(`DELETE FROM tenant_limits WHERE tenant_id IN ($1, $2, $3)`, [
+      tenantId,
+      tenantIdB,
+      tenantIdC,
     ])
     .catch(() => null);
   await pool
-    .query(`DELETE FROM tenant_health WHERE tenant_id IN ($1, $2, $3)`, [orgId, orgIdB, orgIdC])
+    .query(`DELETE FROM tenant_health WHERE tenant_id IN ($1, $2, $3)`, [
+      tenantId,
+      tenantIdB,
+      tenantIdC,
+    ])
     .catch(() => null);
   await pool
-    .query(`DELETE FROM organizations WHERE id IN ($1, $2, $3)`, [orgId, orgIdB, orgIdC])
+    .query(`DELETE FROM tenants WHERE id IN ($1, $2, $3)`, [tenantId, tenantIdB, tenantIdC])
     .catch(() => null);
   await pool.end();
 });
@@ -57,25 +60,25 @@ describe('Tenant Health Service Certification', () => {
   // ── 1. recordHealth creates snapshot ─────────────────────────────────────
   it('1. recordHealth creates a health snapshot', async () => {
     const svc = new TenantHealthService(pool);
-    const health = await svc.recordHealth({ tenantId: orgId, score: 85, metrics: { cpu: 0.3 } });
+    const health = await svc.recordHealth({ tenantId, score: 85, metrics: { cpu: 0.3 } });
     expect(health).toBeTruthy();
     expect(health.id).toBeTruthy();
   });
 
-  // ── 2. recordHealth stores tenantId ──────────────────────────────────────
-  it('2. recordHealth stores the tenantId correctly', async () => {
+  // ── 2. recordHealth stores tenantId and score ─────────────────────────────
+  it('2. recorded health has correct tenantId and score', async () => {
     const svc = new TenantHealthService(pool);
-    const health = await svc.recordHealth({ tenantId: orgId, score: 90, metrics: { cpu: 0.2 } });
-    expect(health.tenantId).toBe(orgId);
+    const health = await svc.recordHealth({ tenantId, score: 90, metrics: { cpu: 0.2 } });
+    expect(health.tenantId).toBe(tenantId);
     expect(health.score).toBe(90);
   });
 
   // ── 3. getLatestHealth returns most recent snapshot ───────────────────────
   it('3. getLatestHealth returns a snapshot for the tenant', async () => {
     const svc = new TenantHealthService(pool);
-    const health = await svc.getLatestHealth(orgId);
+    const health = await svc.getLatestHealth(tenantId);
     expect(health).toBeTruthy();
-    expect(health?.tenantId).toBe(orgId);
+    expect(health?.tenantId).toBe(tenantId);
   });
 
   // ── 4. getLatestHealth returns null for unknown ───────────────────────────
@@ -89,7 +92,7 @@ describe('Tenant Health Service Certification', () => {
   it('5. setTenantLimit creates a limit record', async () => {
     const svc = new TenantHealthService(pool);
     const limit = await svc.setTenantLimit({
-      tenantId: orgId,
+      tenantId,
       resourceType: 'api_calls',
       limitValue: 10000,
     });
@@ -102,17 +105,17 @@ describe('Tenant Health Service Certification', () => {
   // ── 6. getTenantLimits returns limits ────────────────────────────────────
   it('6. getTenantLimits returns limits for the tenant', async () => {
     const svc = new TenantHealthService(pool);
-    const limits = await svc.getTenantLimits(orgId);
+    const limits = await svc.getTenantLimits(tenantId);
     expect(Array.isArray(limits)).toBe(true);
     expect(limits.length).toBeGreaterThan(0);
-    expect(limits.every((l) => l.tenantId === orgId)).toBe(true);
+    expect(limits.every((l) => l.tenantId === tenantId)).toBe(true);
   });
 
   // ── 7. setTenantLimit upserts on conflict ────────────────────────────────
   it('7. setTenantLimit updates limitValue on upsert', async () => {
     const svc = new TenantHealthService(pool);
     const updated = await svc.setTenantLimit({
-      tenantId: orgId,
+      tenantId,
       resourceType: 'api_calls',
       limitValue: 50000,
     });
@@ -122,16 +125,16 @@ describe('Tenant Health Service Certification', () => {
   // ── 8. getLatestHealth returns most recent of multiple ───────────────────
   it('8. getLatestHealth returns most recent of multiple snapshots', async () => {
     const svc = new TenantHealthService(pool);
-    await svc.recordHealth({ tenantId: orgIdB, score: 60, metrics: {} });
-    await svc.recordHealth({ tenantId: orgIdB, score: 95, metrics: { status: 'latest' } });
-    const health = await svc.getLatestHealth(orgIdB);
+    await svc.recordHealth({ tenantId: tenantIdB, score: 60, metrics: {} });
+    await svc.recordHealth({ tenantId: tenantIdB, score: 95, metrics: { status: 'latest' } });
+    const health = await svc.getLatestHealth(tenantIdB);
     expect(health?.score).toBe(95);
   });
 
   // ── 9. getTenantLimits empty for no limits ───────────────────────────────
   it('9. getTenantLimits returns empty array for tenant with no limits', async () => {
     const svc = new TenantHealthService(pool);
-    const limits = await svc.getTenantLimits(orgIdC);
+    const limits = await svc.getTenantLimits(tenantIdC);
     expect(Array.isArray(limits)).toBe(true);
     expect(limits.length).toBe(0);
   });
@@ -139,10 +142,10 @@ describe('Tenant Health Service Certification', () => {
   // ── 10. Cross-tenant: health records are separate ────────────────────────
   it('10. health snapshots are separate per tenant', async () => {
     const svc = new TenantHealthService(pool);
-    const healthA = await svc.getLatestHealth(orgId);
-    const healthB = await svc.getLatestHealth(orgIdB);
-    expect(healthA?.tenantId).toBe(orgId);
-    expect(healthB?.tenantId).toBe(orgIdB);
+    const healthA = await svc.getLatestHealth(tenantId);
+    const healthB = await svc.getLatestHealth(tenantIdB);
+    expect(healthA?.tenantId).toBe(tenantId);
+    expect(healthB?.tenantId).toBe(tenantIdB);
     expect(healthA?.tenantId).not.toBe(healthB?.tenantId);
   });
 });

@@ -25,34 +25,10 @@ export async function up(pool: Pool): Promise<void> {
       UNIQUE (organization_id)
     );
   `);
-
-  await pool.query(`
-    CREATE TABLE IF NOT EXISTS tenant_health (
-      id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-      tenant_id   UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
-      score       NUMERIC(5,2) NOT NULL DEFAULT 0,
-      metrics     JSONB NOT NULL DEFAULT '{}',
-      checked_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
-    );
-    CREATE INDEX IF NOT EXISTS idx_tenant_health_tenant ON tenant_health (tenant_id, checked_at DESC);
-  `);
-
-  await pool.query(`
-    CREATE TABLE IF NOT EXISTS platform_tenant_limits (
-      id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-      tenant_id     UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
-      resource_type TEXT NOT NULL,
-      limit_value   NUMERIC NOT NULL DEFAULT 0,
-      current_value NUMERIC NOT NULL DEFAULT 0,
-      UNIQUE (tenant_id, resource_type)
-    );
-  `);
 }
 
 export async function down(pool: Pool): Promise<void> {
   await pool.query(`
-    DROP TABLE IF EXISTS platform_tenant_limits;
-    DROP TABLE IF EXISTS tenant_health;
     DROP TABLE IF EXISTS org_tenant_limits;
     DROP TABLE IF EXISTS tenant_lifecycle;
   `);
