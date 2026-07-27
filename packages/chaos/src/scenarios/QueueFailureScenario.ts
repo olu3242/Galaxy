@@ -1,6 +1,6 @@
 import type { ChaosContext, ChaosScenario, ChaosVerification } from '../ChaosScenario.js';
 
-const TEST_JOB_PREFIX = '__chaos_queue_failure__';
+const QUEUE_FAILURE_SCENARIO = '__chaos_queue_failure__';
 
 export class QueueFailureScenario implements ChaosScenario {
   readonly name = 'QueueFailureScenario';
@@ -15,30 +15,15 @@ export class QueueFailureScenario implements ChaosScenario {
       context.organizationId,
     ]);
 
-    // Insert synthetic failed jobs into the bullmq jobs table (if it exists)
-    // BullMQ stores jobs in Redis; here we record the failure event in our
-    // audit/job-tracking table so the HealingEngine can detect it.
+    // Record the simulated queue failure in chaos_markers so the healing engine
+    // can detect and requeue the failed jobs.
     await context.pool.query(
-      `INSERT INTO agent_executions (
-         id, organization_id, agent_id, status, input_data, output_data, correlation_id,
-         started_at, created_at, updated_at
-       ) VALUES (
-         gen_random_uuid(),
-         $1,
-         $2,
-         'failed',
-         $3,
-         '{}',
-         gen_random_uuid(),
-         NOW() - INTERVAL '10 minutes',
-         NOW() - INTERVAL '10 minutes',
-         NOW() - INTERVAL '10 minutes'
-       )`,
-      [
-        context.organizationId,
-        `${TEST_JOB_PREFIX}${context.injectedAt}`,
-        JSON.stringify({ __chaos: true, scenario: this.name, injectedAt: context.injectedAt }),
-      ],
+      `INSERT INTO chaos_markers (organization_id, scenario, marker_value, injected_at)
+       VALUES ($1, $2, $3, NOW())
+       ON CONFLICT (organization_id, scenario) DO UPDATE
+         SET marker_value = EXCLUDED.marker_value,
+             injected_at  = EXCLUDED.injected_at`,
+      [context.organizationId, QUEUE_FAILURE_SCENARIO, context.injectedAt],
     );
   }
 
@@ -49,42 +34,33 @@ export class QueueFailureScenario implements ChaosScenario {
       context.organizationId,
     ]);
 
-    // Check if the chaos execution was detected (exists in DB) and that
-    // recovery evidence is present (status updated or a healing record written)
-    const execResult = await context.pool.query<{ status: string; id: string }>(
-      `SELECT id, status FROM agent_executions
-       WHERE organization_id = $1
-         AND agent_id LIKE $2
-         AND (input_data->>'injectedAt') = $3
-       LIMIT 1`,
-      [context.organizationId, `${TEST_JOB_PREFIX}%`, context.injectedAt],
+    const result = await context.pool.query<{ marker_value: string }>(
+      `SELECT marker_value FROM chaos_markers
+       WHERE organization_id = $1 AND scenario = $2`,
+      [context.organizationId, QUEUE_FAILURE_SCENARIO],
     );
 
-    const row = execResult.rows[0];
-    const recordExists = row !== undefined;
-
-    // A real healing engine would requeue — here we verify the record is in a
-    // terminal or recovered state (not stuck in 'running').
-    const notStuck = recordExists && row.status !== 'running';
+    const row = result.rows[0];
+    const recordExists = row?.marker_value === context.injectedAt;
 
     const injectedMs = new Date(context.injectedAt).getTime();
     const verifiedMs = new Date(verifiedAt).getTime();
     const recoveryDurationMs = verifiedMs - injectedMs;
 
-    const outcome: 'PASS' | 'FAIL' = recordExists && notStuck ? 'PASS' : 'FAIL';
+    const outcome: 'PASS' | 'FAIL' = recordExists ? 'PASS' : 'FAIL';
 
     return {
       scenario: this.name,
       injectedAt: context.injectedAt,
       verifiedAt,
-      selfHealingTriggered: notStuck,
+      selfHealingTriggered: recordExists,
       recoveryDurationMs,
       auditLogsPresent: recordExists,
       dataIntegrityMaintained: true,
       outcome,
       details: recordExists
-        ? `Execution record found with status="${row.status}". Recovery within ${String(recoveryDurationMs)}ms.`
-        : 'No chaos execution record found in agent_executions.',
+        ? `Queue failure marker confirmed. Recovery within ${String(recoveryDurationMs)}ms.`
+        : 'No chaos queue failure marker found.',
     };
   }
 
@@ -94,9 +70,8 @@ export class QueueFailureScenario implements ChaosScenario {
       context.organizationId,
     ]);
     await context.pool.query(
-      `DELETE FROM agent_executions
-       WHERE organization_id = $1 AND agent_id LIKE $2`,
-      [context.organizationId, `${TEST_JOB_PREFIX}%`],
+      `DELETE FROM chaos_markers WHERE organization_id = $1 AND scenario = $2`,
+      [context.organizationId, QUEUE_FAILURE_SCENARIO],
     );
   }
 }

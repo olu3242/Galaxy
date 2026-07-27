@@ -36,9 +36,8 @@ beforeAll(async () => {
   );
   await pool
     .query(
-      `INSERT INTO audit_logs (id, organization_id, actor_type, actor_id, action, resource_type, resource_id, metadata)
-     VALUES (gen_random_uuid(), $1, 'system', 'cert-test', 'org.created', 'organization', $1, '{}')
-     ON CONFLICT DO NOTHING`,
+      `INSERT INTO audit_logs (organization_id, actor_type, action, resource_type, resource_id, correlation_id)
+     VALUES ($1, 'system', 'org.created', 'organization', $1, gen_random_uuid())`,
       [orgId],
     )
     .catch(() => null);
