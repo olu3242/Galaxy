@@ -94,6 +94,7 @@ import * as migration093 from './migrations/093_aof_learning_records.js';
 import * as migration094 from './migrations/094_aof_certifications.js';
 import * as migration095 from './migrations/095_cognitive_engine.js';
 import * as migration096 from './migrations/096_fix_billing_usage_schema.js';
+import * as migration097 from './migrations/097_chaos_markers.js';
 
 interface Migration {
   up: (pool: Pool) => Promise<void>;
@@ -196,6 +197,7 @@ const migrations: { name: string; migration: Migration }[] = [
   { name: '094_aof_certifications', migration: migration094 },
   { name: '095_cognitive_engine', migration: migration095 },
   { name: '096_fix_billing_usage_schema', migration: migration096 },
+  { name: '097_chaos_markers', migration: migration097 },
 ];
 
 async function ensureMigrationsTable(pool: Pool): Promise<void> {
