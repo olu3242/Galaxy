@@ -26,8 +26,8 @@ let tenantIdB: string;
 
 beforeAll(async () => {
   const svc = new TenantOperationsService(pool);
-  const a = await svc.createTenant({ name: 'Platform Tenant Test A' });
-  const b = await svc.createTenant({ name: 'Platform Tenant Test B' });
+  const a = await svc.createTenant({ name: 'Platform Tenant Test A', status: 'active' });
+  const b = await svc.createTenant({ name: 'Platform Tenant Test B', status: 'active' });
   tenantId = a.id;
   tenantIdB = b.id;
 });
