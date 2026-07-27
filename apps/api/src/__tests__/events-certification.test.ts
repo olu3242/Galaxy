@@ -17,6 +17,7 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { randomUUID } from 'crypto';
 import pg from 'pg';
+import { z } from 'zod';
 import { EventPublisher, EventRegistry, InMemoryEventSubscriber } from '@galaxy/events';
 
 const { Pool } = pg;
@@ -131,6 +132,7 @@ describe('Galaxy Event Bus OS Certification', () => {
     const received: unknown[] = [];
     subscriber.subscribe('workflow.submitted', (evt) => {
       received.push(evt);
+      return Promise.resolve();
     });
     const event = makeEvent(orgId);
     await subscriber.dispatch(event);
@@ -155,7 +157,7 @@ describe('Galaxy Event Bus OS Certification', () => {
   // ── 8. EventRegistry registers and validates ──────────────────────────────
   it('8. EventRegistry registers and validates payload schemas', () => {
     const registry = new EventRegistry();
-    registry.register('cert.test.event', { parse: (p: unknown) => p });
+    registry.register('cert.test.event', z.object({ certPhase: z.number() }));
     const types = registry.listTypes();
     expect(types).toContain('cert.test.event');
   });
