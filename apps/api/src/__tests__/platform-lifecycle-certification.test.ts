@@ -71,7 +71,7 @@ describe('Platform Lifecycle OS Certification', () => {
     const svc = new OrganizationLifecycleService(pool);
     const events = await svc.listEvents(orgId);
     expect(events.length).toBeGreaterThan(0);
-    expect(events[0].organizationId).toBe(orgId);
+    expect(events[0]?.organizationId).toBe(orgId);
   });
 
   // ── 3. multiple event types store correctly ───────────────────────────────

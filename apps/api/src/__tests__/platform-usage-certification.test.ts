@@ -152,7 +152,7 @@ describe('Platform Usage OS Certification', () => {
     const svc = new RevenueOperationsService(pool);
     const snapshots = await svc.listSnapshots({ limit: 10 });
     expect(snapshots.length).toBeGreaterThan(0);
-    expect(typeof snapshots[0].mrrCents).toBe('number');
+    expect(typeof snapshots[0]?.mrrCents).toBe('number');
   });
 
   // ── 9. calculateHealthScore = 10 for fresh org ───────────────────────────
