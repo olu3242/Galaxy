@@ -30,6 +30,7 @@
     "@fastify/swagger-ui": "^4.0.0",
     "@fastify/websocket": "^8.0.0",
     "@galaxy/agents": "workspace:*",
+    "@galaxy/chaos": "workspace:*",
     "@galaxy/ai-deployment": "workspace:*",
     "@galaxy/analytics": "workspace:*",
     "@galaxy/api-gateway": "workspace:*",
