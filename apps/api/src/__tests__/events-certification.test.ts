@@ -147,6 +147,7 @@ describe('Galaxy Event Bus OS Certification', () => {
     const received: unknown[] = [];
     subscriber.subscribe('workflow.submitted', (evt) => {
       received.push(evt);
+      return Promise.resolve();
     });
     subscriber.unsubscribe('workflow.submitted');
     await subscriber.dispatch(makeEvent(orgId));
