@@ -6,6 +6,7 @@ export async function up(pool: Pool): Promise<void> {
   await pool.query(`ALTER TABLE invoices ALTER COLUMN subscription_id DROP NOT NULL`);
   await pool.query(`ALTER TABLE invoices ALTER COLUMN period_start DROP NOT NULL`);
   await pool.query(`ALTER TABLE invoices ALTER COLUMN period_end DROP NOT NULL`);
+  await pool.query(`ALTER TABLE invoices ALTER COLUMN due_date DROP NOT NULL`);
 
   // plans.tier was NOT NULL from migration 038, but PlanService.createPlan does not
   // accept a tier parameter — make it optional.
@@ -26,6 +27,7 @@ export async function down(pool: Pool): Promise<void> {
   await pool.query(`ALTER TABLE usage_events ALTER COLUMN event_type SET NOT NULL`);
   await pool.query(`ALTER TABLE usage_events ALTER COLUMN subscription_id SET NOT NULL`);
   await pool.query(`ALTER TABLE plans ALTER COLUMN tier SET NOT NULL`);
+  await pool.query(`ALTER TABLE invoices ALTER COLUMN due_date SET NOT NULL`);
   await pool.query(`ALTER TABLE invoices ALTER COLUMN period_end SET NOT NULL`);
   await pool.query(`ALTER TABLE invoices ALTER COLUMN period_start SET NOT NULL`);
   await pool.query(`ALTER TABLE invoices ALTER COLUMN subscription_id SET NOT NULL`);
