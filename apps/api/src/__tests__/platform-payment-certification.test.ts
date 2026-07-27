@@ -126,16 +126,14 @@ describe('Platform Payment OS Certification', () => {
     expect(payment.currency).toBe('EUR');
   });
 
-  // ── 8. recordPayment with invoiceId ──────────────────────────────────────
-  it('8. recordPayment with invoiceId associates it', async () => {
+  // ── 8. recordPayment without invoiceId stores null ───────────────────────
+  it('8. recordPayment without invoiceId stores null invoiceId', async () => {
     const svc = new PaymentService(pool);
-    const fakeInvoiceId = '00000000-6701-4000-8000-670000000099';
     const payment = await svc.recordPayment({
       organizationId: orgId,
       amountCents: 3000,
-      invoiceId: fakeInvoiceId,
     });
-    expect(payment.invoiceId).toBe(fakeInvoiceId);
+    expect(payment.invoiceId).toBeNull();
   });
 
   // ── 9. failed payment does not set paidAt ────────────────────────────────
