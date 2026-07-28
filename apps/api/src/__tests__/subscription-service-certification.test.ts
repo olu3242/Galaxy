@@ -147,7 +147,7 @@ describe('Subscription Service Certification', () => {
   // ── 9. updateStatus records a subscription event ─────────────────────────
   it('9. updateStatus triggers a subscription event record', async () => {
     const result = await pool.query(
-      `SELECT * FROM subscription_events WHERE subscription_id = $1 ORDER BY created_at DESC`,
+      `SELECT * FROM subscription_events WHERE subscription_id = $1 ORDER BY occurred_at DESC`,
       [subscriptionId],
     );
     expect(result.rows.length).toBeGreaterThan(0);
