@@ -118,6 +118,26 @@ export class QuotaService {
     };
   }
 
+  async setAlert(input: {
+    organizationId: string;
+    resourceType: string;
+    thresholdPct: number;
+  }): Promise<UsageAlert> {
+    return this.createAlert(input);
+  }
+
+  async getAlerts(organizationId: string): Promise<UsageAlert[]> {
+    await this.pool.query('SELECT set_config($1, $2, true)', [
+      'app.current_tenant',
+      organizationId,
+    ]);
+    const result = await this.pool.query<UsageAlertRow>(
+      `SELECT * FROM usage_alerts WHERE organization_id = $1 ORDER BY created_at DESC`,
+      [organizationId],
+    );
+    return result.rows.map((r) => this.mapAlert(r));
+  }
+
   async createAlert(input: {
     organizationId: string;
     resourceType: string;
