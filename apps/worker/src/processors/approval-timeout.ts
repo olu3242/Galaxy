@@ -17,7 +17,7 @@ export function createApprovalTimeoutProcessor(pool: Pool): (job: Job) => Promis
     const timedOut = await service.processTimeouts();
 
     if (timedOut.length > 0) {
-      console.log(
+      console.warn(
         JSON.stringify({
           level: 'info',
           event: 'approval.timeout.processed',

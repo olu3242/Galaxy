@@ -72,7 +72,7 @@ export class MissionControlService {
         [orgId],
       ),
       this.pool.query<{ count: string }>(
-        `SELECT COUNT(*) as count FROM risk_alerts WHERE organization_id = $1 AND status = 'open'`,
+        `SELECT COUNT(*) as count FROM risk_alerts WHERE organization_id = $1 AND is_resolved = false`,
         [orgId],
       ),
     ]);

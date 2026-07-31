@@ -24,10 +24,11 @@ export class LoopVerificationService {
 
       const insertResult = await client.query(
         `INSERT INTO loop_verifications
-           (loop_instance_id, verified_by, status, notes, evidence_urls, verified_at)
-         VALUES ($1, $2, $3, $4, $5, NOW())
+           (organization_id, loop_instance_id, verified_by, status, notes, evidence_urls, verified_at)
+         VALUES ($1, $2, $3, $4, $5, $6, NOW())
          RETURNING *`,
         [
+          organizationId,
           input.loopInstanceId,
           input.verifiedBy,
           input.status,

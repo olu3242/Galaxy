@@ -26,7 +26,7 @@ function makePool(responses: QueryResult[]): Pool {
 function taskRow(
   overrides: Partial<{
     status: string;
-    assignee_id: string | null;
+    assigned_to: string | null;
     completed_at: string | null;
   }> = {},
 ) {
@@ -38,8 +38,8 @@ function taskRow(
     description: null,
     status: overrides.status ?? 'pending',
     priority: 'medium',
-    assignee_id: overrides.assignee_id ?? null,
-    reporter_id: REPORTER_ID,
+    assigned_to: overrides.assigned_to ?? null,
+    created_by: REPORTER_ID,
     due_at: null,
     completed_at: overrides.completed_at ?? null,
     correlation_id: CORR_ID,
@@ -118,7 +118,7 @@ describe('TaskEngineService.assignTask', () => {
     const pool = makePool([
       ok([]),
       ok([{ status: 'pending' }]),
-      ok([taskRow({ status: 'in_progress', assignee_id: ASSIGNEE_ID })]),
+      ok([taskRow({ status: 'in_progress', assigned_to: ASSIGNEE_ID })]),
       ok([]),
       ok([]),
     ]);

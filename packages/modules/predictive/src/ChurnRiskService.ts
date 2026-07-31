@@ -3,7 +3,8 @@ import type { ChurnRiskScore } from './types.js';
 
 interface MemberActivityRow {
   id: string;
-  last_active_at: string | null;
+  joined_at: string;
+  status: string;
   login_count_30d: string;
   task_count_30d: string;
 }
@@ -20,15 +21,16 @@ export class ChurnRiskService {
     const result = await this.pool.query<MemberActivityRow>(
       `SELECT
          m.id,
-         m.last_active_at,
+         m.created_at as joined_at,
+         m.status,
          COALESCE(la.login_count, 0)::text as login_count_30d,
          COALESCE(ta.task_count, 0)::text as task_count_30d
-       FROM members m
+       FROM memberships m
        LEFT JOIN (
-         SELECT member_id, COUNT(*) as login_count
+         SELECT actor_id as member_id, COUNT(*) as login_count
          FROM audit_logs
          WHERE organization_id = $1 AND action = 'login' AND created_at > NOW() - INTERVAL '30 days'
-         GROUP BY member_id
+         GROUP BY actor_id
        ) la ON la.member_id = m.id
        LEFT JOIN (
          SELECT assigned_to as member_id, COUNT(*) as task_count
@@ -42,14 +44,19 @@ export class ChurnRiskService {
 
     const now = Date.now();
     return result.rows.map((row) => {
-      const lastActive = row.last_active_at ? new Date(row.last_active_at).getTime() : 0;
-      const daysSinceActive = lastActive ? (now - lastActive) / (1000 * 60 * 60 * 24) : 90;
+      const joined = row.joined_at ? new Date(row.joined_at).getTime() : 0;
+      const daysSinceJoined = joined ? (now - joined) / (1000 * 60 * 60 * 24) : 90;
+      const isInactive = row.status !== 'active';
+      const daysSinceActive = isInactive ? 90 : Math.min(daysSinceJoined, 90);
       const loginCount = parseInt(row.login_count_30d, 10);
       const taskCount = parseInt(row.task_count_30d, 10);
 
       let score = 0;
       const factors: string[] = [];
-      if (daysSinceActive > 30) {
+      if (isInactive) {
+        score += 40;
+        factors.push('inactive_status');
+      } else if (daysSinceActive > 30) {
         score += 40;
         factors.push('inactive_30d');
       } else if (daysSinceActive > 14) {

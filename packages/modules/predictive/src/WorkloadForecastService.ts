@@ -15,16 +15,16 @@ export class WorkloadForecastService {
       day_of_week: string;
       avg_count: string;
     }>(
-      `SELECT EXTRACT(DOW FROM created_at)::text as day_of_week,
+      `SELECT dow::text as day_of_week,
               AVG(daily_count) as avg_count
        FROM (
-         SELECT DATE(created_at) as day, EXTRACT(DOW FROM created_at) as created_at, COUNT(*) as daily_count
+         SELECT DATE(created_at) as day, EXTRACT(DOW FROM created_at) as dow, COUNT(*) as daily_count
          FROM workflow_runs
          WHERE organization_id = $1
            AND created_at > NOW() - INTERVAL '90 days'
          GROUP BY DATE(created_at), EXTRACT(DOW FROM created_at)
        ) sub
-       GROUP BY day_of_week`,
+       GROUP BY dow`,
       [organizationId],
     );
 

@@ -44,7 +44,7 @@ export class FeatureFlagService {
     rolloutPercentage?: number;
   }): Promise<FeatureFlag> {
     const result = await this.pool.query<FeatureFlagRow>(
-      `INSERT INTO feature_flags (name, description, enabled, rollout_percentage)
+      `INSERT INTO feature_flags (key, description, enabled, rollout_percentage)
        VALUES ($1, $2, $3, $4)
        RETURNING *`,
       [input.name, input.description ?? null, input.enabled ?? false, input.rolloutPercentage ?? 0],

@@ -58,8 +58,8 @@ export class OrganizationLifecycleService {
   async startOnboarding(orgId: string): Promise<void> {
     await this.pool.query('SELECT set_config($1, $2, true)', ['app.current_tenant', orgId]);
     await this.pool.query(
-      `INSERT INTO audit_logs (organization_id, actor_type, actor_id, action, resource_type, resource_id, metadata)
-       VALUES ($1, 'system', 'lifecycle', 'onboarding_started', 'organization', $1, '{}')`,
+      `INSERT INTO audit_logs (organization_id, actor_type, action, resource_type, resource_id, correlation_id)
+       VALUES ($1, 'system', 'onboarding_started', 'organization', $1, gen_random_uuid())`,
       [orgId],
     );
   }
@@ -67,18 +67,18 @@ export class OrganizationLifecycleService {
   async completeOnboarding(orgId: string): Promise<void> {
     await this.pool.query('SELECT set_config($1, $2, true)', ['app.current_tenant', orgId]);
     await this.pool.query(
-      `INSERT INTO audit_logs (organization_id, actor_type, actor_id, action, resource_type, resource_id, metadata)
-       VALUES ($1, 'system', 'lifecycle', 'onboarding_completed', 'organization', $1, '{}')`,
+      `INSERT INTO audit_logs (organization_id, actor_type, action, resource_type, resource_id, correlation_id)
+       VALUES ($1, 'system', 'onboarding_completed', 'organization', $1, gen_random_uuid())`,
       [orgId],
     );
   }
 
-  async triggerOffboarding(orgId: string, reason: string): Promise<void> {
+  async triggerOffboarding(orgId: string, _reason: string): Promise<void> {
     await this.pool.query('SELECT set_config($1, $2, true)', ['app.current_tenant', orgId]);
     await this.pool.query(
-      `INSERT INTO audit_logs (organization_id, actor_type, actor_id, action, resource_type, resource_id, metadata)
-       VALUES ($1, 'system', 'lifecycle', 'offboarding_started', 'organization', $1, $2)`,
-      [orgId, JSON.stringify({ reason })],
+      `INSERT INTO audit_logs (organization_id, actor_type, action, resource_type, resource_id, correlation_id)
+       VALUES ($1, 'system', 'offboarding_started', 'organization', $1, gen_random_uuid())`,
+      [orgId],
     );
   }
 

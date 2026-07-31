@@ -89,6 +89,20 @@ export class SubscriptionService {
     return this.mapSubscription(row);
   }
 
+  async getActiveSubscription(organizationId: string): Promise<Subscription | null> {
+    await this.pool.query('SELECT set_config($1, $2, true)', [
+      'app.current_tenant',
+      organizationId,
+    ]);
+    const result = await this.pool.query<SubscriptionRow>(
+      `SELECT * FROM subscriptions WHERE organization_id = $1 AND status = 'active'
+       ORDER BY created_at DESC LIMIT 1`,
+      [organizationId],
+    );
+    const row = result.rows[0];
+    return row ? this.mapSubscription(row) : null;
+  }
+
   async getSubscription(organizationId: string): Promise<Subscription | null> {
     await this.pool.query('SELECT set_config($1, $2, true)', [
       'app.current_tenant',

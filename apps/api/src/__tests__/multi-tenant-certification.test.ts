@@ -25,16 +25,15 @@ import type { AgentMessage } from '@galaxy/agents';
 
 const DATABASE_URL = process.env.DATABASE_URL ?? '';
 
-/** Set the RLS tenant context on a pool connection. */
-async function setTenant(pool: Pool, organizationId: string): Promise<void> {
-  await pool.query('SELECT set_config($1, $2, true)', ['app.current_tenant', organizationId]);
-}
+// Non-superuser role used for RLS assertions.
+// PostgreSQL superusers bypass FORCE ROW LEVEL SECURITY; we must test as a non-superuser.
+const APP_ROLE = 'galaxy_rls_test_role';
 
 /** Create a minimal organization row suitable for tests. */
 async function createOrg(pool: Pool, orgId: string, label: string): Promise<void> {
   await pool.query(
     `INSERT INTO organizations (id, name, slug, tier, status)
-     VALUES ($1, $2, $3, 'free', 'active')
+     VALUES ($1, $2, $3, 'starter', 'active')
      ON CONFLICT (id) DO NOTHING`,
     [orgId, `Cert Test Org ${label}`, `cert-${label.toLowerCase()}-${orgId.slice(0, 8)}`],
   );
@@ -57,8 +56,40 @@ describe.skipIf(!DATABASE_URL)('Multi-Tenant Certification', () => {
   let orgAKnowledgeDocId: string;
   let orgBKnowledgeDocId: string;
 
+  // Run an RLS SELECT assertion as the non-superuser app role so FORCE RLS applies.
+  // Uses a dedicated client with SET ROLE to avoid polluting the shared pool state.
+  const withAppRole = async (
+    tenantId: string,
+    sql: string,
+    params: unknown[] = [],
+  ): Promise<{ rows: Record<string, unknown>[] }> => {
+    const client = await pool.connect();
+    try {
+      await client.query(`SET ROLE ${APP_ROLE}`);
+      await client.query('SELECT set_config($1, $2, false)', ['app.current_tenant', tenantId]);
+      return await client
+        .query<Record<string, unknown>>(sql, params)
+        .catch(() => ({ rows: [] as Record<string, unknown>[] }));
+    } finally {
+      await client.query('RESET ROLE').catch(() => null);
+      client.release();
+    }
+  };
+
   beforeAll(async () => {
     pool = new Pool({ connectionString: DATABASE_URL });
+
+    // Create non-superuser role for RLS testing.
+    await pool.query(`
+      DO $$ BEGIN
+        IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = '${APP_ROLE}') THEN
+          CREATE ROLE ${APP_ROLE};
+        END IF;
+      END $$
+    `);
+    await pool.query(`GRANT SELECT ON ALL TABLES IN SCHEMA public TO ${APP_ROLE}`);
+    // Allow the connecting user to SET ROLE to the app role
+    await pool.query(`GRANT ${APP_ROLE} TO CURRENT_USER`);
 
     orgAId = crypto.randomUUID();
     orgBId = crypto.randomUUID();
@@ -70,90 +101,118 @@ describe.skipIf(!DATABASE_URL)('Multi-Tenant Certification', () => {
     orgAWorkflowId = crypto.randomUUID();
     orgBWorkflowId = crypto.randomUUID();
 
-    await pool.query(
+    // FORCE RLS tables require per-tenant transactions for multi-org seed inserts.
+    // Each block: BEGIN → SET LOCAL tenant → INSERT → COMMIT.
+    const seedInTx = async (tenantId: string, sql: string, params: unknown[]) => {
+      const client = await pool.connect();
+      try {
+        await client.query('BEGIN');
+        await client.query('SELECT set_config($1, $2, true)', ['app.current_tenant', tenantId]);
+        await client.query(sql, params);
+        await client.query('COMMIT');
+      } catch (e) {
+        await client.query('ROLLBACK').catch(() => null);
+        throw e;
+      } finally {
+        client.release();
+      }
+    };
+
+    await seedInTx(
+      orgAId,
       `INSERT INTO workflows (id, organization_id, name, version, is_active, definition, created_by)
-       VALUES ($1, $2, 'Cert WF A', '1', true, '{}', $2),
-              ($3, $4, 'Cert WF B', '1', true, '{}', $4)
-       ON CONFLICT (id) DO NOTHING`,
-      [orgAWorkflowId, orgAId, orgBWorkflowId, orgBId],
+       VALUES ($1, $2, 'Cert WF A', '1', true, '{}', $2) ON CONFLICT (id) DO NOTHING`,
+      [orgAWorkflowId, orgAId],
+    );
+    await seedInTx(
+      orgBId,
+      `INSERT INTO workflows (id, organization_id, name, version, is_active, definition, created_by)
+       VALUES ($1, $2, 'Cert WF B', '1', true, '{}', $2) ON CONFLICT (id) DO NOTHING`,
+      [orgBWorkflowId, orgBId],
     );
 
     // ── Workflow runs ────────────────────────────────────────────────────────
     orgARunId = crypto.randomUUID();
     orgBRunId = crypto.randomUUID();
 
-    await pool.query(
-      `INSERT INTO workflow_runs
-         (id, organization_id, workflow_id, status, triggered_by, trigger_data, correlation_id)
-       VALUES ($1, $2, $3, 'pending', 'cert-test', '{}', $1),
-              ($4, $5, $6, 'pending', 'cert-test', '{}', $4)
-       ON CONFLICT (id) DO NOTHING`,
-      [orgARunId, orgAId, orgAWorkflowId, orgBRunId, orgBId, orgBWorkflowId],
+    await seedInTx(
+      orgAId,
+      `INSERT INTO workflow_runs (id, organization_id, workflow_id, status, triggered_by, trigger_data, correlation_id)
+       VALUES ($1, $2, $3, 'pending', $2, '{}', $1) ON CONFLICT (id) DO NOTHING`,
+      [orgARunId, orgAId, orgAWorkflowId],
+    );
+    await seedInTx(
+      orgBId,
+      `INSERT INTO workflow_runs (id, organization_id, workflow_id, status, triggered_by, trigger_data, correlation_id)
+       VALUES ($1, $2, $3, 'pending', $2, '{}', $1) ON CONFLICT (id) DO NOTHING`,
+      [orgBRunId, orgBId, orgBWorkflowId],
     );
 
-    // ── Audit logs ───────────────────────────────────────────────────────────
-    await setTenant(pool, orgAId);
-    await pool
-      .query(
-        `INSERT INTO audit_logs
-           (id, organization_id, actor_type, actor_id, action, resource_type, resource_id, correlation_id)
-         VALUES ($1, $2, 'member', $2, 'cert.action', 'cert', $1, $1)
-         ON CONFLICT (id) DO NOTHING`,
-        [crypto.randomUUID(), orgAId],
-      )
-      .catch(() => null);
+    // ── Audit logs (id is BIGINT SERIAL — omit from INSERT) ──────────────────
+    await seedInTx(
+      orgAId,
+      `INSERT INTO audit_logs
+         (organization_id, actor_type, actor_id, action, resource_type, resource_id, correlation_id)
+       VALUES ($1, 'member', $1, 'cert.action', 'cert', $2, $2)`,
+      [orgAId, crypto.randomUUID()],
+    ).catch(() => null);
 
-    await setTenant(pool, orgBId);
-    await pool
-      .query(
-        `INSERT INTO audit_logs
-           (id, organization_id, actor_type, actor_id, action, resource_type, resource_id, correlation_id)
-         VALUES ($1, $2, 'member', $2, 'cert.action', 'cert', $1, $1)
-         ON CONFLICT (id) DO NOTHING`,
-        [crypto.randomUUID(), orgBId],
-      )
-      .catch(() => null);
+    await seedInTx(
+      orgBId,
+      `INSERT INTO audit_logs
+         (organization_id, actor_type, actor_id, action, resource_type, resource_id, correlation_id)
+       VALUES ($1, 'member', $1, 'cert.action', 'cert', $2, $2)`,
+      [orgBId, crypto.randomUUID()],
+    ).catch(() => null);
 
     // ── Approvals ────────────────────────────────────────────────────────────
     orgAApprovalId = crypto.randomUUID();
     orgBApprovalId = crypto.randomUUID();
     const approverId = crypto.randomUUID();
 
-    await pool.query(
-      `INSERT INTO approvals
-         (id, organization_id, title, status, requested_by, current_step_order, data, correlation_id)
-       VALUES ($1, $2, 'Cert Approval A', 'pending', $3, 1, '{}', $1),
-              ($4, $5, 'Cert Approval B', 'pending', $3, 1, '{}', $4)
-       ON CONFLICT (id) DO NOTHING`,
-      [orgAApprovalId, orgAId, approverId, orgBApprovalId, orgBId],
+    await seedInTx(
+      orgAId,
+      `INSERT INTO approvals (id, organization_id, title, status, requested_by, current_step_order, data, correlation_id)
+       VALUES ($1, $2, 'Cert Approval A', 'pending', $3, 1, '{}', $1) ON CONFLICT (id) DO NOTHING`,
+      [orgAApprovalId, orgAId, approverId],
+    );
+    await seedInTx(
+      orgBId,
+      `INSERT INTO approvals (id, organization_id, title, status, requested_by, current_step_order, data, correlation_id)
+       VALUES ($1, $2, 'Cert Approval B', 'pending', $3, 1, '{}', $1) ON CONFLICT (id) DO NOTHING`,
+      [orgBApprovalId, orgBId, approverId],
     );
 
-    // ── Knowledge documents ──────────────────────────────────────────────────
+    // ── Knowledge documents (author_id, not created_by) ──────────────────────
     orgAKnowledgeDocId = crypto.randomUUID();
     orgBKnowledgeDocId = crypto.randomUUID();
 
-    await pool
-      .query(
-        `INSERT INTO knowledge_documents
-           (id, organization_id, title, content, status, created_by)
-         VALUES ($1, $2, 'Cert Doc A', 'content A', 'published', $2),
-                ($3, $4, 'Cert Doc B', 'content B', 'published', $4)
-         ON CONFLICT (id) DO NOTHING`,
-        [orgAKnowledgeDocId, orgAId, orgBKnowledgeDocId, orgBId],
-      )
-      .catch(() => null); // table may not exist in all environments
+    await seedInTx(
+      orgAId,
+      `INSERT INTO knowledge_documents (id, organization_id, title, content, status, author_id)
+       VALUES ($1, $2, 'Cert Doc A', 'content A', 'published', $2) ON CONFLICT (id) DO NOTHING`,
+      [orgAKnowledgeDocId, orgAId],
+    ).catch(() => null);
+    await seedInTx(
+      orgBId,
+      `INSERT INTO knowledge_documents (id, organization_id, title, content, status, author_id)
+       VALUES ($1, $2, 'Cert Doc B', 'content B', 'published', $2) ON CONFLICT (id) DO NOTHING`,
+      [orgBKnowledgeDocId, orgBId],
+    ).catch(() => null);
 
-    // ── Autonomous agents (agent_configs) ────────────────────────────────────
-    await pool
-      .query(
-        `INSERT INTO autonomous_agents
-           (id, organization_id, name, type, status, config, permissions)
-         VALUES ($1, $2, 'Cert Agent A', 'assistant', 'active', '{}', '{}'),
-                ($3, $4, 'Cert Agent B', 'assistant', 'active', '{}', '{}')
-         ON CONFLICT (id) DO NOTHING`,
-        [crypto.randomUUID(), orgAId, crypto.randomUUID(), orgBId],
-      )
-      .catch(() => null); // table may not exist in all environments
+    // ── Autonomous agents (agent_type column, not name/type/permissions) ─────
+    await seedInTx(
+      orgAId,
+      `INSERT INTO autonomous_agents (id, organization_id, agent_type, status, config)
+       VALUES ($1, $2, 'assistant', 'active', '{}') ON CONFLICT (id) DO NOTHING`,
+      [crypto.randomUUID(), orgAId],
+    ).catch(() => null);
+    await seedInTx(
+      orgBId,
+      `INSERT INTO autonomous_agents (id, organization_id, agent_type, status, config)
+       VALUES ($1, $2, 'assistant', 'active', '{}') ON CONFLICT (id) DO NOTHING`,
+      [crypto.randomUUID(), orgBId],
+    ).catch(() => null); // table may not exist in all environments
   });
 
   afterAll(async () => {
@@ -177,84 +236,60 @@ describe.skipIf(!DATABASE_URL)('Multi-Tenant Certification', () => {
 
   describe('Row-Level Security', () => {
     it('workflow_runs: org A cannot see org B rows when RLS context is org A', async () => {
-      await setTenant(pool, orgAId);
-
-      const { rows } = await pool.query<{ organization_id: string }>(
+      const { rows } = await withAppRole(
+        orgAId,
         `SELECT organization_id FROM workflow_runs WHERE id = $1`,
         [orgBRunId],
       );
-
       expect(rows).toHaveLength(0);
     });
 
     it('workflow_runs: org A can see its own rows', async () => {
-      await setTenant(pool, orgAId);
-
-      const { rows } = await pool.query<{ id: string }>(
-        `SELECT id FROM workflow_runs WHERE id = $1`,
-        [orgARunId],
-      );
-
+      const { rows } = await withAppRole(orgAId, `SELECT id FROM workflow_runs WHERE id = $1`, [
+        orgARunId,
+      ]);
       expect(rows).toHaveLength(1);
     });
 
     it('audit_logs: org A cannot see org B logs (INSERT-only policy; SELECT blocked)', async () => {
-      // Under normal app role, SELECT on audit_logs returns 0 rows unless
-      // app.current_role = 'auditor'. Cross-tenant SELECT must always return 0.
-      await setTenant(pool, orgAId);
-
-      const { rows } = await pool
-        .query<{
-          organization_id: string;
-        }>(`SELECT organization_id FROM audit_logs WHERE organization_id = $1 LIMIT 1`, [orgBId])
-        .catch(() => ({ rows: [] as { organization_id: string }[] }));
-
+      // Under normal app role, SELECT on audit_logs returns 0 rows (INSERT-only policy).
+      const { rows } = await withAppRole(
+        orgAId,
+        `SELECT organization_id FROM audit_logs WHERE organization_id = $1 LIMIT 1`,
+        [orgBId],
+      );
       expect(rows).toHaveLength(0);
     });
 
     it('autonomous_agents (agent_configs): org A cannot see org B agents', async () => {
-      await setTenant(pool, orgAId);
-
-      const { rows } = await pool
-        .query<{
-          organization_id: string;
-        }>(`SELECT organization_id FROM autonomous_agents WHERE organization_id = $1 LIMIT 1`, [
-          orgBId,
-        ])
-        .catch(() => ({ rows: [] as { organization_id: string }[] }));
-
+      const { rows } = await withAppRole(
+        orgAId,
+        `SELECT organization_id FROM autonomous_agents WHERE organization_id = $1 LIMIT 1`,
+        [orgBId],
+      );
       expect(rows).toHaveLength(0);
     });
 
     it('knowledge_documents: org A cannot see org B documents', async () => {
-      await setTenant(pool, orgAId);
-
-      const { rows } = await pool
-        .query<{
-          organization_id: string;
-        }>(`SELECT organization_id FROM knowledge_documents WHERE id = $1`, [orgBKnowledgeDocId])
-        .catch(() => ({ rows: [] as { organization_id: string }[] }));
-
+      const { rows } = await withAppRole(
+        orgAId,
+        `SELECT organization_id FROM knowledge_documents WHERE id = $1`,
+        [orgBKnowledgeDocId],
+      );
       expect(rows).toHaveLength(0);
     });
 
     it('approvals: org A cannot see org B pending approvals', async () => {
-      await setTenant(pool, orgAId);
-
-      const { rows } = await pool.query<{ id: string }>(`SELECT id FROM approvals WHERE id = $1`, [
+      const { rows } = await withAppRole(orgAId, `SELECT id FROM approvals WHERE id = $1`, [
         orgBApprovalId,
       ]);
-
       expect(rows).toHaveLength(0);
     });
 
     it('approvals: org A can see its own pending approvals', async () => {
-      await setTenant(pool, orgAId);
-
-      const { rows } = await pool.query<{ id: string }>(`SELECT id FROM approvals WHERE id = $1`, [
+      const { rows } = await withAppRole(orgAId, `SELECT id FROM approvals WHERE id = $1`, [
         orgAApprovalId,
       ]);
-
       expect(rows).toHaveLength(1);
     });
   });
@@ -274,7 +309,7 @@ describe.skipIf(!DATABASE_URL)('Multi-Tenant Certification', () => {
         engine.startWorkflow({
           organizationId: orgAId,
           workflowId: orgBWorkflowId, // belongs to org B
-          triggeredBy: 'cert-test',
+          triggeredBy: crypto.randomUUID(),
           triggerData: {},
           correlationId: crypto.randomUUID(),
         }),
@@ -287,7 +322,7 @@ describe.skipIf(!DATABASE_URL)('Multi-Tenant Certification', () => {
       const run = await engine.startWorkflow({
         organizationId: orgAId,
         workflowId: orgAWorkflowId,
-        triggeredBy: 'cert-test',
+        triggeredBy: crypto.randomUUID(),
         triggerData: {},
         correlationId: crypto.randomUUID(),
       });
@@ -428,53 +463,33 @@ describe.skipIf(!DATABASE_URL)('Multi-Tenant Certification', () => {
 
   describe('API-Layer Isolation', () => {
     it('JWT for org A cannot fetch org B resources (RLS context enforcement)', async () => {
-      // Simulate what the TenantContextMiddleware does:
-      // it reads the organizationId from the JWT and sets it as the RLS context.
-      // With org A's JWT, we set tenant = orgA, then query for orgB's run.
-
-      const orgAJwtOrgId = orgAId; // value extracted from JWT by TenantContextMiddleware
-
-      await setTenant(pool, orgAJwtOrgId); // replicates middleware behaviour
-
-      const { rows } = await pool.query<{ id: string }>(
-        `SELECT id FROM workflow_runs WHERE id = $1`,
-        [orgBRunId],
-      );
-
+      // Simulate TenantContextMiddleware: reads organizationId from JWT, sets RLS context.
+      // All queries run as non-superuser so FORCE RLS applies.
+      const { rows } = await withAppRole(orgAId, `SELECT id FROM workflow_runs WHERE id = $1`, [
+        orgBRunId,
+      ]);
       // RLS must block the cross-tenant read even at the DB layer
       expect(rows).toHaveLength(0);
     });
 
     it('organizationId in JWT is validated against RLS context (no privilege escalation)', async () => {
-      // An attacker supplies a valid JWT for org A but tries to inject org B's id
-      // into the query predicate.  The RLS context is derived solely from the
-      // validated JWT claim; the attacker-supplied predicate is irrelevant
-      // because RLS filters rows regardless of application-level WHERE clauses.
-
-      const jwtOrgId = orgAId; // the legitimate claim
-      const attackerOrgId = orgBId; // the org the attacker wants to access
-
-      await setTenant(pool, jwtOrgId); // middleware sets context from JWT
-
       // Even with an explicit WHERE on the attacker's org, RLS blocks the read
-      const { rows } = await pool.query<{ id: string }>(
+      // because the tenant context comes from the JWT, not the query predicate.
+      const attackerOrgId = orgBId;
+      const { rows } = await withAppRole(
+        orgAId, // jwtOrgId — what the middleware sets
         `SELECT id FROM workflow_runs WHERE organization_id = $1`,
         [attackerOrgId],
       );
-
       expect(rows).toHaveLength(0);
     });
 
     it('setting RLS context to org B grants access only to org B resources', async () => {
-      await setTenant(pool, orgBId);
-
-      const { rows } = await pool.query<{ id: string; organization_id: string }>(
-        `SELECT id, organization_id
-         FROM workflow_runs
-         WHERE organization_id IN ($1, $2)`,
+      const { rows } = await withAppRole(
+        orgBId,
+        `SELECT id, organization_id FROM workflow_runs WHERE organization_id IN ($1, $2)`,
         [orgAId, orgBId],
       );
-
       // Every row returned must belong to org B
       expect(rows.length).toBeGreaterThan(0);
       expect(rows.every((r) => r.organization_id === orgBId)).toBe(true);

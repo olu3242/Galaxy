@@ -82,6 +82,22 @@ import * as migration080 from './migrations/080_loop_instances_phase.js';
 import * as migration081 from './migrations/081_agent_lifecycle_traces.js';
 import * as migration083 from './migrations/083_shared_org_memory.js';
 import * as migration084 from './migrations/084_loop_telemetry.js';
+import * as migration085 from './migrations/085_force_rls_all_tenant_tables.js';
+import * as migration086 from './migrations/086_workflow_definitions.js';
+import * as migration087 from './migrations/087_workstream_checkpoints.js';
+import * as migration088 from './migrations/088_workstream_telemetry.js';
+import * as migration089 from './migrations/089_aof_observations.js';
+import * as migration090 from './migrations/090_aof_decisions.js';
+import * as migration091 from './migrations/091_aof_predictions.js';
+import * as migration092 from './migrations/092_aof_optimizations.js';
+import * as migration093 from './migrations/093_aof_learning_records.js';
+import * as migration094 from './migrations/094_aof_certifications.js';
+import * as migration095 from './migrations/095_cognitive_engine.js';
+import * as migration096 from './migrations/096_fix_billing_usage_schema.js';
+import * as migration097 from './migrations/097_chaos_markers.js';
+import * as migration098 from './migrations/098_members_platform_audit_logs.js';
+import * as migration099 from './migrations/099_support_notes_and_entitlements.js';
+import * as migration100 from './migrations/100_tenant_lifecycle_and_limits.js';
 
 interface Migration {
   up: (pool: Pool) => Promise<void>;
@@ -172,6 +188,22 @@ const migrations: { name: string; migration: Migration }[] = [
   { name: '081_agent_lifecycle_traces', migration: migration081 },
   { name: '083_shared_org_memory', migration: migration083 },
   { name: '084_loop_telemetry', migration: migration084 },
+  { name: '085_force_rls_all_tenant_tables', migration: migration085 },
+  { name: '086_workflow_definitions', migration: migration086 },
+  { name: '087_workstream_checkpoints', migration: migration087 },
+  { name: '088_workstream_telemetry', migration: migration088 },
+  { name: '089_aof_observations', migration: migration089 },
+  { name: '090_aof_decisions', migration: migration090 },
+  { name: '091_aof_predictions', migration: migration091 },
+  { name: '092_aof_optimizations', migration: migration092 },
+  { name: '093_aof_learning_records', migration: migration093 },
+  { name: '094_aof_certifications', migration: migration094 },
+  { name: '095_cognitive_engine', migration: migration095 },
+  { name: '096_fix_billing_usage_schema', migration: migration096 },
+  { name: '097_chaos_markers', migration: migration097 },
+  { name: '098_members_platform_audit_logs', migration: migration098 },
+  { name: '099_support_notes_and_entitlements', migration: migration099 },
+  { name: '100_tenant_lifecycle_and_limits', migration: migration100 },
 ];
 
 async function ensureMigrationsTable(pool: Pool): Promise<void> {

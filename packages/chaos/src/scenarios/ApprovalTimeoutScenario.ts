@@ -17,25 +17,22 @@ export class ApprovalTimeoutScenario implements ChaosScenario {
 
     const result = await context.pool.query<{ id: string }>(
       `INSERT INTO approvals (
-         id, organization_id, workflow_run_id, step_id, approver_id,
-         status, due_at, metadata, created_at, updated_at
+         id, organization_id, title, requested_by,
+         status, due_at, data, correlation_id, created_at, updated_at
        ) VALUES (
          gen_random_uuid(),
          $1,
-         $2,
-         $3,
-         $4,
+         '__chaos_approval__',
+         gen_random_uuid(),
          'pending',
          NOW() + INTERVAL '1 second',
-         $5,
+         $2,
+         gen_random_uuid(),
          NOW(),
          NOW()
        ) RETURNING id`,
       [
         context.organizationId,
-        '00000000-0000-0000-0000-000000000000',
-        '__chaos_step__',
-        '__chaos_approver__',
         JSON.stringify({ __chaos: true, scenario: this.name, injectedAt: context.injectedAt }),
       ],
     );

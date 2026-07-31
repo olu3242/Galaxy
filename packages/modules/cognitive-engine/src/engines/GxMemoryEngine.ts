@@ -110,22 +110,22 @@ export class GxMemoryEngine {
     let idx = 3;
 
     if (input.scope !== undefined) {
-      conditions.push(`scope = ${String(idx)}`);
+      conditions.push(`scope = $${String(idx)}`);
       params.push(input.scope);
       idx++;
     }
     if (input.key !== undefined) {
-      conditions.push(`key = ${String(idx)}`);
+      conditions.push(`key = $${String(idx)}`);
       params.push(input.key);
       idx++;
     }
     if (input.minRelevance !== undefined) {
-      conditions.push(`relevance_score >= ${String(idx)}`);
+      conditions.push(`relevance_score >= $${String(idx)}`);
       params.push(input.minRelevance);
       idx++;
     }
 
-    params.push(input.limit ?? 20);
+    const limit = input.limit ?? 20;
 
     const result = await this.pool.query<{
       id: string;
@@ -140,7 +140,7 @@ export class GxMemoryEngine {
       updated_at: string;
     }>(
       `SELECT * FROM agent_memories WHERE ${conditions.join(' AND ')}
-       ORDER BY relevance_score DESC, updated_at DESC LIMIT ${String(idx)}`,
+       ORDER BY relevance_score DESC, updated_at DESC LIMIT ${String(limit)}`,
       params,
     );
 

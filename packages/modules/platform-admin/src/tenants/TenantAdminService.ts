@@ -57,7 +57,7 @@ export class TenantAdminService {
     const result = await this.pool.query<OrganizationRow>(
       `SELECT o.id, o.name, o.slug,
               COALESCE(o.status, 'active') as status,
-              COALESCE(o.plan, 'free') as plan,
+              COALESCE(o.tier, 'free') as plan,
               o.created_at,
               (SELECT COUNT(*) FROM memberships m WHERE m.organization_id = o.id) as member_count,
               (SELECT COUNT(*) FROM workflows w WHERE w.organization_id = o.id) as workflow_count
@@ -74,7 +74,7 @@ export class TenantAdminService {
     const result = await this.pool.query<OrganizationRow>(
       `SELECT o.id, o.name, o.slug,
               COALESCE(o.status, 'active') as status,
-              COALESCE(o.plan, 'free') as plan,
+              COALESCE(o.tier, 'free') as plan,
               o.created_at,
               (SELECT COUNT(*) FROM memberships m WHERE m.organization_id = o.id) as member_count,
               (SELECT COUNT(*) FROM workflows w WHERE w.organization_id = o.id) as workflow_count
@@ -97,7 +97,7 @@ export class TenantAdminService {
     }>(
       `UPDATE organizations SET status = 'suspended', updated_at = NOW()
        WHERE id = $1
-       RETURNING id, name, slug, COALESCE(status, 'suspended') as status, COALESCE(plan, 'free') as plan, created_at`,
+       RETURNING id, name, slug, COALESCE(status, 'suspended') as status, COALESCE(tier, 'free') as plan, created_at`,
       [tenantId],
     );
 
@@ -126,7 +126,7 @@ export class TenantAdminService {
     }>(
       `UPDATE organizations SET status = 'active', updated_at = NOW()
        WHERE id = $1
-       RETURNING id, name, slug, COALESCE(status, 'active') as status, COALESCE(plan, 'free') as plan, created_at`,
+       RETURNING id, name, slug, COALESCE(status, 'active') as status, COALESCE(tier, 'free') as plan, created_at`,
       [tenantId],
     );
 

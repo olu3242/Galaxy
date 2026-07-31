@@ -62,6 +62,25 @@ export class RevenueOperationsService {
     return result.rows.map((r) => this.mapSnapshot(r));
   }
 
+  async getLatestSnapshot(): Promise<RevenueSnapshot | null> {
+    const result = await this.pool.query<RevenueSnapshotRow>(
+      `SELECT * FROM revenue_snapshots ORDER BY snapshot_date DESC LIMIT 1`,
+    );
+    const row = result.rows[0];
+    return row ? this.mapSnapshot(row) : null;
+  }
+
+  async getSnapshotHistory(opts?: { limit?: number }): Promise<RevenueSnapshot[]> {
+    return this.listSnapshots(opts);
+  }
+
+  async getMrrTrend(opts?: {
+    limit?: number;
+  }): Promise<{ mrrCents: number; snapshotDate: string }[]> {
+    const snapshots = await this.listSnapshots(opts);
+    return snapshots.map((s) => ({ mrrCents: s.mrrCents, snapshotDate: s.snapshotDate }));
+  }
+
   async calculateCurrentMrr(): Promise<number> {
     const result = await this.pool.query<{ mrr: string }>(
       `SELECT COALESCE(SUM(p.price_cents_monthly), 0) AS mrr

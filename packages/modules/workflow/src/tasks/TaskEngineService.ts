@@ -9,8 +9,8 @@ interface TaskRow {
   description: string | null;
   status: string;
   priority: string;
-  assignee_id: string | null;
-  reporter_id: string;
+  assigned_to: string | null;
+  created_by: string;
   due_at: string | null;
   completed_at: string | null;
   correlation_id: string;
@@ -26,14 +26,14 @@ function rowToTask(row: TaskRow): Task {
     title: row.title,
     status: row.status as TaskStatus,
     priority: row.priority as Task['priority'],
-    reporterId: row.reporter_id,
+    reporterId: row.created_by,
     correlationId: row.correlation_id,
     data: row.data,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     ...(row.workflow_run_id !== null ? { workflowRunId: row.workflow_run_id } : {}),
     ...(row.description !== null ? { description: row.description } : {}),
-    ...(row.assignee_id !== null ? { assigneeId: row.assignee_id } : {}),
+    ...(row.assigned_to !== null ? { assigneeId: row.assigned_to } : {}),
     ...(row.due_at !== null ? { dueAt: row.due_at } : {}),
     ...(row.completed_at !== null ? { completedAt: row.completed_at } : {}),
   };
@@ -54,7 +54,7 @@ export class TaskEngineService {
     const result = await this.pool.query<TaskRow>(
       `INSERT INTO tasks
          (organization_id, workflow_run_id, title, description, status, priority,
-          assignee_id, reporter_id, due_at, data, correlation_id)
+          assigned_to, created_by, due_at, data, correlation_id)
        VALUES ($1, $2, $3, $4, 'pending', $5, $6, $7, $8, $9, $10)
        RETURNING *`,
       [
@@ -100,14 +100,14 @@ export class TaskEngineService {
     if (!prev) throw new Error(`Task not found: ${taskId}`);
     const newStatus = prev.status === 'pending' ? 'in_progress' : prev.status;
     const result = await this.pool.query<TaskRow>(
-      `UPDATE tasks SET assignee_id = $3, status = $4, updated_at = NOW()
+      `UPDATE tasks SET assigned_to = $3, status = $4, updated_at = NOW()
        WHERE organization_id = $1 AND id = $2 RETURNING *`,
       [organizationId, taskId, assigneeId, newStatus],
     );
     const row = result.rows[0];
     if (!row) throw new Error(`Task not found: ${taskId}`);
     await this.pool.query(
-      `INSERT INTO task_assignments (organization_id, task_id, assignee_id, assigned_by)
+      `INSERT INTO task_assignments (organization_id, task_id, member_id, assigned_by)
        VALUES ($1, $2, $3, $4)`,
       [organizationId, taskId, assigneeId, actorId],
     );
@@ -162,7 +162,7 @@ export class TaskEngineService {
     const params: unknown[] = [organizationId];
     let idx = 2;
     if (opts?.assigneeId !== undefined) {
-      conditions.push(`assignee_id = $${String(idx)}`);
+      conditions.push(`assigned_to = $${String(idx)}`);
       params.push(opts.assigneeId);
       idx++;
     }

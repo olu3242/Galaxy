@@ -41,7 +41,7 @@ export class OrganizationRegistryService {
     const result = await this.pool.query<OrgRow>(
       `SELECT o.id, o.name, o.slug,
               COALESCE(o.status, 'active') AS status,
-              COALESCE(o.plan, 'free') AS plan,
+              COALESCE(o.tier, 'free') AS plan,
               o.created_at,
               (SELECT COUNT(*) FROM memberships m WHERE m.organization_id = o.id) AS member_count
        FROM organizations o
@@ -83,7 +83,7 @@ export class OrganizationRegistryService {
     const result = await this.pool.query<OrgRow>(
       `SELECT o.id, o.name, o.slug,
               COALESCE(o.status, 'active') AS status,
-              COALESCE(o.plan, 'free') AS plan,
+              COALESCE(o.tier, 'free') AS plan,
               o.created_at,
               (SELECT COUNT(*) FROM memberships m WHERE m.organization_id = o.id) AS member_count
        FROM organizations o

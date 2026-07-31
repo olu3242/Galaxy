@@ -145,6 +145,7 @@ jobs:
         run: pnpm --filter @galaxy/api test:ci
         env:
           NODE_ENV: test
+          DATABASE_URL: postgresql://galaxy:galaxy_test@localhost:5432/galaxy_test
           DATABASE_URL_TEST: postgresql://galaxy:galaxy_test@localhost:5432/galaxy_test
           REDIS_URL: redis://localhost:6379
           JWT_SECRET: test-jwt-secret-minimum-32-characters-long
