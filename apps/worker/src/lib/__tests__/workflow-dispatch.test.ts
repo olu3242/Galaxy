@@ -83,15 +83,15 @@ describe('workflow trigger discovery bridge', () => {
 
     expect(match.workflowId).toBe(INSTANTIATED);
     expect(match.matchedTemplateId).toBe(TEMPLATE);
-    const calls = (client.query as ReturnType<typeof vi.fn>).mock.calls as [string, unknown[]][];
+    const calls = (client.query as ReturnType<typeof vi.fn>).mock.calls as [string, unknown[]?][];
     expect(calls.some(([sql]) => sql.includes('INSERT INTO workflows'))).toBe(true);
     expect(
       calls.some(([, params]) =>
-        params.some(
+        params?.some(
           (param) =>
             param === 'leave_request' ||
             (Array.isArray(param) && param.includes('leave_request')),
-        ),
+        ) ?? false,
       ),
     ).toBe(true);
   });
