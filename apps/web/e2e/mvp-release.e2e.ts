@@ -45,6 +45,33 @@ test.describe('MVP release readiness', () => {
     expect(body.error).toContain('Tenant mismatch');
   });
 
+  test('authenticated system readiness certifies critical MVP dependencies', async ({
+    request,
+    accessToken,
+  }) => {
+    const res = await request.get(`${API}/api/v1/system/readiness`, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+
+    expect(res.status()).toBe(200);
+    const body = (await res.json()) as {
+      ready: boolean;
+      checks: {
+        database: boolean;
+        workflowReplaySafety: boolean;
+        redisConfigured: boolean;
+        whatsappConfigured: boolean;
+        aiConfigured: boolean;
+        jwtConfigured: boolean;
+      };
+      timestamp: string;
+    };
+
+    expect(body.ready).toBe(true);
+    expect(Object.values(body.checks).every(Boolean)).toBe(true);
+    expect(Number.isNaN(Date.parse(body.timestamp))).toBe(false);
+  });
+
   test('liveness remains available for deployment probes', async ({ request }) => {
     const res = await request.get(`${API}/health`);
     expect(res.status()).toBe(200);
