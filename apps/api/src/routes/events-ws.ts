@@ -1,5 +1,4 @@
 import type { FastifyInstance } from 'fastify';
-import type { SocketStream } from '@fastify/websocket';
 import type WebSocket from 'ws';
 
 const POLL_INTERVAL_MS = 3000;
@@ -30,8 +29,7 @@ interface GalaxyEventsRow {
  * The connection closes automatically after MAX_DURATION_MS.
  */
 export async function eventsWsRoutes(fastify: FastifyInstance): Promise<void> {
-  fastify.get('/events/ws', { websocket: true }, (connection: SocketStream, request) => {
-    const socket = connection.socket as WebSocket;
+  fastify.get('/events/ws', { websocket: true }, (socket: WebSocket, request) => {
     const query = request.query as { organizationId?: string; since?: string };
     const { organizationId, since } = query;
 
