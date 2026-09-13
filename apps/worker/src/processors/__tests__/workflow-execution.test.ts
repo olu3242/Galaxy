@@ -45,7 +45,7 @@ function makePool(state: MockState = {}): Pool {
   const currentStepId = state.currentStepId ?? null;
   const hasSecondStep = state.hasSecondStep ?? true;
 
-  const query = vi.fn(async (sql: string): Promise<QueryResult> => {
+  const query = vi.fn(async (sql: string): Promise<QueryResult<object>> => {
     if (sql.includes('FROM workflow_runs') && sql.includes('SELECT id, workflow_id')) {
       return ok([
         {
@@ -57,16 +57,24 @@ function makePool(state: MockState = {}): Pool {
         },
       ]);
     }
-    if (sql.includes('FROM workflow_steps') && sql.includes('ORDER BY step_order ASC') && sql.includes('LIMIT 1')) {
+    if (
+      sql.includes('FROM workflow_steps') &&
+      sql.includes('ORDER BY step_order ASC') &&
+      sql.includes('LIMIT 1')
+    ) {
       if (sql.includes('step_order >')) {
         return hasSecondStep
           ? ok([{ id: STEP_2, step_type: 'approval', step_order: 2, next_step_id: null }])
           : ok([]);
       }
-      return ok([{ id: STEP_1, step_type: 'manual_task', step_order: 1, next_step_id: null }]);
+      return ok([
+        { id: STEP_1, step_type: 'manual_task', step_order: 1, next_step_id: null },
+      ]);
     }
     if (sql.includes('FROM workflow_steps') && sql.includes('AND id = $3')) {
-      return ok([{ id: STEP_1, step_type: 'manual_task', step_order: 1, next_step_id: null }]);
+      return ok([
+        { id: STEP_1, step_type: 'manual_task', step_order: 1, next_step_id: null },
+      ]);
     }
     if (sql.includes('FROM memberships')) return ok([]);
     return ok([]);
@@ -90,13 +98,6 @@ function makeJob(jobName: string): Job {
   } as unknown as Job;
 }
 
-function clientQuery(pool: Pool): ReturnType<typeof vi.fn> {
-  const connectMock = pool.connect as ReturnType<typeof vi.fn>;
-  const client = connectMock.mock.results[0]?.value as Promise<PoolClient> | undefined;
-  if (!client) throw new Error('Client was not created');
-  throw new Error('Use getClientQuery after processor execution');
-}
-
 async function getClientQuery(pool: Pool): Promise<ReturnType<typeof vi.fn>> {
   const connectMock = pool.connect as ReturnType<typeof vi.fn>;
   const resolvedClient = (await connectMock.mock.results[0]?.value) as PoolClient | undefined;
@@ -111,7 +112,9 @@ describe('workflow-execution runtime convergence', () => {
 
     const query = await getClientQuery(pool);
     const calls = query.mock.calls as [string, unknown[]][];
-    expect(calls.some(([sql]) => sql.includes("SET status = 'running', current_step_id = $3"))).toBe(true);
+    expect(
+      calls.some(([sql]) => sql.includes("SET status = 'running', current_step_id = $3")),
+    ).toBe(true);
     expect(calls.some(([sql]) => sql.includes('INSERT INTO workflow_run_steps'))).toBe(true);
   });
 
@@ -121,7 +124,13 @@ describe('workflow-execution runtime convergence', () => {
 
     const query = await getClientQuery(pool);
     const calls = query.mock.calls as [string, unknown[]][];
-    expect(calls.some(([sql]) => sql.includes("SET status = 'completed', completed_at = NOW()") && sql.includes('workflow_run_steps'))).toBe(true);
+    expect(
+      calls.some(
+        ([sql]) =>
+          sql.includes("SET status = 'completed', completed_at = NOW()") &&
+          sql.includes('workflow_run_steps'),
+      ),
+    ).toBe(true);
     expect(calls.some(([sql]) => sql.includes('SET current_step_id = $3'))).toBe(true);
     expect(calls.some(([, params]) => params?.includes(STEP_2))).toBe(true);
   });
@@ -132,7 +141,9 @@ describe('workflow-execution runtime convergence', () => {
 
     const query = await getClientQuery(pool);
     const calls = query.mock.calls as [string, unknown[]][];
-    expect(calls.some(([sql]) => sql.includes("SET status = 'completed', current_step_id = NULL"))).toBe(true);
+    expect(
+      calls.some(([sql]) => sql.includes("SET status = 'completed', current_step_id = NULL")),
+    ).toBe(true);
     expect(calls.some(([, params]) => params?.includes('workflow.completed'))).toBe(true);
   });
 
