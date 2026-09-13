@@ -1,0 +1,37 @@
+name: Web Lint Fix
+
+on:
+  push:
+    branches:
+      - fix/post-merge-security-audit
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/post-merge-security-audit
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Fix web lint errors
+        run: pnpm exec eslint apps/web/lib/api/hooks.ts apps/web/lib/assistant/types.ts --fix
+      - name: Commit fixes
+        run: |
+          if git diff --quiet apps/web/lib/api/hooks.ts apps/web/lib/assistant/types.ts; then
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add apps/web/lib/api/hooks.ts apps/web/lib/assistant/types.ts
+          git commit --no-verify -m "style(web): fix Next 15 build lint errors"
+          git push origin HEAD:fix/post-merge-security-audit
