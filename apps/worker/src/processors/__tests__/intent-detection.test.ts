@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { Job } from 'bullmq';
+import type { Job, Queue as BullQueue } from 'bullmq';
 import type { Pool, PoolClient, QueryResult } from 'pg';
 
 const mocks = vi.hoisted(() => ({
@@ -18,13 +18,9 @@ vi.mock('ioredis', () => ({
   Redis: vi.fn().mockImplementation(() => ({})),
 }));
 
-vi.mock('bullmq', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('bullmq')>();
-  return {
-    ...actual,
-    Queue: vi.fn().mockImplementation(() => ({ add: mocks.queueAdd })),
-  };
-});
+vi.mock('bullmq', () => ({
+  Queue: vi.fn().mockImplementation(() => ({ add: mocks.queueAdd } satisfies Pick<BullQueue, 'add'>)),
+}));
 
 vi.mock('@galaxy/communication', () => ({
   WhatsAppProvider: vi.fn().mockImplementation(() => ({ send: vi.fn().mockResolvedValue(undefined) })),
@@ -53,9 +49,9 @@ function ok<T extends object>(rows: T[]): QueryResult<T> {
 }
 
 function makePool(): Pool {
-  const query = vi.fn(async (sql: string): Promise<QueryResult<object>> => {
-    if (sql.includes('INSERT INTO workflow_runs')) return ok([{ id: RUN }]);
-    return ok([]);
+  const query = vi.fn((sql: string): Promise<QueryResult<object>> => {
+    if (sql.includes('INSERT INTO workflow_runs')) return Promise.resolve(ok([{ id: RUN }]));
+    return Promise.resolve(ok([]));
   });
   const client = { query, release: vi.fn() } as unknown as PoolClient;
   return {
