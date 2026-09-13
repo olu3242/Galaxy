@@ -30,7 +30,7 @@ const WORKFLOW_ID = '00000000-0000-0000-0000-000000000003';
 const STEP_1 = '00000000-0000-0000-0000-000000000004';
 const STEP_2 = '00000000-0000-0000-0000-000000000005';
 
-function ok<T extends object>(rows: T[]): QueryResult<T> {
+function ok<T extends Record<string, unknown>>(rows: T[]): QueryResult<T> {
   return { rows, rowCount: rows.length, command: 'SELECT', oid: 0, fields: [] };
 }
 
@@ -45,9 +45,10 @@ function makePool(state: MockState = {}): Pool {
   const currentStepId = state.currentStepId ?? null;
   const hasSecondStep = state.hasSecondStep ?? true;
 
-  const query = vi.fn(async (sql: string): Promise<QueryResult<object>> => {
+  const query = vi.fn((sql: string): Promise<QueryResult<Record<string, unknown>>> => {
+    let result: QueryResult<Record<string, unknown>>;
     if (sql.includes('FROM workflow_runs') && sql.includes('SELECT id, workflow_id')) {
-      return ok([
+      result = ok([
         {
           id: RUN_ID,
           workflow_id: WORKFLOW_ID,
@@ -56,28 +57,28 @@ function makePool(state: MockState = {}): Pool {
           trigger_data: {},
         },
       ]);
-    }
-    if (
+    } else if (
       sql.includes('FROM workflow_steps') &&
       sql.includes('ORDER BY step_order ASC') &&
       sql.includes('LIMIT 1')
     ) {
       if (sql.includes('step_order >')) {
-        return hasSecondStep
+        result = hasSecondStep
           ? ok([{ id: STEP_2, step_type: 'approval', step_order: 2, next_step_id: null }])
           : ok([]);
+      } else {
+        result = ok([
+          { id: STEP_1, step_type: 'manual_task', step_order: 1, next_step_id: null },
+        ]);
       }
-      return ok([
+    } else if (sql.includes('FROM workflow_steps') && sql.includes('AND id = $3')) {
+      result = ok([
         { id: STEP_1, step_type: 'manual_task', step_order: 1, next_step_id: null },
       ]);
+    } else {
+      result = ok([]);
     }
-    if (sql.includes('FROM workflow_steps') && sql.includes('AND id = $3')) {
-      return ok([
-        { id: STEP_1, step_type: 'manual_task', step_order: 1, next_step_id: null },
-      ]);
-    }
-    if (sql.includes('FROM memberships')) return ok([]);
-    return ok([]);
+    return Promise.resolve(result);
   });
 
   const client = {
