@@ -108,18 +108,16 @@ describe('workflow step execution dispatcher', () => {
 
   it('selects a branch using persisted workflow conditions', async () => {
     const q = queues();
-    const query = vi
-      .fn()
-      .mockResolvedValue(
-        ok([
-          {
-            condition_type: 'field_gt',
-            field: 'amount',
-            value: 100,
-            next_step_id: '00000000-0000-0000-0000-000000000099',
-          },
-        ]),
-      );
+    const query = vi.fn().mockResolvedValue(
+      ok([
+        {
+          condition_type: 'field_gt',
+          field: 'amount',
+          value: 100,
+          next_step_id: '00000000-0000-0000-0000-000000000099',
+        },
+      ]),
+    );
     const client = { query } as unknown as PoolClient;
     const execute = createStepExecutor(q);
     const result = await execute(client, step('branch'), context);
