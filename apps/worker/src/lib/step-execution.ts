@@ -21,12 +21,19 @@ export interface StepExecutionContext {
 }
 
 export type StepExecutionResult =
-  | { disposition: 'wait'; engine: 'task' | 'approval' | 'agent' }
-  | { disposition: 'advance'; engine: 'notification' | 'branch' | 'automation'; nextStepId?: string }
+  | { disposition: 'wait'; engine: 'task' | 'approval' | 'agent' | 'notification' }
+  | { disposition: 'advance'; engine: 'branch' | 'automation'; nextStepId?: string }
   | { disposition: 'scheduled'; engine: 'delay'; delayMs: number };
 
+interface QueueJobOptions {
+  delay?: number;
+  attempts?: number;
+  backoff?: { type: 'exponential'; delay: number };
+  jobId?: string;
+}
+
 interface QueueLike {
-  add(name: string, data: Record<string, unknown>, opts?: { delay?: number }): Promise<unknown>;
+  add(name: string, data: Record<string, unknown>, opts?: QueueJobOptions): Promise<unknown>;
 }
 
 export interface StepExecutionQueues {
@@ -72,65 +79,48 @@ function readField(data: Record<string, unknown>, path: string): unknown {
 
 function conditionMatches(type: string, actual: unknown, expected: unknown): boolean {
   switch (type) {
-    case 'field_equals':
-      return actual === expected;
-    case 'field_gt':
-      return typeof actual === 'number' && typeof expected === 'number' && actual > expected;
-    case 'field_lt':
-      return typeof actual === 'number' && typeof expected === 'number' && actual < expected;
-    case 'field_contains':
-      return typeof actual === 'string' && typeof expected === 'string' && actual.includes(expected);
-    default:
-      return false;
+    case 'field_equals': return actual === expected;
+    case 'field_gt': return typeof actual === 'number' && typeof expected === 'number' && actual > expected;
+    case 'field_lt': return typeof actual === 'number' && typeof expected === 'number' && actual < expected;
+    case 'field_contains': return typeof actual === 'string' && typeof expected === 'string' && actual.includes(expected);
+    default: return false;
   }
 }
 
-async function resolveBranch(
-  client: PoolClient,
-  step: ExecutableWorkflowStep,
-  triggerData: Record<string, unknown>,
-): Promise<string | undefined> {
-  const result = await client.query<{
-    condition_type: string;
-    field: string | null;
-    value: unknown;
-    next_step_id: string | null;
-  }>(
+async function resolveBranch(client: PoolClient, step: ExecutableWorkflowStep, triggerData: Record<string, unknown>): Promise<string | undefined> {
+  const result = await client.query<{ condition_type: string; field: string | null; value: unknown; next_step_id: string | null }>(
     `SELECT condition_type, field, value, next_step_id
-       FROM workflow_conditions
-      WHERE step_id = $1
-      ORDER BY created_at ASC`,
+       FROM workflow_conditions WHERE step_id = $1 ORDER BY created_at ASC`,
     [step.id],
   );
-
   for (const condition of result.rows) {
     if (!condition.field || !condition.next_step_id) continue;
-    if (conditionMatches(condition.condition_type, readField(triggerData, condition.field), condition.value)) {
-      return condition.next_step_id;
-    }
+    if (conditionMatches(condition.condition_type, readField(triggerData, condition.field), condition.value)) return condition.next_step_id;
   }
   return step.next_step_id ?? undefined;
 }
 
+function retryOptions(jobId: string): QueueJobOptions {
+  return { attempts: 3, backoff: { type: 'exponential', delay: 1000 }, jobId };
+}
+
 export function createStepExecutor(queues: StepExecutionQueues = queueSet()) {
-  return async (
-    client: PoolClient,
-    step: ExecutableWorkflowStep,
-    context: StepExecutionContext,
-  ): Promise<StepExecutionResult> => {
+  return async (client: PoolClient, step: ExecutableWorkflowStep, context: StepExecutionContext): Promise<StepExecutionResult> => {
     const config = step.config ?? {};
 
     switch (step.step_type) {
       case 'manual_task':
       case 'task': {
+        const description = stringValue(config.description);
+        const assigneeId = stringValue(config.assigneeId);
         const taskEngine = new TaskEngineService(poolAdapter(client));
         await taskEngine.createTask({
           organizationId: context.organizationId,
           workflowRunId: context.workflowRunId,
           title: stringValue(config.title) ?? step.name,
-          ...(stringValue(config.description) ? { description: stringValue(config.description) } : {}),
+          ...(description ? { description } : {}),
           priority: (stringValue(config.priority) as 'low' | 'medium' | 'high' | 'urgent' | undefined) ?? 'medium',
-          ...(stringValue(config.assigneeId) ? { assigneeId: stringValue(config.assigneeId) } : {}),
+          ...(assigneeId ? { assigneeId } : {}),
           reporterId: stringValue(config.reporterId) ?? context.actorId,
           data: { ...config, workflowStepId: step.id },
           correlationId: context.correlationId,
@@ -141,6 +131,10 @@ export function createStepExecutor(queues: StepExecutionQueues = queueSet()) {
       case 'approval': {
         const assignedTo = stringArray(config.assignedTo);
         if (assignedTo.length === 0) throw new Error(`Approval step ${step.id} requires config.assignedTo`);
+        const currency = stringValue(config.currency);
+        const deadline = stringValue(config.deadline);
+        const escalateTo = stringValue(config.escalateTo);
+        const timeoutAt = stringValue(config.timeoutAt);
         const approvals = new ApprovalRuntimeService(poolAdapter(client));
         await approvals.request({
           organizationId: context.organizationId,
@@ -152,10 +146,10 @@ export function createStepExecutor(queues: StepExecutionQueues = queueSet()) {
           requestedBy: stringValue(config.requestedBy) ?? context.actorId,
           assignedTo,
           ...(typeof config.amount === 'number' ? { amount: config.amount } : {}),
-          ...(stringValue(config.currency) ? { currency: stringValue(config.currency) } : {}),
-          ...(stringValue(config.deadline) ? { deadline: stringValue(config.deadline) } : {}),
-          ...(stringValue(config.escalateTo) ? { escalateTo: stringValue(config.escalateTo) } : {}),
-          ...(stringValue(config.timeoutAt) ? { timeoutAt: stringValue(config.timeoutAt) } : {}),
+          ...(currency ? { currency } : {}),
+          ...(deadline ? { deadline } : {}),
+          ...(escalateTo ? { escalateTo } : {}),
+          ...(timeoutAt ? { timeoutAt } : {}),
           correlationId: context.correlationId,
         });
         return { disposition: 'wait', engine: 'approval' };
@@ -172,7 +166,7 @@ export function createStepExecutor(queues: StepExecutionQueues = queueSet()) {
           correlationId: context.correlationId,
           workflowRunId: context.workflowRunId,
           workflowStepId: step.id,
-        });
+        }, retryOptions(`workflow:${context.workflowRunId}:${step.id}:agent`));
         return { disposition: 'wait', engine: 'agent' };
       }
 
@@ -187,8 +181,8 @@ export function createStepExecutor(queues: StepExecutionQueues = queueSet()) {
           correlationId: context.correlationId,
           workflowRunId: context.workflowRunId,
           workflowStepId: step.id,
-        });
-        return { disposition: 'advance', engine: 'notification' };
+        }, retryOptions(`workflow:${context.workflowRunId}:${step.id}:notification`));
+        return { disposition: 'wait', engine: 'notification' };
       }
 
       case 'delay': {
@@ -197,8 +191,9 @@ export function createStepExecutor(queues: StepExecutionQueues = queueSet()) {
           jobName: 'resume-step', organizationId: context.organizationId,
           runId: context.workflowRunId, completedStepId: step.id,
           actorId: context.actorId, correlationId: context.correlationId,
+          idempotencyKey: `workflow:${context.workflowRunId}:${step.id}:delay`,
           outcome: { engine: 'delay', status: 'elapsed' },
-        }, { delay: delayMs });
+        }, { ...retryOptions(`workflow:${context.workflowRunId}:${step.id}:delay`), delay: delayMs });
         return { disposition: 'scheduled', engine: 'delay', delayMs };
       }
 
@@ -215,15 +210,15 @@ export function createStepExecutor(queues: StepExecutionQueues = queueSet()) {
             jobName: 'resume-step', organizationId: context.organizationId,
             runId: context.workflowRunId, completedStepId: step.id,
             actorId: context.actorId, correlationId: context.correlationId,
+            idempotencyKey: `workflow:${context.workflowRunId}:${step.id}:automation`,
             outcome: { engine: 'automation', status: 'elapsed' },
-          }, { delay: delayMs });
+          }, { ...retryOptions(`workflow:${context.workflowRunId}:${step.id}:automation`), delay: delayMs });
           return { disposition: 'scheduled', engine: 'delay', delayMs };
         }
         return { disposition: 'advance', engine: 'automation' };
       }
 
-      default:
-        throw new Error(`Unsupported workflow step type: ${step.step_type}`);
+      default: throw new Error(`Unsupported workflow step type: ${step.step_type}`);
     }
   };
 }
