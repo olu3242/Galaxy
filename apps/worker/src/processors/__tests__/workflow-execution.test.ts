@@ -30,7 +30,7 @@ function makePool(state: MockState = {}): Pool {
   const currentStepId = state.currentStepId ?? null;
   const hasSecondStep = state.hasSecondStep ?? true;
   const receiptClaimed = state.receiptClaimed ?? true;
-  const query = vi.fn((sql: string): Promise<QueryResult<Record<string, unknown>>> => {
+  const query = vi.fn((sql: string, params?: unknown[]): Promise<QueryResult<Record<string, unknown>>> => {
     let result: QueryResult<Record<string, unknown>>;
     if (sql.includes('FROM workflow_runs') && sql.includes('SELECT id, workflow_id')) {
       result = ok([{ id: RUN_ID, workflow_id: WORKFLOW_ID, status: runStatus, current_step_id: currentStepId, triggered_by: ACTOR, trigger_data: {} }]);
@@ -46,14 +46,16 @@ function makePool(state: MockState = {}): Pool {
       }]);
     } else if (sql.includes('FROM workflow_steps') && sql.includes('ORDER BY step_order ASC') && sql.includes('LIMIT 1')) {
       if (sql.includes('step_order >')) {
-        result = hasSecondStep
+        const afterOrder = typeof params?.[2] === 'number' ? params[2] : 0;
+        result = hasSecondStep && afterOrder < 2
           ? ok([{ id: STEP_2, name: 'Finish', step_type: 'automation', step_order: 2, next_step_id: null, config: {} }])
           : ok([]);
       } else {
         result = ok([{ id: STEP_1, name: 'Wait', step_type: 'manual_task', step_order: 1, next_step_id: null, config: {} }]);
       }
     } else if (sql.includes('FROM workflow_steps') && sql.includes('AND id = $3')) {
-      const isSecond = currentStepId === STEP_2;
+      const requestedStepId = typeof params?.[2] === 'string' ? params[2] : currentStepId;
+      const isSecond = requestedStepId === STEP_2;
       result = ok([{ id: isSecond ? STEP_2 : STEP_1, name: isSecond ? 'Finish' : 'Wait', step_type: isSecond ? 'automation' : 'manual_task', step_order: isSecond ? 2 : 1, next_step_id: null, config: {} }]);
     } else {
       result = ok([]);
@@ -70,8 +72,9 @@ function makeJob(jobName: string, extra: Record<string, unknown> = {}): Job {
 
 async function getClientQuery(pool: Pool): Promise<ReturnType<typeof vi.fn>> {
   const connectMock = pool.connect as ReturnType<typeof vi.fn>;
-  const resolvedClient = (await connectMock.mock.results[0]?.value) as PoolClient | undefined;
-  if (!resolvedClient) throw new Error('Client was not created');
+  const result = connectMock.mock.results[0];
+  if (!result) throw new Error('Client connection was not attempted');
+  const resolvedClient = (await result.value) as PoolClient;
   return resolvedClient.query as ReturnType<typeof vi.fn>;
 }
 
@@ -97,8 +100,9 @@ describe('workflow-execution runtime convergence', () => {
     expect(calls.some(([sql]) => sql.includes('INSERT INTO workflow_execution_receipts'))).toBe(true);
     expect(calls.some(([sql]) => sql.includes("SET status = 'completed', completed_at = NOW()"))).toBe(true);
     expect(calls.some(([sql]) => sql.includes("UPDATE workflow_runs SET status = 'running'"))).toBe(true);
-    expect(calls.some(([, params]) => params?.includes(STEP_2))).toBe(true);
+    expect(calls.some(([, params]) => params.includes(STEP_2))).toBe(true);
     expect(calls.some(([sql]) => sql.includes('Workflow engine step completed'))).toBe(true);
+    expect(calls.some(([sql]) => sql.includes("SET status = 'completed', current_step_id = NULL"))).toBe(true);
   });
 
   it('ignores a duplicate completion receipt without advancing again', async () => {
