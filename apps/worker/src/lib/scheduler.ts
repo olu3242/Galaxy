@@ -17,6 +17,13 @@ export const SCHEDULED_JOBS: ScheduledJobDefinition[] = [
     data: { jobName: 'sla-check' },
   },
   {
+    name: 'workflow-completion-reconcile',
+    queueName: 'task-processing',
+    cron: '*/1 * * * *',
+    description: 'Resume waiting workflows after completed task or approval engine work',
+    data: { jobName: 'workflow-completion-reconcile', organizationId: 'system' },
+  },
+  {
     name: 'analytics-rollup',
     queueName: 'analytics-rollup',
     cron: '0 * * * *',
