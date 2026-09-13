@@ -32,7 +32,7 @@ export function useOrgQuery<T>(path: string | null, config?: SWRConfiguration<T,
 
 export interface DashboardData {
   metrics?: Record<string, number | string>;
-  kpis?: Array<{ name: string; value: number | string; delta?: number }>;
+  kpis?: { name: string; value: number | string; delta?: number }[];
   health?: number;
 }
 
@@ -108,7 +108,7 @@ export function useBroadcasts(page = 1, limit = 20) {
 }
 
 export function useKPIs() {
-  return useOrgQuery<{ data: Array<{ name: string; value: number | string; period: string }> }>(
+  return useOrgQuery<{ data: { name: string; value: number | string; period: string }[] }>(
     '/api/v1/analytics/kpis',
   );
 }
@@ -193,13 +193,13 @@ export interface AgentOverview {
   activeAgents: number;
   executionsToday: number;
   pendingApprovals: number;
-  agents: Array<{
+  agents: {
     id: string;
     name: string;
     type: string;
     status: string;
     lastExecutedAt?: string | undefined;
-  }>;
+  }[];
 }
 
 export function useAgentOverview() {
@@ -227,7 +227,7 @@ export function useAIRecommendations() {
 
 export function useRiskSignals() {
   return useOrgQuery<{
-    data: Array<{ id: string; type: string; severity: string; description: string }>;
+    data: { id: string; type: string; severity: string; description: string }[];
   }>('/api/v1/intelligence/risks');
 }
 
@@ -248,7 +248,7 @@ export function useSystemHealth() {
 
 export function useAlerts(limit = 10) {
   return useOrgQuery<{
-    data: Array<{ id: string; name: string; severity: string; firedAt: string }>;
+    data: { id: string; name: string; severity: string; firedAt: string }[];
   }>(`/api/v1/observability/alerts?limit=${String(limit)}`);
 }
 
@@ -469,14 +469,14 @@ export function useInvoices(orgId: string | null, limit = 10) {
     ? `/api/v1/billing/organizations/${orgId}/invoices?limit=${String(limit)}`
     : null;
   return useApiQuery<{
-    invoices: Array<{
+    invoices: {
       id: string;
       amountDue: number;
       currency: string;
       status: string;
       createdAt: string;
       pdfUrl?: string;
-    }>;
+    }[];
   }>(path);
 }
 

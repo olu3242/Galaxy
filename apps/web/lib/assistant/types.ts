@@ -31,7 +31,7 @@ export interface DemoRequest {
 }
 
 export interface AssistantRequest {
-  messages: Array<{ role: MessageRole; content: string }>;
+  messages: { role: MessageRole; content: string }[];
   sessionId: string;
   leadData?: LeadData;
 }

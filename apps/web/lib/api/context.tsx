@@ -35,17 +35,14 @@ export function ApiProvider({
   const resolvedBaseUrl =
     baseUrl ?? (typeof process !== 'undefined' ? (process.env.NEXT_PUBLIC_API_URL ?? '') : '');
 
-  const clientOpts: Parameters<typeof createApiClient>[0] = {
-    baseUrl: resolvedBaseUrl,
-    getToken: () => token ?? null,
-  };
-  if (onUnauthorized !== undefined) clientOpts.onUnauthorized = onUnauthorized;
-
-  const client = useMemo(
-    () => createApiClient(clientOpts),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [resolvedBaseUrl, token, onUnauthorized],
-  );
+  const client = useMemo(() => {
+    const options: Parameters<typeof createApiClient>[0] = {
+      baseUrl: resolvedBaseUrl,
+      getToken: () => token ?? null,
+    };
+    if (onUnauthorized !== undefined) options.onUnauthorized = onUnauthorized;
+    return createApiClient(options);
+  }, [resolvedBaseUrl, token, onUnauthorized]);
 
   const value = useMemo<ApiContextValue>(
     () => ({ client, organizationId }),
