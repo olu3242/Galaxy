@@ -61,16 +61,20 @@ describe('Workflow discovery runtime', () => {
     const context = new ContextIntelligenceEngine([
       {
         name: 'membership',
-        enrich: async () => ({ memberRole: 'employee' }),
+        enrich: () => Promise.resolve({ memberRole: 'employee' }),
       },
     ]);
     const discovery = new WorkflowDiscoveryEngine(workflows, triggers);
-    const execute = vi.fn<WorkflowExecutor['execute']>().mockResolvedValue({ runId: 'run-1', status: 'running' });
+    const execute = vi
+      .fn<WorkflowExecutor['execute']>()
+      .mockResolvedValue({ runId: 'run-1', status: 'running' });
     const stages: string[] = [];
     const dispatchAgent = vi.fn().mockResolvedValue({ classification: 'annual_leave' });
 
     const runtime = new WorkflowRuntime(context, discovery, { execute }, {
-      onStage: async (stage) => { stages.push(stage); },
+      onStage: (stage) => {
+        stages.push(stage);
+      },
       dispatchAgent,
     });
 
