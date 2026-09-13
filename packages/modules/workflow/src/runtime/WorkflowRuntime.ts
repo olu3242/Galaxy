@@ -6,8 +6,8 @@ import type {
   WorkflowRequest,
   WorkflowRuntimeHooks,
 } from '../contracts.js';
-import { ContextIntelligenceEngine } from '../context/ContextIntelligenceEngine.js';
-import { WorkflowDiscoveryEngine } from '../discovery/WorkflowDiscoveryEngine.js';
+import type { ContextIntelligenceEngine } from '../context/ContextIntelligenceEngine.js';
+import type { WorkflowDiscoveryEngine } from '../discovery/WorkflowDiscoveryEngine.js';
 
 const WORKFLOW_STEP_TYPES = new Set<WorkflowExecutionStep['type']>([
   'task',
@@ -23,10 +23,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 function isWorkflowStepType(value: unknown): value is WorkflowExecutionStep['type'] {
-  return (
-    typeof value === 'string' &&
-    WORKFLOW_STEP_TYPES.has(value as WorkflowExecutionStep['type'])
-  );
+  return typeof value === 'string' && WORKFLOW_STEP_TYPES.has(value as WorkflowExecutionStep['type']);
 }
 
 function parseSteps(definition: Record<string, unknown>): WorkflowExecutionStep[] {
@@ -35,7 +32,7 @@ function parseSteps(definition: Record<string, unknown>): WorkflowExecutionStep[
 
   return rawSteps.flatMap((raw, index) => {
     if (!isRecord(raw) || !isWorkflowStepType(raw.type)) return [];
-    const id = typeof raw.id === 'string' ? raw.id : `step-${index + 1}`;
+    const id = typeof raw.id === 'string' ? raw.id : `step-${String(index + 1)}`;
     const name = typeof raw.name === 'string' ? raw.name : id;
     const config = isRecord(raw.config) ? raw.config : {};
     return [{ id, name, type: raw.type, config }];
@@ -85,7 +82,8 @@ export class WorkflowRuntime {
       };
 
       await this.hooks.onStage?.('workflow.plan.ready', context);
-      const result = await this.executor.execute(plan);
+      const execute = this.executor.execute.bind(this.executor);
+      const result = await execute(plan);
       await this.hooks.onStage?.('workflow.execution.dispatched', context);
       return { plan, runId: result.runId, status: result.status };
     } catch (error) {
