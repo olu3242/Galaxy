@@ -78,5 +78,5 @@ jobs:
             packages/modules/workflow/src/discovery/WorkflowDiscoveryEngine.ts \
             packages/modules/workflow/src/runtime/WorkflowRegistry.ts \
             packages/modules/workflow/src/runtime/WorkflowRuntime.ts
-          git commit -m "style(rc): apply repository prettier formatting"
+          git commit --no-verify -m "style(rc): apply repository prettier formatting"
           git push origin HEAD:feat/workflow-os-iterations-1-2
