@@ -56,6 +56,7 @@ import { billingV2Routes } from './routes/billing-v2.js';
 import { loopRoutes } from './routes/loop.js';
 import { broadcastRoutes } from './routes/broadcast.js';
 import { onboardingRoutes } from './routes/onboarding.js';
+import { releaseReadinessRoutes } from './routes/release-readiness.js';
 import { eventsSseRoutes } from './routes/events-sse.js';
 import { eventsWsRoutes } from './routes/events-ws.js';
 import { authRoutes } from './routes/auth.js';
@@ -78,7 +79,6 @@ async function buildApp(): Promise<FastifyInstance> {
     },
   });
 
-  // CORS — allow cross-origin requests from the web app (dev/test)
   await fastify.register(fastifyWebSocket);
 
   await fastify.register(cors, {
@@ -88,7 +88,6 @@ async function buildApp(): Promise<FastifyInstance> {
     credentials: true,
   });
 
-  // Enable raw body capture for HMAC signature verification on webhook routes
   fastify.addContentTypeParser('application/json', { parseAs: 'buffer' }, (req, body, done) => {
     (req as typeof req & { rawBody: Buffer }).rawBody = body as Buffer;
     try {
@@ -98,41 +97,26 @@ async function buildApp(): Promise<FastifyInstance> {
     }
   });
 
-  // Database pool
   const databaseUrl = process.env.DATABASE_URL;
   if (!databaseUrl) {
     throw new Error('DATABASE_URL environment variable is required');
   }
 
   const pool = new Pool({ connectionString: databaseUrl });
-
-  // Decorate fastify with pg pool
   fastify.decorate('pg', pool);
 
-  // Auth — JWT verification (skips /health and /api/v1/webhooks/whatsapp)
   await registerAuth(fastify);
-
-  // Tenant context — injects organizationId into DB session (skips public paths)
   registerTenantContext(fastify, pool);
-
-  // ABAC — legacy attribute-based access control decorators (checkAbac, assertAbac)
   registerAbacPlugin(fastify);
-
-  // Authorization Pipeline — unified RBAC+ABAC engine via Organization OS (authorize, assertAuthorized)
   registerAuthorizationPlugin(fastify);
-
-  // Runtime Pipeline — threads correlationId; emits GalaxyEvent + audit log on mutating requests
   registerRuntimePipeline(fastify, pool);
 
-  // Health check — no auth required
   fastify.get('/health', async (_request, reply) => {
     return reply.send({ status: 'ok', timestamp: new Date().toISOString() });
   });
 
-  // WhatsApp inbound webhook — no JWT, uses HMAC signature verification
   await fastify.register(whatsappWebhookRoutes, { prefix: '/api/v1' });
 
-  // Register API routes
   await fastify.register(organizationRoutes, { prefix: '/api/v1' });
   await fastify.register(memberRoutes, { prefix: '/api/v1' });
   await fastify.register(departmentRoutes, { prefix: '/api/v1' });
@@ -179,6 +163,7 @@ async function buildApp(): Promise<FastifyInstance> {
   await fastify.register(loopRoutes, { prefix: '/api/v1' });
   await fastify.register(broadcastRoutes, { prefix: '/api/v1' });
   await fastify.register(onboardingRoutes, { prefix: '/api/v1' });
+  await fastify.register(releaseReadinessRoutes, { prefix: '/api/v1' });
   await fastify.register(authRoutes, { prefix: '/api/v1' });
   await fastify.register(eventsSseRoutes, { prefix: '/api/v1' });
   await fastify.register(eventsWsRoutes, { prefix: '/api/v1' });
@@ -189,7 +174,6 @@ async function buildApp(): Promise<FastifyInstance> {
   await fastify.register(wrfRoutes, { prefix: '/api/v1' });
   await fastify.register(aofRoutes, { prefix: '/api/v1' });
 
-  // Graceful shutdown
   fastify.addHook('onClose', async () => {
     await pool.end();
   });
