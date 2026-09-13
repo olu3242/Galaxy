@@ -155,8 +155,24 @@ function makeRequest(input: WorkflowDispatchInput): WorkflowRequest {
   return request;
 }
 
-function normalized(value: string): string {
-  return value.replaceAll('_', ' ').replaceAll('-', ' ').trim().toLowerCase();
+function tokens(value: string): string[] {
+  return value
+    .replaceAll('_', ' ')
+    .replaceAll('-', ' ')
+    .trim()
+    .toLowerCase()
+    .split(/\s+/)
+    .filter((token) => token.length > 2 && !['request', 'workflow', 'process'].includes(token));
+}
+
+function semanticallyMatches(intent: string, workflow: WorkflowDefinition): boolean {
+  const intentTokens = tokens(intent);
+  if (intentTokens.length === 0) return true;
+  const candidateTokens = new Set([
+    ...tokens(workflow.name),
+    ...workflow.tags.flatMap((tag) => tokens(tag)),
+  ]);
+  return intentTokens.some((token) => candidateTokens.has(token));
 }
 
 export async function discoverWorkflowForTrigger(
@@ -199,13 +215,8 @@ export async function discoverWorkflowForTrigger(
       source: request.source,
       intent: request.intent,
       priority: isTemplate ? 10 : 30,
-      predicate: (candidate) => {
-        if (!candidate.intent) return true;
-        const intent = normalized(candidate.intent);
-        const name = normalized(workflow.name);
-        const tags = workflow.tags.map(normalized);
-        return name.includes(intent) || tags.includes(intent);
-      },
+      predicate: (candidate) =>
+        candidate.intent === undefined || semanticallyMatches(candidate.intent, workflow),
     });
   }
 
