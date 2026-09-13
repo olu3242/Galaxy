@@ -32,7 +32,6 @@ interface TemplateRow {
   id: string;
   name: string;
   description: string | null;
-  category: string;
   definition: Record<string, unknown>;
   created_at: Date | string;
   updated_at: Date | string;
@@ -132,21 +131,32 @@ function makeRequest(input: WorkflowDispatchInput): WorkflowRequest {
     correlationId: input.correlationId,
   };
 
-  const source = normalizeSource(input.sourceType);
-  const request =
-    source === 'whatsapp'
-      ? WorkflowTriggerAdapters.whatsapp(envelope)
-      : source === 'web'
-        ? WorkflowTriggerAdapters.web(envelope)
-        : source === 'scheduler'
-          ? WorkflowTriggerAdapters.scheduler(envelope)
-          : source === 'event'
-            ? WorkflowTriggerAdapters.event(envelope)
-            : WorkflowTriggerAdapters.api(envelope);
+  let request: WorkflowRequest;
+  switch (normalizeSource(input.sourceType)) {
+    case 'whatsapp':
+      request = WorkflowTriggerAdapters.whatsapp(envelope);
+      break;
+    case 'web':
+      request = WorkflowTriggerAdapters.web(envelope);
+      break;
+    case 'scheduler':
+      request = WorkflowTriggerAdapters.scheduler(envelope);
+      break;
+    case 'event':
+      request = WorkflowTriggerAdapters.event(envelope);
+      break;
+    case 'api':
+      request = WorkflowTriggerAdapters.api(envelope);
+      break;
+  }
 
   if (input.automationDomain) request.automationDomain = input.automationDomain;
   if (input.flowType) request.flowType = input.flowType;
   return request;
+}
+
+function normalized(value: string): string {
+  return value.replaceAll('_', ' ').replaceAll('-', ' ').trim().toLowerCase();
 }
 
 export async function discoverWorkflowForTrigger(
@@ -162,7 +172,7 @@ export async function discoverWorkflowForTrigger(
   );
 
   const templateRows = await client.query<TemplateRow>(
-    `SELECT id, name, description, category, definition, created_at, updated_at
+    `SELECT id, name, description, definition, created_at, updated_at
        FROM workflow_definitions
       WHERE is_active = true`,
   );
@@ -191,9 +201,9 @@ export async function discoverWorkflowForTrigger(
       priority: isTemplate ? 10 : 30,
       predicate: (candidate) => {
         if (!candidate.intent) return true;
-        const intent = candidate.intent.replaceAll('_', ' ').replaceAll('-', ' ').toLowerCase();
-        const name = workflow.name.replaceAll('_', ' ').replaceAll('-', ' ').toLowerCase();
-        const tags = workflow.tags.map((tag) => tag.replaceAll('_', ' ').replaceAll('-', ' ').toLowerCase());
+        const intent = normalized(candidate.intent);
+        const name = normalized(workflow.name);
+        const tags = workflow.tags.map(normalized);
         return name.includes(intent) || tags.includes(intent);
       },
     });
@@ -202,12 +212,13 @@ export async function discoverWorkflowForTrigger(
   const contextEngine = new ContextIntelligenceEngine([
     {
       name: 'intent-classification',
-      enrich: () => ({
-        detectedIntent: input.intent,
-        source: request.source,
-        automationDomain: input.automationDomain ?? null,
-        flowType: input.flowType ?? null,
-      }),
+      enrich: async () =>
+        Promise.resolve({
+          detectedIntent: input.intent,
+          source: request.source,
+          automationDomain: input.automationDomain ?? null,
+          flowType: input.flowType ?? null,
+        }),
     },
   ]);
   const context = await contextEngine.build(request);
@@ -233,13 +244,7 @@ export async function discoverWorkflowForTrigger(
        FROM workflow_definitions
       WHERE id = $5 AND is_active = true
      RETURNING id`,
-    [
-      input.organizationId,
-      domain,
-      flowType,
-      [input.intent],
-      matchedTemplateId,
-    ],
+    [input.organizationId, domain, flowType, [input.intent], matchedTemplateId],
   );
   const instantiated = inserted.rows[0];
   if (!instantiated) return null;
