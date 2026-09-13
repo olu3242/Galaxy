@@ -229,10 +229,7 @@ async function classifyIntent(
   return parseClassification(firstBlock?.type === 'text' ? firstBlock.text : '{}');
 }
 
-async function resolveActorId(
-  client: PoolClient,
-  context: ResolvedIntentContext,
-): Promise<string> {
+async function resolveActorId(client: PoolClient, context: ResolvedIntentContext): Promise<string> {
   if (context.actorId) return context.actorId;
   if (context.senderPhone) {
     const userResult = await client.query<{ id: string }>(
@@ -377,10 +374,10 @@ async function handleMembership(
       context.senderPhone,
     ],
   );
-  await client.query(
-    'INSERT INTO memberships (organization_id, user_id) VALUES ($1, $2)',
-    [context.organizationId, newUserId],
-  );
+  await client.query('INSERT INTO memberships (organization_id, user_id) VALUES ($1, $2)', [
+    context.organizationId,
+    newUserId,
+  ]);
   await whatsapp
     .send(context.senderPhone, {
       type: 'text',

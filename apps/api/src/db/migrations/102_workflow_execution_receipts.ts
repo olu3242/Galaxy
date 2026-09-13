@@ -23,7 +23,9 @@ export async function up(pool: Pool): Promise<void> {
 
   await pool.query(`ALTER TABLE workflow_execution_receipts ENABLE ROW LEVEL SECURITY`);
   await pool.query(`ALTER TABLE workflow_execution_receipts FORCE ROW LEVEL SECURITY`);
-  await pool.query(`DROP POLICY IF EXISTS workflow_execution_receipts_tenant_isolation ON workflow_execution_receipts`);
+  await pool.query(
+    `DROP POLICY IF EXISTS workflow_execution_receipts_tenant_isolation ON workflow_execution_receipts`,
+  );
   await pool.query(`
     CREATE POLICY workflow_execution_receipts_tenant_isolation
       ON workflow_execution_receipts

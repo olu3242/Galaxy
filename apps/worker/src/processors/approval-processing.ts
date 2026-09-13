@@ -8,7 +8,11 @@ import { withEngineLifecycle } from '../lib/withEngineLifecycle.js';
 import { withTenantClient } from '../lib/withTenantClient.js';
 
 interface QueueLike {
-  add(name: string, data: Record<string, unknown>, opts?: Record<string, unknown>): Promise<unknown>;
+  add(
+    name: string,
+    data: Record<string, unknown>,
+    opts?: Record<string, unknown>,
+  ): Promise<unknown>;
 }
 
 function makeWorkflowQueue(): Queue {
@@ -35,7 +39,15 @@ async function writeAuditLog(
     `INSERT INTO audit_logs
        (organization_id, actor_type, actor_id, action, resource_type, resource_id, correlation_id)
      VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-    [opts.organizationId, opts.actorType, opts.actorId, opts.action, opts.resourceType, opts.resourceId, opts.correlationId],
+    [
+      opts.organizationId,
+      opts.actorType,
+      opts.actorId,
+      opts.action,
+      opts.resourceType,
+      opts.resourceId,
+      opts.correlationId,
+    ],
   );
 }
 
@@ -59,7 +71,10 @@ interface WorkflowRunRow {
   trigger_data: { senderPhone?: string };
 }
 
-export function createApprovalProcessor(pool: Pool, injectedWorkflowQueue?: QueueLike): (job: Job) => Promise<void> {
+export function createApprovalProcessor(
+  pool: Pool,
+  injectedWorkflowQueue?: QueueLike,
+): (job: Job) => Promise<void> {
   const whatsapp = new WhatsAppProvider();
   let workflowQueue = injectedWorkflowQueue;
   const getWorkflowQueue = (): QueueLike => {
@@ -91,7 +106,13 @@ export function createApprovalProcessor(pool: Pool, injectedWorkflowQueue?: Queu
           [organizationId, workflowRunId],
         );
         const run = runResult.rows[0];
-        if (!run || run.status === 'completed' || run.status === 'failed' || run.status === 'cancelled') return;
+        if (
+          !run ||
+          run.status === 'completed' ||
+          run.status === 'failed' ||
+          run.status === 'cancelled'
+        )
+          return;
 
         const correlationId = payload.correlationId ?? crypto.randomUUID();
         if (jobName === 'post-approval-advance') {
@@ -107,7 +128,12 @@ export function createApprovalProcessor(pool: Pool, injectedWorkflowQueue?: Queu
               actorId: approverId,
               correlationId,
               idempotencyKey,
-              outcome: { engine: 'approval', status: 'approved', approvalId, compatibilityPath: 'legacy' },
+              outcome: {
+                engine: 'approval',
+                status: 'approved',
+                approvalId,
+                compatibilityPath: 'legacy',
+              },
             },
             { jobId: idempotencyKey, attempts: 3, backoff: { type: 'exponential', delay: 1000 } },
           );
@@ -123,7 +149,12 @@ export function createApprovalProcessor(pool: Pool, injectedWorkflowQueue?: Queu
 
           const senderPhone = run.trigger_data.senderPhone;
           if (senderPhone) {
-            await whatsapp.send(senderPhone, { type: 'text', text: 'Your approval was recorded and the workflow is continuing.' }).catch(() => undefined);
+            await whatsapp
+              .send(senderPhone, {
+                type: 'text',
+                text: 'Your approval was recorded and the workflow is continuing.',
+              })
+              .catch(() => undefined);
           }
           return;
         }
@@ -139,7 +170,12 @@ export function createApprovalProcessor(pool: Pool, injectedWorkflowQueue?: Queu
               actorId: approverId,
               correlationId,
               idempotencyKey,
-              outcome: { engine: 'approval', status: 'rejected', approvalId, compatibilityPath: 'legacy' },
+              outcome: {
+                engine: 'approval',
+                status: 'rejected',
+                approvalId,
+                compatibilityPath: 'legacy',
+              },
             },
             { jobId: idempotencyKey, attempts: 3, backoff: { type: 'exponential', delay: 1000 } },
           );
@@ -154,7 +190,9 @@ export function createApprovalProcessor(pool: Pool, injectedWorkflowQueue?: Queu
           }).catch(() => null);
           const senderPhone = run.trigger_data.senderPhone;
           if (senderPhone) {
-            await whatsapp.send(senderPhone, { type: 'text', text: 'Your request has been rejected.' }).catch(() => undefined);
+            await whatsapp
+              .send(senderPhone, { type: 'text', text: 'Your request has been rejected.' })
+              .catch(() => undefined);
           }
           return;
         }

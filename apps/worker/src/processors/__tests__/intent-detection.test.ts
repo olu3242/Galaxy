@@ -19,19 +19,27 @@ vi.mock('ioredis', () => ({
 }));
 
 vi.mock('bullmq', () => ({
-  Queue: vi.fn().mockImplementation(() => ({ add: mocks.queueAdd } satisfies Pick<BullQueue, 'add'>)),
+  Queue: vi
+    .fn()
+    .mockImplementation(() => ({ add: mocks.queueAdd }) satisfies Pick<BullQueue, 'add'>),
 }));
 
 vi.mock('@galaxy/communication', () => ({
-  WhatsAppProvider: vi.fn().mockImplementation(() => ({ send: vi.fn().mockResolvedValue(undefined) })),
+  WhatsAppProvider: vi
+    .fn()
+    .mockImplementation(() => ({ send: vi.fn().mockResolvedValue(undefined) })),
 }));
 
 vi.mock('@galaxy/events', () => ({
-  EventPublisher: vi.fn().mockImplementation(() => ({ publish: vi.fn().mockResolvedValue(undefined) })),
+  EventPublisher: vi
+    .fn()
+    .mockImplementation(() => ({ publish: vi.fn().mockResolvedValue(undefined) })),
 }));
 
 vi.mock('@galaxy/identity', () => ({
-  AuditRepository: vi.fn().mockImplementation(() => ({ insert: vi.fn().mockResolvedValue(undefined) })),
+  AuditRepository: vi
+    .fn()
+    .mockImplementation(() => ({ insert: vi.fn().mockResolvedValue(undefined) })),
 }));
 
 vi.mock('../../lib/workflow-dispatch.js', () => ({

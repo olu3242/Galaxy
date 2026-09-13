@@ -11,7 +11,9 @@ export class WorkflowDiscoveryEngine {
   discover(context: WorkflowContext): WorkflowMatch[] {
     const request = context.request;
     const triggerMatches = this.triggers.match(request);
-    const triggerByWorkflow = new Map(triggerMatches.map((trigger) => [trigger.workflowId, trigger]));
+    const triggerByWorkflow = new Map(
+      triggerMatches.map((trigger) => [trigger.workflowId, trigger]),
+    );
 
     return this.workflows
       .active(request.organizationId)

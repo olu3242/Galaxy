@@ -6,7 +6,11 @@ import { withEngineLifecycle } from '../lib/withEngineLifecycle.js';
 import { SendGridProvider } from '@galaxy/communication';
 
 interface QueueLike {
-  add(name: string, data: Record<string, unknown>, opts?: Record<string, unknown>): Promise<unknown>;
+  add(
+    name: string,
+    data: Record<string, unknown>,
+    opts?: Record<string, unknown>,
+  ): Promise<unknown>;
 }
 
 interface NotificationDispatchJobData {
@@ -41,9 +45,14 @@ export function createNotificationDispatchProcessor(
 ): (job: Job) => Promise<void> {
   const sendGridFromEmail = process.env.SENDGRID_FROM_EMAIL;
   const sendGridFromName = process.env.SENDGRID_FROM_NAME;
-  const emailProvider = sendGridApiKey && sendGridFromEmail
-    ? new SendGridProvider({ apiKey: sendGridApiKey, fromEmail: sendGridFromEmail, ...(sendGridFromName !== undefined ? { fromName: sendGridFromName } : {}) })
-    : null;
+  const emailProvider =
+    sendGridApiKey && sendGridFromEmail
+      ? new SendGridProvider({
+          apiKey: sendGridApiKey,
+          fromEmail: sendGridFromEmail,
+          ...(sendGridFromName !== undefined ? { fromName: sendGridFromName } : {}),
+        })
+      : null;
   let workflowQueue = injectedWorkflowQueue;
   const getWorkflowQueue = (): QueueLike => {
     workflowQueue ??= makeWorkflowQueue();
@@ -81,7 +90,17 @@ export function createNotificationDispatchProcessor(
               failedCount += 1;
               continue;
             }
-            console.warn(JSON.stringify({ level: 'info', event: 'notification.dispatched', broadcastId, organizationId, recipientId: recipient.id, channel, contentLength: content.length }));
+            console.warn(
+              JSON.stringify({
+                level: 'info',
+                event: 'notification.dispatched',
+                broadcastId,
+                organizationId,
+                recipientId: recipient.id,
+                channel,
+                contentLength: content.length,
+              }),
+            );
             sentCount += 1;
           }
         }
@@ -100,7 +119,11 @@ export function createNotificationDispatchProcessor(
           `INSERT INTO workflow_history
              (organization_id, run_id, from_status, to_status, actor_type, actor_id, notes, data)
            VALUES ($1, $2, 'waiting', 'waiting', 'system', 'notification', 'Notification engine completed', $3)`,
-          [organizationId, data.workflowRunId, JSON.stringify({ stepId: data.workflowStepId, sentCount, failedCount, correlationId })],
+          [
+            organizationId,
+            data.workflowRunId,
+            JSON.stringify({ stepId: data.workflowStepId, sentCount, failedCount, correlationId }),
+          ],
         );
         await getWorkflowQueue().add(
           'resume-step',
@@ -111,7 +134,13 @@ export function createNotificationDispatchProcessor(
             completedStepId: data.workflowStepId,
             correlationId,
             idempotencyKey,
-            outcome: { engine: 'notification', status: 'completed', broadcastId, sentCount, failedCount },
+            outcome: {
+              engine: 'notification',
+              status: 'completed',
+              broadcastId,
+              sentCount,
+              failedCount,
+            },
           },
           { jobId: idempotencyKey, attempts: 3, backoff: { type: 'exponential', delay: 1000 } },
         );

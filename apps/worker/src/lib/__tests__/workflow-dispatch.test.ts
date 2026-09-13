@@ -15,37 +15,41 @@ function makeClient(existing: boolean): PoolClient {
   const query = vi.fn((sql: string): Promise<QueryResult<object>> => {
     if (sql.includes('INSERT INTO workflows')) return Promise.resolve(ok([{ id: INSTANTIATED }]));
     if (sql.includes('FROM workflows') && sql.includes('is_active = true')) {
-      return Promise.resolve(existing
-        ? ok([
-            {
-              id: WORKFLOW,
-              organization_id: ORG,
-              name: 'Leave Request',
-              description: null,
-              version: 2,
-              is_active: true,
-              automation_domain: 'hr',
-              flow_type: 'ai_flow',
-              tags: ['leave_request'],
-              definition: {},
-              created_by: ORG,
-              created_at: '2026-09-13T00:00:00.000Z',
-              updated_at: '2026-09-13T00:00:00.000Z',
-            },
-          ])
-        : ok([]));
+      return Promise.resolve(
+        existing
+          ? ok([
+              {
+                id: WORKFLOW,
+                organization_id: ORG,
+                name: 'Leave Request',
+                description: null,
+                version: 2,
+                is_active: true,
+                automation_domain: 'hr',
+                flow_type: 'ai_flow',
+                tags: ['leave_request'],
+                definition: {},
+                created_by: ORG,
+                created_at: '2026-09-13T00:00:00.000Z',
+                updated_at: '2026-09-13T00:00:00.000Z',
+              },
+            ])
+          : ok([]),
+      );
     }
     if (sql.includes('FROM workflow_definitions')) {
-      return Promise.resolve(ok([
-        {
-          id: TEMPLATE,
-          name: 'Leave Request',
-          description: 'Leave workflow',
-          definition: {},
-          created_at: '2026-09-13T00:00:00.000Z',
-          updated_at: '2026-09-13T00:00:00.000Z',
-        },
-      ]));
+      return Promise.resolve(
+        ok([
+          {
+            id: TEMPLATE,
+            name: 'Leave Request',
+            description: 'Leave workflow',
+            definition: {},
+            created_at: '2026-09-13T00:00:00.000Z',
+            updated_at: '2026-09-13T00:00:00.000Z',
+          },
+        ]),
+      );
     }
     return Promise.resolve(ok([]));
   });
@@ -86,12 +90,13 @@ describe('workflow trigger discovery bridge', () => {
     const calls = (client.query as ReturnType<typeof vi.fn>).mock.calls as [string, unknown[]?][];
     expect(calls.some(([sql]) => sql.includes('INSERT INTO workflows'))).toBe(true);
     expect(
-      calls.some(([, params]) =>
-        params?.some(
-          (param) =>
-            param === 'leave_request' ||
-            (Array.isArray(param) && param.includes('leave_request')),
-        ) ?? false,
+      calls.some(
+        ([, params]) =>
+          params?.some(
+            (param) =>
+              param === 'leave_request' ||
+              (Array.isArray(param) && param.includes('leave_request')),
+          ) ?? false,
       ),
     ).toBe(true);
   });

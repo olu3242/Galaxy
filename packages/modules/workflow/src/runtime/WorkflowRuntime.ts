@@ -23,7 +23,9 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 function isWorkflowStepType(value: unknown): value is WorkflowExecutionStep['type'] {
-  return typeof value === 'string' && WORKFLOW_STEP_TYPES.has(value as WorkflowExecutionStep['type']);
+  return (
+    typeof value === 'string' && WORKFLOW_STEP_TYPES.has(value as WorkflowExecutionStep['type'])
+  );
 }
 
 function parseSteps(definition: Record<string, unknown>): WorkflowExecutionStep[] {

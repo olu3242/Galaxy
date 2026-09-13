@@ -5,13 +5,19 @@ import type { Job } from 'bullmq';
 import { createApprovalProcessor } from '../approval-processing.js';
 
 vi.mock('@galaxy/communication', () => ({
-  WhatsAppProvider: vi.fn().mockImplementation(() => ({ send: vi.fn().mockResolvedValue(undefined) })),
+  WhatsAppProvider: vi
+    .fn()
+    .mockImplementation(() => ({ send: vi.fn().mockResolvedValue(undefined) })),
 }));
 vi.mock('@galaxy/events', () => ({
-  EventPublisher: vi.fn().mockImplementation(() => ({ publish: vi.fn().mockResolvedValue(undefined) })),
+  EventPublisher: vi
+    .fn()
+    .mockImplementation(() => ({ publish: vi.fn().mockResolvedValue(undefined) })),
 }));
 vi.mock('@galaxy/identity', () => ({
-  AuditRepository: vi.fn().mockImplementation(() => ({ insert: vi.fn().mockResolvedValue(undefined) })),
+  AuditRepository: vi
+    .fn()
+    .mockImplementation(() => ({ insert: vi.fn().mockResolvedValue(undefined) })),
 }));
 
 const ORG = '00000000-0000-0000-0000-000000000001';
@@ -27,14 +33,18 @@ function ok<T extends object>(rows: T[]): QueryResult<T> {
 function makePool(runStatus = 'waiting'): { pool: Pool; clientQuery: ReturnType<typeof vi.fn> } {
   const clientQuery = vi.fn((sql: string): Promise<QueryResult<Record<string, unknown>>> => {
     if (sql.includes('FROM workflow_runs')) {
-      return Promise.resolve(ok([{
-        id: RUN_ID,
-        organization_id: ORG,
-        workflow_id: 'wf-1',
-        status: runStatus,
-        current_step_id: STEP_ID,
-        trigger_data: { senderPhone: '+2341234567890' },
-      }]));
+      return Promise.resolve(
+        ok([
+          {
+            id: RUN_ID,
+            organization_id: ORG,
+            workflow_id: 'wf-1',
+            status: runStatus,
+            current_step_id: STEP_ID,
+            trigger_data: { senderPhone: '+2341234567890' },
+          },
+        ]),
+      );
     }
     return Promise.resolve(ok([]));
   });
@@ -79,7 +89,11 @@ describe('approval-processing convergence', () => {
       expect.objectContaining({ attempts: 3 }),
     );
     expect(
-      clientQuery.mock.calls.some(([sql]) => String(sql).includes('UPDATE workflow_runs') && String(sql).includes("status = 'completed'")),
+      clientQuery.mock.calls.some(
+        ([sql]) =>
+          String(sql).includes('UPDATE workflow_runs') &&
+          String(sql).includes("status = 'completed'"),
+      ),
     ).toBe(false);
   });
 
@@ -109,6 +123,8 @@ describe('approval-processing convergence', () => {
   it('throws for an unrecognised job name on an active run', async () => {
     const { pool } = makePool();
     const add = vi.fn().mockResolvedValue(undefined);
-    await expect(createApprovalProcessor(pool, { add })(makeJob('bad-job'))).rejects.toThrow('Unknown approval job');
+    await expect(createApprovalProcessor(pool, { add })(makeJob('bad-job'))).rejects.toThrow(
+      'Unknown approval job',
+    );
   });
 });

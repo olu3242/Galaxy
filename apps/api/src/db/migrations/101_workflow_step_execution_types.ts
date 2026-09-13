@@ -1,13 +1,13 @@
 import type { Pool } from 'pg';
 
-const LEGACY_STEP_TYPES = ['manual_task', 'approval', 'notification', 'condition', 'automation'] as const;
-const EXECUTION_STEP_TYPES = [
-  ...LEGACY_STEP_TYPES,
-  'task',
-  'agent',
-  'branch',
-  'delay',
+const LEGACY_STEP_TYPES = [
+  'manual_task',
+  'approval',
+  'notification',
+  'condition',
+  'automation',
 ] as const;
+const EXECUTION_STEP_TYPES = [...LEGACY_STEP_TYPES, 'task', 'agent', 'branch', 'delay'] as const;
 
 function sqlList(values: readonly string[]): string {
   return values.map((value) => `'${value}'`).join(',');

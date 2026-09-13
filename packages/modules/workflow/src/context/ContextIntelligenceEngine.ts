@@ -2,7 +2,10 @@ import type { WorkflowContext, WorkflowRequest } from '../contracts.js';
 
 export interface ContextProvider {
   name: string;
-  enrich(request: WorkflowRequest, current: Readonly<Record<string, unknown>>): Promise<Record<string, unknown>>;
+  enrich(
+    request: WorkflowRequest,
+    current: Readonly<Record<string, unknown>>,
+  ): Promise<Record<string, unknown>>;
 }
 
 export class ContextIntelligenceEngine {

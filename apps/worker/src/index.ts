@@ -32,7 +32,9 @@ import { registerScheduledJobs } from './lib/scheduler.js';
 const logger = pino({ level: process.env.LOG_LEVEL ?? 'info' });
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
-const workflowWorker = new Worker('workflow-execution', createWorkflowProcessor(pool), { connection });
+const workflowWorker = new Worker('workflow-execution', createWorkflowProcessor(pool), {
+  connection,
+});
 workflowWorker.on('completed', (job) => {
   logger.info({ jobId: job.id }, 'workflow job completed');
 });

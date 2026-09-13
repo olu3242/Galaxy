@@ -25,7 +25,9 @@ export class WorkflowRegistry {
 
   list(organizationId?: string): WorkflowDefinition[] {
     const all = [...this.definitions.values()];
-    return organizationId === undefined ? all : all.filter((item) => item.organizationId === organizationId);
+    return organizationId === undefined
+      ? all
+      : all.filter((item) => item.organizationId === organizationId);
   }
 
   active(organizationId: string): WorkflowDefinition[] {

@@ -39,13 +39,19 @@ describe('workflow step execution dispatcher', () => {
     const q = queues();
     const client = { query: vi.fn() } as unknown as PoolClient;
     const execute = createStepExecutor(q);
-    const result = await execute(client, step('agent', { agentId: 'agent-1', input: { goal: 'review' } }), context);
+    const result = await execute(
+      client,
+      step('agent', { agentId: 'agent-1', input: { goal: 'review' } }),
+      context,
+    );
 
     expect(result).toEqual({ disposition: 'wait', engine: 'agent' });
     expect(q.agent.add).toHaveBeenCalledWith(
       'execute',
       expect.objectContaining({
-        type: 'execute', agentId: 'agent-1', triggerType: 'workflow',
+        type: 'execute',
+        agentId: 'agent-1',
+        triggerType: 'workflow',
         workflowRunId: context.workflowRunId,
         workflowStepId: '00000000-0000-0000-0000-000000000010',
         correlationId: context.correlationId,
@@ -61,7 +67,10 @@ describe('workflow step execution dispatcher', () => {
     const result = await execute(
       client,
       step('notification', {
-        broadcastId: 'broadcast-1', recipientIds: ['member-1'], content: 'Approved', channel: 'email',
+        broadcastId: 'broadcast-1',
+        recipientIds: ['member-1'],
+        content: 'Approved',
+        channel: 'email',
       }),
       context,
     );
@@ -89,26 +98,45 @@ describe('workflow step execution dispatcher', () => {
         correlationId: context.correlationId,
         idempotencyKey: expect.stringContaining(':delay'),
       }),
-      expect.objectContaining({ delay: 4500, attempts: 3, jobId: expect.stringContaining(':delay') }),
+      expect.objectContaining({
+        delay: 4500,
+        attempts: 3,
+        jobId: expect.stringContaining(':delay'),
+      }),
     );
   });
 
   it('selects a branch using persisted workflow conditions', async () => {
     const q = queues();
-    const query = vi.fn().mockResolvedValue(
-      ok([{ condition_type: 'field_gt', field: 'amount', value: 100, next_step_id: '00000000-0000-0000-0000-000000000099' }]),
-    );
+    const query = vi
+      .fn()
+      .mockResolvedValue(
+        ok([
+          {
+            condition_type: 'field_gt',
+            field: 'amount',
+            value: 100,
+            next_step_id: '00000000-0000-0000-0000-000000000099',
+          },
+        ]),
+      );
     const client = { query } as unknown as PoolClient;
     const execute = createStepExecutor(q);
     const result = await execute(client, step('branch'), context);
 
-    expect(result).toEqual({ disposition: 'advance', engine: 'branch', nextStepId: '00000000-0000-0000-0000-000000000099' });
+    expect(result).toEqual({
+      disposition: 'advance',
+      engine: 'branch',
+      nextStepId: '00000000-0000-0000-0000-000000000099',
+    });
   });
 
   it('rejects an approval step without explicit assignees', async () => {
     const q = queues();
     const client = { query: vi.fn() } as unknown as PoolClient;
     const execute = createStepExecutor(q);
-    await expect(execute(client, step('approval'), context)).rejects.toThrow('requires config.assignedTo');
+    await expect(execute(client, step('approval'), context)).rejects.toThrow(
+      'requires config.assignedTo',
+    );
   });
 });

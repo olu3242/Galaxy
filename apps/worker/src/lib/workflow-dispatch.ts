@@ -60,17 +60,24 @@ export interface WorkflowDispatchMatch {
 
 function normalizeSource(sourceType: string): WorkflowTriggerSource {
   switch (sourceType.toLowerCase()) {
-    case 'whatsapp': return 'whatsapp';
-    case 'web': return 'web';
+    case 'whatsapp':
+      return 'whatsapp';
+    case 'web':
+      return 'web';
     case 'scheduler':
-    case 'scheduled': return 'scheduler';
-    case 'event': return 'event';
+    case 'scheduled':
+      return 'scheduler';
+    case 'event':
+      return 'event';
     case 'api':
-    default: return 'api';
+    default:
+      return 'api';
   }
 }
 
-function iso(value: Date | string): string { return value instanceof Date ? value.toISOString() : value; }
+function iso(value: Date | string): string {
+  return value instanceof Date ? value.toISOString() : value;
+}
 
 function workflowFromRow(row: WorkflowRow): WorkflowDefinition {
   return {
@@ -90,7 +97,12 @@ function workflowFromRow(row: WorkflowRow): WorkflowDefinition {
   };
 }
 
-function templateAsWorkflow(row: TemplateRow, organizationId: string, automationDomain: AutomationDomain, flowType: FlowType): WorkflowDefinition {
+function templateAsWorkflow(
+  row: TemplateRow,
+  organizationId: string,
+  automationDomain: AutomationDomain,
+  flowType: FlowType,
+): WorkflowDefinition {
   return {
     id: `template:${row.id}`,
     organizationId,
@@ -121,11 +133,21 @@ function makeRequest(input: WorkflowDispatchInput): WorkflowRequest {
 
   let request: WorkflowRequest;
   switch (normalizeSource(input.sourceType)) {
-    case 'whatsapp': request = WorkflowTriggerAdapters.whatsapp(envelope); break;
-    case 'web': request = WorkflowTriggerAdapters.web(envelope); break;
-    case 'scheduler': request = WorkflowTriggerAdapters.scheduler(envelope); break;
-    case 'event': request = WorkflowTriggerAdapters.event(envelope); break;
-    case 'api': request = WorkflowTriggerAdapters.api(envelope); break;
+    case 'whatsapp':
+      request = WorkflowTriggerAdapters.whatsapp(envelope);
+      break;
+    case 'web':
+      request = WorkflowTriggerAdapters.web(envelope);
+      break;
+    case 'scheduler':
+      request = WorkflowTriggerAdapters.scheduler(envelope);
+      break;
+    case 'event':
+      request = WorkflowTriggerAdapters.event(envelope);
+      break;
+    case 'api':
+      request = WorkflowTriggerAdapters.api(envelope);
+      break;
   }
   if (input.automationDomain) request.automationDomain = input.automationDomain;
   if (input.flowType) request.flowType = input.flowType;
@@ -133,18 +155,29 @@ function makeRequest(input: WorkflowDispatchInput): WorkflowRequest {
 }
 
 function tokens(value: string): string[] {
-  return value.replaceAll('_', ' ').replaceAll('-', ' ').trim().toLowerCase().split(/\s+/)
+  return value
+    .replaceAll('_', ' ')
+    .replaceAll('-', ' ')
+    .trim()
+    .toLowerCase()
+    .split(/\s+/)
     .filter((token) => token.length > 2 && !['request', 'workflow', 'process'].includes(token));
 }
 
 function semanticallyMatches(intent: string, workflow: WorkflowDefinition): boolean {
   const intentTokens = tokens(intent);
   if (intentTokens.length === 0) return true;
-  const candidateTokens = new Set([...tokens(workflow.name), ...workflow.tags.flatMap((tag) => tokens(tag))]);
+  const candidateTokens = new Set([
+    ...tokens(workflow.name),
+    ...workflow.tags.flatMap((tag) => tokens(tag)),
+  ]);
   return intentTokens.some((token) => candidateTokens.has(token));
 }
 
-export async function discoverWorkflowForTrigger(client: PoolClient, input: WorkflowDispatchInput): Promise<WorkflowDispatchMatch | null> {
+export async function discoverWorkflowForTrigger(
+  client: PoolClient,
+  input: WorkflowDispatchInput,
+): Promise<WorkflowDispatchMatch | null> {
   const workflowRows = await client.query<WorkflowRow>(
     `SELECT id, organization_id, name, description, version, is_active,
             automation_domain, flow_type, tags, definition, created_by, created_at, updated_at
@@ -177,20 +210,30 @@ export async function discoverWorkflowForTrigger(client: PoolClient, input: Work
       source: request.source,
       ...(request.intent ? { intent: request.intent } : {}),
       priority: isTemplate ? 10 : 30,
-      predicate: (candidate) => candidate.intent === undefined || semanticallyMatches(candidate.intent, workflow),
+      predicate: (candidate) =>
+        candidate.intent === undefined || semanticallyMatches(candidate.intent, workflow),
     });
   }
 
-  const contextEngine = new ContextIntelligenceEngine([{
-    name: 'intent-classification',
-    enrich: () => Promise.resolve({ detectedIntent: input.intent, source: request.source, automationDomain: input.automationDomain ?? null, flowType: input.flowType ?? null }),
-  }]);
+  const contextEngine = new ContextIntelligenceEngine([
+    {
+      name: 'intent-classification',
+      enrich: () =>
+        Promise.resolve({
+          detectedIntent: input.intent,
+          source: request.source,
+          automationDomain: input.automationDomain ?? null,
+          flowType: input.flowType ?? null,
+        }),
+    },
+  ]);
   const context = await contextEngine.build(request);
   const best = new WorkflowDiscoveryEngine(registry, triggers).discover(context)[0];
   if (!best) return null;
 
   const matchedTemplateId = templateIds.get(best.workflow.id);
-  if (!matchedTemplateId) return { workflowId: best.workflow.id, score: best.score, reasons: best.reasons, request };
+  if (!matchedTemplateId)
+    return { workflowId: best.workflow.id, score: best.score, reasons: best.reasons, request };
 
   const inserted = await client.query<{ id: string }>(
     `INSERT INTO workflows
@@ -198,9 +241,21 @@ export async function discoverWorkflowForTrigger(client: PoolClient, input: Work
         automation_domain, flow_type, tags)
      SELECT $1, name, description, 1, true, definition, $1, $2, $3, $4
        FROM workflow_definitions WHERE id = $5 AND is_active = true RETURNING id`,
-    [input.organizationId, domain, flowType, [input.intent, ...tokens(input.intent)], matchedTemplateId],
+    [
+      input.organizationId,
+      domain,
+      flowType,
+      [input.intent, ...tokens(input.intent)],
+      matchedTemplateId,
+    ],
   );
   const instantiated = inserted.rows[0];
   if (!instantiated) return null;
-  return { workflowId: instantiated.id, matchedTemplateId, score: best.score, reasons: best.reasons, request };
+  return {
+    workflowId: instantiated.id,
+    matchedTemplateId,
+    score: best.score,
+    reasons: best.reasons,
+    request,
+  };
 }

@@ -51,5 +51,8 @@ export interface WorkflowExecutor {
 export interface WorkflowRuntimeHooks {
   onStage?(stage: string, context: WorkflowContext): Promise<void> | void;
   onError?(stage: string, error: unknown, context: WorkflowContext): Promise<void> | void;
-  dispatchAgent?(step: WorkflowExecutionStep, context: WorkflowContext): Promise<Record<string, unknown>>;
+  dispatchAgent?(
+    step: WorkflowExecutionStep,
+    context: WorkflowContext,
+  ): Promise<Record<string, unknown>>;
 }

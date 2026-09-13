@@ -71,12 +71,17 @@ describe('Workflow discovery runtime', () => {
     const stages: string[] = [];
     const dispatchAgent = vi.fn().mockResolvedValue({ classification: 'annual_leave' });
 
-    const runtime = new WorkflowRuntime(context, discovery, { execute }, {
-      onStage: (stage) => {
-        stages.push(stage);
+    const runtime = new WorkflowRuntime(
+      context,
+      discovery,
+      { execute },
+      {
+        onStage: (stage) => {
+          stages.push(stage);
+        },
+        dispatchAgent,
       },
-      dispatchAgent,
-    });
+    );
 
     const result = await runtime.handle(request);
 
