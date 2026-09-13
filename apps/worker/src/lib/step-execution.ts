@@ -112,7 +112,7 @@ export function createStepExecutor(injectedQueues?: StepExecutionQueues) {
   };
 
   return async (client: PoolClient, step: ExecutableWorkflowStep, context: StepExecutionContext): Promise<StepExecutionResult> => {
-    const config = step.config ?? {};
+    const config = step.config;
 
     switch (step.step_type) {
       case 'manual_task':
