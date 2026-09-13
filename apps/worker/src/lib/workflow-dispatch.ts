@@ -212,7 +212,7 @@ export async function discoverWorkflowForTrigger(
   const contextEngine = new ContextIntelligenceEngine([
     {
       name: 'intent-classification',
-      enrich: async () =>
+      enrich: () =>
         Promise.resolve({
           detectedIntent: input.intent,
           source: request.source,
