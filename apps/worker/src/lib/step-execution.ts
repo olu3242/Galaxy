@@ -70,11 +70,7 @@ function readField(data: Record<string, unknown>, path: string): unknown {
   }, data);
 }
 
-function conditionMatches(
-  type: string,
-  actual: unknown,
-  expected: unknown,
-): boolean {
+function conditionMatches(type: string, actual: unknown, expected: unknown): boolean {
   switch (type) {
     case 'field_equals':
       return actual === expected;
@@ -144,9 +140,7 @@ export function createStepExecutor(queues: StepExecutionQueues = queueSet()) {
 
       case 'approval': {
         const assignedTo = stringArray(config.assignedTo);
-        if (assignedTo.length === 0) {
-          throw new Error(`Approval step ${step.id} requires config.assignedTo`);
-        }
+        if (assignedTo.length === 0) throw new Error(`Approval step ${step.id} requires config.assignedTo`);
         const approvals = new ApprovalRuntimeService(poolAdapter(client));
         await approvals.request({
           organizationId: context.organizationId,
@@ -171,11 +165,8 @@ export function createStepExecutor(queues: StepExecutionQueues = queueSet()) {
         const agentId = stringValue(config.agentId);
         if (!agentId) throw new Error(`Agent step ${step.id} requires config.agentId`);
         await queues.agent.add('execute', {
-          type: 'execute',
-          organizationId: context.organizationId,
-          agentId,
-          triggerType: 'workflow',
-          triggerData: context.triggerData,
+          type: 'execute', organizationId: context.organizationId, agentId,
+          triggerType: 'workflow', triggerData: context.triggerData,
           input: typeof config.input === 'object' && config.input !== null ? config.input : {},
           actorId: stringValue(config.actorId) ?? context.actorId,
           correlationId: context.correlationId,
@@ -188,13 +179,9 @@ export function createStepExecutor(queues: StepExecutionQueues = queueSet()) {
       case 'notification': {
         const recipientIds = stringArray(config.recipientIds);
         const broadcastId = stringValue(config.broadcastId);
-        if (!broadcastId || recipientIds.length === 0) {
-          throw new Error(`Notification step ${step.id} requires broadcastId and recipientIds`);
-        }
+        if (!broadcastId || recipientIds.length === 0) throw new Error(`Notification step ${step.id} requires broadcastId and recipientIds`);
         await queues.notification.add('dispatch', {
-          organizationId: context.organizationId,
-          broadcastId,
-          recipientIds,
+          organizationId: context.organizationId, broadcastId, recipientIds,
           content: stringValue(config.content) ?? step.name,
           channel: stringValue(config.channel) ?? 'whatsapp',
           correlationId: context.correlationId,
@@ -206,40 +193,30 @@ export function createStepExecutor(queues: StepExecutionQueues = queueSet()) {
 
       case 'delay': {
         const delayMs = Math.max(0, numberValue(config.delayMs, 0));
-        await queues.workflow.add(
-          'advance-step',
-          {
-            jobName: 'advance-step',
-            organizationId: context.organizationId,
-            runId: context.workflowRunId,
-            correlationId: context.correlationId,
-          },
-          { delay: delayMs },
-        );
+        await queues.workflow.add('resume-step', {
+          jobName: 'resume-step', organizationId: context.organizationId,
+          runId: context.workflowRunId, completedStepId: step.id,
+          actorId: context.actorId, correlationId: context.correlationId,
+          outcome: { engine: 'delay', status: 'elapsed' },
+        }, { delay: delayMs });
         return { disposition: 'scheduled', engine: 'delay', delayMs };
       }
 
       case 'condition':
       case 'branch': {
         const nextStepId = await resolveBranch(client, step, context.triggerData);
-        return nextStepId
-          ? { disposition: 'advance', engine: 'branch', nextStepId }
-          : { disposition: 'advance', engine: 'branch' };
+        return nextStepId ? { disposition: 'advance', engine: 'branch', nextStepId } : { disposition: 'advance', engine: 'branch' };
       }
 
       case 'automation': {
         const delayMs = numberValue(config.delayMs, -1);
         if (delayMs >= 0) {
-          await queues.workflow.add(
-            'advance-step',
-            {
-              jobName: 'advance-step',
-              organizationId: context.organizationId,
-              runId: context.workflowRunId,
-              correlationId: context.correlationId,
-            },
-            { delay: delayMs },
-          );
+          await queues.workflow.add('resume-step', {
+            jobName: 'resume-step', organizationId: context.organizationId,
+            runId: context.workflowRunId, completedStepId: step.id,
+            actorId: context.actorId, correlationId: context.correlationId,
+            outcome: { engine: 'automation', status: 'elapsed' },
+          }, { delay: delayMs });
           return { disposition: 'scheduled', engine: 'delay', delayMs };
         }
         return { disposition: 'advance', engine: 'automation' };
