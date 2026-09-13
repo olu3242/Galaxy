@@ -1,6 +1,6 @@
 import type { WorkflowContext, WorkflowMatch } from '../contracts.js';
-import { WorkflowRegistry } from '../runtime/WorkflowRegistry.js';
-import { TriggerRegistry } from '../triggers/TriggerRegistry.js';
+import type { WorkflowRegistry } from '../runtime/WorkflowRegistry.js';
+import type { TriggerRegistry } from '../triggers/TriggerRegistry.js';
 
 export class WorkflowDiscoveryEngine {
   constructor(
@@ -26,7 +26,10 @@ export class WorkflowDiscoveryEngine {
         }
         if (request.intent) {
           const needle = request.intent.toLowerCase();
-          if (workflow.name.toLowerCase().includes(needle) || workflow.tags.some((tag) => tag.toLowerCase() === needle)) {
+          if (
+            workflow.name.toLowerCase().includes(needle) ||
+            workflow.tags.some((tag) => tag.toLowerCase() === needle)
+          ) {
             score += 25;
             reasons.push('intent');
           }
