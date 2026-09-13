@@ -1,185 +1,246 @@
-/**
- * workflow-execution processor — unit tests
- *
- * Mocks: pg.Pool, bullmq.Job, @galaxy/communication, @galaxy/events, @galaxy/identity
- */
+/** workflow-execution processor — runtime convergence tests */
 import { describe, it, expect, vi } from 'vitest';
-import type { Pool, QueryResult } from 'pg';
+import type { Pool, PoolClient, QueryResult } from 'pg';
 import type { Job } from 'bullmq';
 import { createWorkflowProcessor } from '../workflow-execution.js';
 
-// ─── Module mocks ─────────────────────────────────────────────────────────────
-
-vi.mock('@galaxy/communication', () => ({
-  WhatsAppProvider: vi.fn().mockImplementation(() => ({
-    send: vi.fn().mockResolvedValue(undefined),
-  })),
-}));
-
 vi.mock('@galaxy/events', () => ({
-  EventPublisher: vi.fn().mockImplementation(() => ({
-    publish: vi.fn().mockResolvedValue(undefined),
-  })),
+  EventPublisher: vi
+    .fn()
+    .mockImplementation(() => ({ publish: vi.fn().mockResolvedValue(undefined) })),
 }));
-
 vi.mock('@galaxy/identity', () => ({
-  AuditRepository: vi.fn().mockImplementation(() => ({
-    insert: vi.fn().mockResolvedValue(undefined),
-  })),
+  AuditRepository: vi
+    .fn()
+    .mockImplementation(() => ({ insert: vi.fn().mockResolvedValue(undefined) })),
 }));
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const ORG = '00000000-0000-0000-0000-000000000001';
 const RUN_ID = '00000000-0000-0000-0000-000000000002';
+const WORKFLOW_ID = '00000000-0000-0000-0000-000000000003';
+const STEP_1 = '00000000-0000-0000-0000-000000000004';
+const STEP_2 = '00000000-0000-0000-0000-000000000005';
+const ACTOR = '00000000-0000-0000-0000-000000000006';
 
-function ok<T extends object>(rows: T[]): QueryResult<T> {
+function ok<T extends Record<string, unknown>>(rows: T[]): QueryResult<T> {
   return { rows, rowCount: rows.length, command: 'SELECT', oid: 0, fields: [] };
 }
 
-function makePool(responses: QueryResult[]): Pool {
-  let call = 0;
+interface MockState {
+  runStatus?: 'pending' | 'running' | 'waiting' | 'completed' | 'failed' | 'cancelled';
+  currentStepId?: string | null;
+  hasSecondStep?: boolean;
+  receiptClaimed?: boolean;
+}
+
+function makePool(state: MockState = {}): Pool {
+  const runStatus = state.runStatus ?? 'pending';
+  const currentStepId = state.currentStepId ?? null;
+  const hasSecondStep = state.hasSecondStep ?? true;
+  const receiptClaimed = state.receiptClaimed ?? true;
+  const query = vi.fn(
+    (sql: string, params?: unknown[]): Promise<QueryResult<Record<string, unknown>>> => {
+      let result: QueryResult<Record<string, unknown>>;
+      if (sql.includes('FROM workflow_runs') && sql.includes('SELECT id, workflow_id')) {
+        result = ok([
+          {
+            id: RUN_ID,
+            workflow_id: WORKFLOW_ID,
+            status: runStatus,
+            current_step_id: currentStepId,
+            triggered_by: ACTOR,
+            trigger_data: {},
+          },
+        ]);
+      } else if (sql.includes('INSERT INTO workflow_execution_receipts')) {
+        result = receiptClaimed ? ok([{ id: 'receipt-1' }]) : ok([]);
+      } else if (sql.includes('INSERT INTO tasks')) {
+        result = ok([
+          {
+            id: 'task-1',
+            organization_id: ORG,
+            workflow_run_id: RUN_ID,
+            title: 'Wait',
+            description: null,
+            status: 'pending',
+            priority: 'medium',
+            assigned_to: null,
+            created_by: ACTOR,
+            due_at: null,
+            completed_at: null,
+            correlation_id: 'corr-1',
+            data: { workflowStepId: STEP_1 },
+            created_at: '2026-09-13T00:00:00.000Z',
+            updated_at: '2026-09-13T00:00:00.000Z',
+          },
+        ]);
+      } else if (
+        sql.includes('FROM workflow_steps') &&
+        sql.includes('ORDER BY step_order ASC') &&
+        sql.includes('LIMIT 1')
+      ) {
+        if (sql.includes('step_order >')) {
+          const afterOrder = typeof params?.[2] === 'number' ? params[2] : 0;
+          result =
+            hasSecondStep && afterOrder < 2
+              ? ok([
+                  {
+                    id: STEP_2,
+                    name: 'Finish',
+                    step_type: 'automation',
+                    step_order: 2,
+                    next_step_id: null,
+                    config: {},
+                  },
+                ])
+              : ok([]);
+        } else {
+          result = ok([
+            {
+              id: STEP_1,
+              name: 'Wait',
+              step_type: 'manual_task',
+              step_order: 1,
+              next_step_id: null,
+              config: {},
+            },
+          ]);
+        }
+      } else if (sql.includes('FROM workflow_steps') && sql.includes('AND id = $3')) {
+        const requestedStepId = typeof params?.[2] === 'string' ? params[2] : currentStepId;
+        const isSecond = requestedStepId === STEP_2;
+        result = ok([
+          {
+            id: isSecond ? STEP_2 : STEP_1,
+            name: isSecond ? 'Finish' : 'Wait',
+            step_type: isSecond ? 'automation' : 'manual_task',
+            step_order: isSecond ? 2 : 1,
+            next_step_id: null,
+            config: {},
+          },
+        ]);
+      } else {
+        result = ok([]);
+      }
+      return Promise.resolve(result);
+    },
+  );
+  const client = { query, release: vi.fn() } as unknown as PoolClient;
   return {
-    query: vi.fn(() => {
-      const resp = responses[call] ?? ok([]);
-      call++;
-      return Promise.resolve(resp);
-    }),
+    connect: vi.fn().mockResolvedValue(client),
+    query: vi.fn().mockResolvedValue(ok([])),
   } as unknown as Pool;
 }
 
-function makeJob(jobName: string, extra?: Record<string, unknown>): Job {
+function makeJob(jobName: string, extra: Record<string, unknown> = {}): Job {
   return {
     id: 'job-1',
     name: jobName,
-    data: { jobName, organizationId: ORG, runId: RUN_ID, correlationId: 'corr-1', ...extra },
+    data: {
+      jobName,
+      organizationId: ORG,
+      runId: RUN_ID,
+      correlationId: 'corr-1',
+      actorId: ACTOR,
+      ...extra,
+    },
   } as unknown as Job;
 }
 
-type QueryCall = [string, unknown[]];
-
-function queryCalls(pool: Pool): QueryCall[] {
-  return (pool.query as ReturnType<typeof vi.fn>).mock.calls as QueryCall[];
+async function getClientQuery(pool: Pool): Promise<ReturnType<typeof vi.fn>> {
+  const connectMock = pool.connect as ReturnType<typeof vi.fn>;
+  const result = connectMock.mock.results[0];
+  if (!result) throw new Error('Client connection was not attempted');
+  const resolvedClient = (await result.value) as PoolClient;
+  return resolvedClient.query as ReturnType<typeof vi.fn>;
 }
 
-// ─── start-workflow ───────────────────────────────────────────────────────────
-
-describe('workflow-execution: start-workflow', () => {
-  it('sets tenant context before any DML', async () => {
-    const pool = makePool([ok([]), ok([]), ok([]), ok([{ id: RUN_ID, trigger_data: {} }]), ok([])]);
-    const processor = createWorkflowProcessor(pool);
-    await processor(makeJob('start-workflow'));
-
-    const calls = queryCalls(pool);
-    expect(calls[0]?.[0]).toBe('SELECT set_config($1, $2, true)');
-    expect(calls[0]?.[1]).toContain(ORG);
-  });
-
-  it('updates workflow_runs to running', async () => {
-    const pool = makePool([ok([]), ok([]), ok([]), ok([{ id: RUN_ID, trigger_data: {} }]), ok([])]);
-    const processor = createWorkflowProcessor(pool);
-    await processor(makeJob('start-workflow'));
-
-    const updateCall = queryCalls(pool).find(([sql]) => sql.includes("status = 'running'"));
-    expect(updateCall).toBeDefined();
-    expect(updateCall?.[1]).toContain(RUN_ID);
-    expect(updateCall?.[1]).toContain(ORG);
-  });
-
-  it('inserts workflow_history with running status', async () => {
-    const pool = makePool([ok([]), ok([]), ok([]), ok([{ id: RUN_ID, trigger_data: {} }]), ok([])]);
-    const processor = createWorkflowProcessor(pool);
-    await processor(makeJob('start-workflow'));
-
-    const histCall = queryCalls(pool).find(([sql]) => sql.includes('workflow_history'));
-    expect(histCall).toBeDefined();
-  });
-});
-
-// ─── complete-workflow ────────────────────────────────────────────────────────
-
-describe('workflow-execution: complete-workflow', () => {
-  it('updates workflow_runs to completed', async () => {
-    const pool = makePool([ok([]), ok([]), ok([]), ok([])]);
-    const processor = createWorkflowProcessor(pool);
-    await processor(makeJob('complete-workflow'));
-
-    const updateCall = queryCalls(pool).find(([sql]) => sql.includes("status = 'completed'"));
-    expect(updateCall).toBeDefined();
-    expect(updateCall?.[1]).toContain(RUN_ID);
-    expect(updateCall?.[1]).toContain(ORG);
-  });
-
-  it('inserts completed workflow_history entry', async () => {
-    const pool = makePool([ok([]), ok([]), ok([]), ok([])]);
-    const processor = createWorkflowProcessor(pool);
-    await processor(makeJob('complete-workflow'));
-
-    const histCall = queryCalls(pool).find(
-      ([sql]) => sql.includes('workflow_history') && sql.includes("'completed'"),
+describe('workflow-execution runtime convergence', () => {
+  it('starts the workflow at the first concrete step', async () => {
+    const pool = makePool({ runStatus: 'pending' });
+    await createWorkflowProcessor(pool)(makeJob('start-workflow'));
+    const calls = (await getClientQuery(pool)).mock.calls as [string, unknown[]][];
+    expect(
+      calls.some(([sql]) => sql.includes("SET status = 'running', current_step_id = $3")),
+    ).toBe(true);
+    expect(calls.some(([sql]) => sql.includes('INSERT INTO workflow_run_steps'))).toBe(true);
+    expect(calls.some(([sql]) => sql.includes('INSERT INTO tasks'))).toBe(true);
+    expect(calls.some(([sql]) => sql.includes("UPDATE workflow_runs SET status = 'waiting'"))).toBe(
+      true,
     );
-    expect(histCall).toBeDefined();
   });
 
-  it('writes audit log for workflow.completed', async () => {
-    const pool = makePool([ok([]), ok([]), ok([]), ok([])]);
-    const processor = createWorkflowProcessor(pool);
-    await processor(makeJob('complete-workflow'));
-
-    const auditCall = queryCalls(pool).find(
-      ([sql]) => sql.includes('audit_logs') && sql.includes('INSERT'),
+  it('resumes a waiting engine step and advances exactly once', async () => {
+    const pool = makePool({ runStatus: 'waiting', currentStepId: STEP_1, hasSecondStep: true });
+    await createWorkflowProcessor(pool)(
+      makeJob('resume-step', {
+        completedStepId: STEP_1,
+        idempotencyKey: 'receipt-key-1',
+        outcome: { engine: 'agent', status: 'completed' },
+      }),
     );
-    expect(auditCall).toBeDefined();
-    expect(auditCall?.[1]).toContain('workflow.completed');
-    expect(auditCall?.[1]).toContain(ORG);
-  });
-});
-
-// ─── fail-workflow ────────────────────────────────────────────────────────────
-
-describe('workflow-execution: fail-workflow', () => {
-  it('updates workflow_runs to failed', async () => {
-    const pool = makePool([ok([]), ok([]), ok([]), ok([])]);
-    const processor = createWorkflowProcessor(pool);
-    await processor(makeJob('fail-workflow'));
-
-    const updateCall = queryCalls(pool).find(([sql]) => sql.includes("status = 'failed'"));
-    expect(updateCall).toBeDefined();
-    expect(updateCall?.[1]).toContain(RUN_ID);
-  });
-
-  it('writes audit log for workflow.failed', async () => {
-    const pool = makePool([ok([]), ok([]), ok([]), ok([])]);
-    const processor = createWorkflowProcessor(pool);
-    await processor(makeJob('fail-workflow'));
-
-    const auditCall = queryCalls(pool).find(
-      ([sql]) => sql.includes('audit_logs') && sql.includes('INSERT'),
+    const calls = (await getClientQuery(pool)).mock.calls as [string, unknown[]][];
+    expect(calls.some(([sql]) => sql.includes('INSERT INTO workflow_execution_receipts'))).toBe(
+      true,
     );
-    expect(auditCall).toBeDefined();
-    expect(auditCall?.[1]).toContain('workflow.failed');
+    expect(
+      calls.some(([sql]) => sql.includes("SET status = 'completed', completed_at = NOW()")),
+    ).toBe(true);
+    expect(calls.some(([sql]) => sql.includes("UPDATE workflow_runs SET status = 'running'"))).toBe(
+      true,
+    );
+    expect(calls.some(([, params]) => params.includes(STEP_2))).toBe(true);
+    expect(calls.some(([sql]) => sql.includes('Workflow engine step completed'))).toBe(true);
+    expect(
+      calls.some(([sql]) => sql.includes("SET status = 'completed', current_step_id = NULL")),
+    ).toBe(true);
   });
-});
 
-// ─── advance-step ─────────────────────────────────────────────────────────────
-
-describe('workflow-execution: advance-step', () => {
-  it('inserts workflow_history entry', async () => {
-    const pool = makePool([ok([]), ok([])]);
-    const processor = createWorkflowProcessor(pool);
-    await processor(makeJob('advance-step'));
-
-    const histCall = queryCalls(pool).find(([sql]) => sql.includes('workflow_history'));
-    expect(histCall).toBeDefined();
+  it('ignores a duplicate completion receipt without advancing again', async () => {
+    const pool = makePool({ runStatus: 'waiting', currentStepId: STEP_1, receiptClaimed: false });
+    await createWorkflowProcessor(pool)(
+      makeJob('resume-step', {
+        completedStepId: STEP_1,
+        idempotencyKey: 'duplicate-key',
+        outcome: { engine: 'task', status: 'completed' },
+      }),
+    );
+    const calls = (await getClientQuery(pool)).mock.calls as [string, unknown[]][];
+    expect(calls.some(([sql]) => sql.includes('INSERT INTO workflow_execution_receipts'))).toBe(
+      true,
+    );
+    expect(
+      calls.some(([sql]) => sql.includes("SET status = 'completed', completed_at = NOW()")),
+    ).toBe(false);
   });
-});
 
-// ─── unknown job name ─────────────────────────────────────────────────────────
+  it('rejects stale engine completion callbacks', async () => {
+    const pool = makePool({ runStatus: 'waiting', currentStepId: STEP_2 });
+    await expect(
+      createWorkflowProcessor(pool)(makeJob('resume-step', { completedStepId: STEP_1 })),
+    ).rejects.toThrow('is not current step');
+  });
 
-describe('workflow-execution: unknown job', () => {
+  it('completes the workflow when the final step advances', async () => {
+    const pool = makePool({ runStatus: 'running', currentStepId: STEP_1, hasSecondStep: false });
+    await createWorkflowProcessor(pool)(makeJob('advance-step'));
+    const calls = (await getClientQuery(pool)).mock.calls as [string, unknown[]][];
+    expect(
+      calls.some(([sql]) => sql.includes("SET status = 'completed', current_step_id = NULL")),
+    ).toBe(true);
+  });
+
+  it('rejects invalid lifecycle transitions', async () => {
+    const pool = makePool({ runStatus: 'completed' });
+    await expect(createWorkflowProcessor(pool)(makeJob('start-workflow'))).rejects.toThrow(
+      'Invalid workflow transition: completed -> running',
+    );
+  });
+
   it('throws for an unrecognised job name', async () => {
-    const pool = makePool([ok([])]);
-    const processor = createWorkflowProcessor(pool);
-    await expect(processor(makeJob('nonexistent-job'))).rejects.toThrow('Unknown job name');
+    const pool = makePool();
+    await expect(createWorkflowProcessor(pool)(makeJob('nonexistent-job'))).rejects.toThrow(
+      'Unknown job name',
+    );
   });
 });

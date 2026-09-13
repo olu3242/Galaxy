@@ -1,10 +1,24 @@
 import type { Job } from 'bullmq';
+import { Queue } from 'bullmq';
+import { Redis } from 'ioredis';
 import { Pool } from 'pg';
 import { AgentRegistryService, AgentRuntime } from '@galaxy/agents';
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 const registry = new AgentRegistryService(pool);
 const runtime = new AgentRuntime(pool);
+let workflowQueue: Queue | undefined;
+
+function getWorkflowQueue(): Queue {
+  if (!workflowQueue) {
+    const redis = new Redis(process.env.REDIS_URL ?? 'redis://localhost:6379', {
+      maxRetriesPerRequest: null,
+      lazyConnect: true,
+    });
+    workflowQueue = new Queue('workflow-execution', { connection: redis });
+  }
+  return workflowQueue;
+}
 
 interface AgentJobData {
   type: 'execute' | 'approve';
@@ -16,6 +30,8 @@ interface AgentJobData {
   input?: Record<string, unknown>;
   actorId: string;
   correlationId: string;
+  workflowRunId?: string;
+  workflowStepId?: string;
 }
 
 export async function processAgentJob(job: Job<AgentJobData>): Promise<void> {
@@ -38,10 +54,31 @@ export async function processAgentJob(job: Job<AgentJobData>): Promise<void> {
       actorId,
       correlationId,
     });
+
+    if (job.data.workflowRunId && job.data.workflowStepId) {
+      const idempotencyKey = `workflow:${job.data.workflowRunId}:${job.data.workflowStepId}:agent:${agentId}`;
+      await getWorkflowQueue().add(
+        'resume-step',
+        {
+          jobName: 'resume-step',
+          organizationId,
+          runId: job.data.workflowRunId,
+          completedStepId: job.data.workflowStepId,
+          actorId,
+          correlationId,
+          idempotencyKey,
+          outcome: { engine: 'agent', status: 'completed', agentId },
+        },
+        {
+          jobId: idempotencyKey,
+          attempts: 3,
+          backoff: { type: 'exponential', delay: 1000 },
+        },
+      );
+    }
     return;
   }
 
-  // type === 'approve'
   if (!job.data.executionId) throw new Error('executionId required for approve action');
   await runtime.approveExecution(organizationId, job.data.executionId, actorId);
 }

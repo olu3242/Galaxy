@@ -26,13 +26,12 @@ import { createAuditSyncProcessor } from './processors/audit-sync.js';
 import { createApprovalProcessor } from './processors/approval-processing.js';
 import { createLoopProcessor } from './processors/loop-processing.js';
 import { createApprovalTimeoutProcessor } from './processors/approval-timeout.js';
+import { createWorkflowRecoveryProcessor } from './processors/workflow-recovery.js';
 import { registerScheduledJobs } from './lib/scheduler.js';
 
 const logger = pino({ level: process.env.LOG_LEVEL ?? 'info' });
-
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
-// Workflow execution worker
 const workflowWorker = new Worker('workflow-execution', createWorkflowProcessor(pool), {
   connection,
 });
@@ -43,7 +42,18 @@ workflowWorker.on('failed', (job, err) => {
   logger.error({ jobId: job?.id, err }, 'workflow job failed');
 });
 
-// SLA monitoring — run every 5 minutes
+const workflowRecoveryWorker = new Worker(
+  'task-processing',
+  createWorkflowRecoveryProcessor(pool, workflowQueue),
+  { connection },
+);
+workflowRecoveryWorker.on('completed', (job) => {
+  logger.info({ jobId: job.id }, 'workflow completion reconciliation finished');
+});
+workflowRecoveryWorker.on('failed', (job, err) => {
+  logger.error({ jobId: job?.id, err }, 'workflow completion reconciliation failed');
+});
+
 const slaProcessor = createSlaProcessor(pool);
 const slaWorker = new Worker(
   'sla-monitoring',
@@ -57,7 +67,6 @@ slaWorker.on('failed', (job, err) => {
   logger.error({ jobId: job?.id, err }, 'SLA job failed');
 });
 
-// Intent detection worker
 const anthropicKey = process.env.ANTHROPIC_API_KEY ?? '';
 const intentWorker = new Worker('intent-detection', createIntentProcessor(pool, anthropicKey), {
   connection,
@@ -69,7 +78,6 @@ intentWorker.on('failed', (job, err) => {
   logger.error({ jobId: job?.id, err }, 'intent detection job failed');
 });
 
-// Notification dispatch worker (email via SendGrid, whatsapp via channel providers)
 const sendGridApiKey = process.env.SENDGRID_API_KEY;
 const notificationWorker = new Worker(
   'notification-dispatch',
@@ -83,7 +91,6 @@ notificationWorker.on('failed', (job, err) => {
   logger.error({ jobId: job?.id, err }, 'notification dispatch job failed');
 });
 
-// Loop learning worker (AI-driven optimization insights)
 const loopLearningWorker = new Worker(
   'loop-learning',
   createLoopLearningProcessor(pool, anthropicKey),
@@ -96,7 +103,6 @@ loopLearningWorker.on('failed', (job, err) => {
   logger.error({ jobId: job?.id, err }, 'loop learning job failed');
 });
 
-// Knowledge ingestion worker (RAG embedding pipeline — real embeddings via Voyage AI)
 const voyageApiKey = process.env.VOYAGE_API_KEY;
 const knowledgeWorker = new Worker(
   'knowledge-ingestion',
@@ -110,7 +116,6 @@ knowledgeWorker.on('failed', (job, err) => {
   logger.error({ jobId: job?.id, err }, 'knowledge ingestion job failed');
 });
 
-// Audit sync worker — streams audit log entries to Elasticsearch
 const elasticsearchUrl = process.env.ELASTICSEARCH_URL;
 const auditSyncWorker = new Worker('audit-sync', createAuditSyncProcessor(pool, elasticsearchUrl), {
   connection,
@@ -122,7 +127,6 @@ auditSyncWorker.on('failed', (job, err) => {
   logger.error({ jobId: job?.id, err }, 'audit sync job failed');
 });
 
-// Approval processing worker — advances workflow runs after approval decisions
 const approvalWorker = new Worker('approval-processing', createApprovalProcessor(pool), {
   connection,
 });
@@ -133,7 +137,6 @@ approvalWorker.on('failed', (job, err) => {
   logger.error({ jobId: job?.id, err }, 'approval job failed');
 });
 
-// Approval timeout worker — checks for timed-out pending approvals every 5 minutes
 const approvalTimeoutWorker = new Worker('approval-timeout', createApprovalTimeoutProcessor(pool), {
   connection,
 });
@@ -144,7 +147,6 @@ approvalTimeoutWorker.on('failed', (job, err) => {
   logger.error({ jobId: job?.id, err }, 'approval-timeout job failed');
 });
 
-// Loop processing worker — lifecycle: create-loop, record-verification, record-feedback, run-compliance
 const loopWorker = new Worker('loop-processing', createLoopProcessor(pool), { connection });
 loopWorker.on('completed', (job) => {
   logger.info({ jobId: job.id }, 'loop job completed');
@@ -153,7 +155,6 @@ loopWorker.on('failed', (job, err) => {
   logger.error({ jobId: job?.id, err }, 'loop job failed');
 });
 
-// Agent execution worker
 const agentWorker = new Worker('agent-execution', processAgentJob, { connection });
 agentWorker.on('completed', (job) => {
   logger.info({ jobId: job.id }, 'agent job completed');
@@ -162,7 +163,6 @@ agentWorker.on('failed', (job, err) => {
   logger.error({ jobId: job?.id, err }, 'agent job failed');
 });
 
-// Health-check worker — logs platform health
 const healthCheckWorker = new Worker(
   'health-check',
   () => {
@@ -175,7 +175,6 @@ healthCheckWorker.on('failed', (job, err) => {
   logger.error({ jobId: job?.id, err }, 'health-check job failed');
 });
 
-// Register all scheduled/cron jobs
 const schedulerQueues = new Map([
   ['workflow-execution', workflowQueue],
   ['approval-processing', approvalQueue],
@@ -194,10 +193,10 @@ registerScheduledJobs(schedulerQueues).catch((err: unknown) => {
   logger.error(err, 'Failed to register scheduled jobs');
 });
 
-// Graceful shutdown
 async function shutdown(): Promise<void> {
   logger.info('Shutting down Galaxy Worker...');
   await workflowWorker.close();
+  await workflowRecoveryWorker.close();
   await slaWorker.close();
   await intentWorker.close();
   await loopLearningWorker.close();

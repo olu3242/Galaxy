@@ -22,7 +22,7 @@ import * as migration020 from './migrations/020_create_dashboard_widgets.js';
 import * as migration021 from './migrations/021_create_knowledge_documents.js';
 import * as migration022 from './migrations/022_create_knowledge_categories_tags.js';
 import * as migration023 from './migrations/023_create_health_scores.js';
-import * as migration024 from './migrations/024_create_intelligence_snapshots.js';
+import * as migration024 from './migrations/024_intelligence_snapshots.js';
 import * as migration025 from './migrations/025_gwos_workflow_classification.js';
 import * as migration026 from './migrations/026_gwos_event_fabric.js';
 import * as migration027 from './migrations/027_gwos_ai_orchestration.js';
@@ -98,6 +98,8 @@ import * as migration097 from './migrations/097_chaos_markers.js';
 import * as migration098 from './migrations/098_members_platform_audit_logs.js';
 import * as migration099 from './migrations/099_support_notes_and_entitlements.js';
 import * as migration100 from './migrations/100_tenant_lifecycle_and_limits.js';
+import * as migration101 from './migrations/101_workflow_step_execution_types.js';
+import * as migration102 from './migrations/102_workflow_execution_receipts.js';
 
 interface Migration {
   up: (pool: Pool) => Promise<void>;
@@ -204,6 +206,8 @@ const migrations: { name: string; migration: Migration }[] = [
   { name: '098_members_platform_audit_logs', migration: migration098 },
   { name: '099_support_notes_and_entitlements', migration: migration099 },
   { name: '100_tenant_lifecycle_and_limits', migration: migration100 },
+  { name: '101_workflow_step_execution_types', migration: migration101 },
+  { name: '102_workflow_execution_receipts', migration: migration102 },
 ];
 
 async function ensureMigrationsTable(pool: Pool): Promise<void> {
