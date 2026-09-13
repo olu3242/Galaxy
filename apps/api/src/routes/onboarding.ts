@@ -9,6 +9,19 @@ function envelope<T>(data: T, requestId: string) {
   return { data, meta: { requestId, timestamp: new Date().toISOString() } };
 }
 
+function authenticatedContext(
+  request: FastifyRequest,
+  suppliedOrganizationId?: string,
+  suppliedActorId?: string,
+): { organizationId: string; actorId: string } | null {
+  const organizationId = request.user.organizationId;
+  const actorId = request.user.sub;
+  if (!organizationId || !actorId) return null;
+  if (suppliedOrganizationId && suppliedOrganizationId !== organizationId) return null;
+  if (suppliedActorId && suppliedActorId !== actorId) return null;
+  return { organizationId, actorId };
+}
+
 export async function onboardingRoutes(fastify: FastifyInstance): Promise<void> {
   const eventPublisher = new EventPublisher(fastify.pg);
   const orgService = new OrganizationService(fastify.pg, eventPublisher);
@@ -16,65 +29,68 @@ export async function onboardingRoutes(fastify: FastifyInstance): Promise<void> 
   const departmentService = new DepartmentService(fastify.pg, eventPublisher);
   const teamService = new TeamService(fastify.pg, eventPublisher);
 
-  // ── WABA Setup Wizard ───────────────────────────────────────────────────────
-
   fastify.post(
     '/onboarding/waba-setup',
     async (
       request: FastifyRequest<{
         Body: {
-          organizationId: string;
+          organizationId?: string;
           whatsappPhoneNumberId: string;
-          actorId: string;
+          actorId?: string;
         };
       }>,
       reply: FastifyReply,
     ) => {
-      const { organizationId, whatsappPhoneNumberId, actorId } = request.body;
-      if (!organizationId || !whatsappPhoneNumberId || !actorId) {
-        return reply
-          .status(400)
-          .send({ error: 'organizationId, whatsappPhoneNumberId, actorId required' });
+      const context = authenticatedContext(
+        request,
+        request.body.organizationId,
+        request.body.actorId,
+      );
+      if (!context) return reply.status(403).send({ error: 'Tenant or actor mismatch' });
+      if (!request.body.whatsappPhoneNumberId) {
+        return reply.status(400).send({ error: 'whatsappPhoneNumberId required' });
       }
 
       await fastify.pg.query('SELECT set_config($1, $2, true)', [
         'app.current_tenant',
-        organizationId,
+        context.organizationId,
       ]);
 
       await fastify.pg.query(
         `UPDATE organizations
          SET waba_phone_number_id = $1, updated_at = NOW()
          WHERE id = $2`,
-        [whatsappPhoneNumberId, organizationId],
+        [request.body.whatsappPhoneNumberId, context.organizationId],
       );
 
-      const org = await orgService.getById(organizationId);
+      const org = await orgService.getById(context.organizationId);
       if (!org) return reply.status(404).send({ error: 'Organization not found' });
 
       return reply.send(envelope({ organization: org, wabaConfigured: true }, request.id));
     },
   );
 
-  // ── Bulk Member Invite ──────────────────────────────────────────────────────
-
   fastify.post(
     '/onboarding/bulk-invite',
     async (
       request: FastifyRequest<{
         Body: {
-          organizationId: string;
-          actorId: string;
+          organizationId?: string;
+          actorId?: string;
           members: { userId: string; roleId?: string }[];
         };
       }>,
       reply: FastifyReply,
     ) => {
-      const { organizationId, actorId, members } = request.body;
-      if (!organizationId || !actorId || !Array.isArray(members) || members.length === 0) {
-        return reply
-          .status(400)
-          .send({ error: 'organizationId, actorId, and non-empty members array required' });
+      const context = authenticatedContext(
+        request,
+        request.body.organizationId,
+        request.body.actorId,
+      );
+      if (!context) return reply.status(403).send({ error: 'Tenant or actor mismatch' });
+      const { members } = request.body;
+      if (!Array.isArray(members) || members.length === 0) {
+        return reply.status(400).send({ error: 'non-empty members array required' });
       }
 
       const results: { userId: string; status: 'invited' | 'failed'; error?: string }[] = [];
@@ -82,10 +98,10 @@ export async function onboardingRoutes(fastify: FastifyInstance): Promise<void> 
       for (const member of members) {
         try {
           await membershipService.addMember({
-            organizationId,
+            organizationId: context.organizationId,
             userId: member.userId,
             correlationId: randomUUID(),
-            actorId,
+            actorId: context.actorId,
             ...(member.roleId !== undefined ? { roleId: member.roleId } : {}),
           });
           results.push({ userId: member.userId, status: 'invited' });
@@ -114,34 +130,36 @@ export async function onboardingRoutes(fastify: FastifyInstance): Promise<void> 
     },
   );
 
-  // ── Department Setup ────────────────────────────────────────────────────────
-
   fastify.post(
     '/onboarding/departments',
     async (
       request: FastifyRequest<{
         Body: {
-          organizationId: string;
-          actorId: string;
+          organizationId?: string;
+          actorId?: string;
           departments: { name: string; description?: string; headId?: string }[];
         };
       }>,
       reply: FastifyReply,
     ) => {
-      const { organizationId, actorId, departments } = request.body;
-      if (!organizationId || !actorId || !Array.isArray(departments) || departments.length === 0) {
-        return reply
-          .status(400)
-          .send({ error: 'organizationId, actorId, and non-empty departments array required' });
+      const context = authenticatedContext(
+        request,
+        request.body.organizationId,
+        request.body.actorId,
+      );
+      if (!context) return reply.status(403).send({ error: 'Tenant or actor mismatch' });
+      const { departments } = request.body;
+      if (!Array.isArray(departments) || departments.length === 0) {
+        return reply.status(400).send({ error: 'non-empty departments array required' });
       }
 
       const created = await Promise.all(
         departments.map((dept) =>
           departmentService.create({
-            organizationId,
+            organizationId: context.organizationId,
             name: dept.name,
             correlationId: randomUUID(),
-            actorId,
+            actorId: context.actorId,
             ...(dept.description !== undefined ? { description: dept.description } : {}),
             ...(dept.headId !== undefined ? { headId: dept.headId } : {}),
           }),
@@ -152,35 +170,37 @@ export async function onboardingRoutes(fastify: FastifyInstance): Promise<void> 
     },
   );
 
-  // ── Team Setup ──────────────────────────────────────────────────────────────
-
   fastify.post(
     '/onboarding/teams',
     async (
       request: FastifyRequest<{
         Body: {
-          organizationId: string;
-          actorId: string;
+          organizationId?: string;
+          actorId?: string;
           teams: { name: string; departmentId: string; description?: string }[];
         };
       }>,
       reply: FastifyReply,
     ) => {
-      const { organizationId, actorId, teams } = request.body;
-      if (!organizationId || !actorId || !Array.isArray(teams) || teams.length === 0) {
-        return reply
-          .status(400)
-          .send({ error: 'organizationId, actorId, and non-empty teams array required' });
+      const context = authenticatedContext(
+        request,
+        request.body.organizationId,
+        request.body.actorId,
+      );
+      if (!context) return reply.status(403).send({ error: 'Tenant or actor mismatch' });
+      const { teams } = request.body;
+      if (!Array.isArray(teams) || teams.length === 0) {
+        return reply.status(400).send({ error: 'non-empty teams array required' });
       }
 
       const created = await Promise.all(
         teams.map((team) =>
           teamService.create({
-            organizationId,
+            organizationId: context.organizationId,
             name: team.name,
             departmentId: team.departmentId,
             correlationId: randomUUID(),
-            actorId,
+            actorId: context.actorId,
             ...(team.description !== undefined ? { description: team.description } : {}),
           }),
         ),
@@ -190,38 +210,40 @@ export async function onboardingRoutes(fastify: FastifyInstance): Promise<void> 
     },
   );
 
-  // ── Onboarding Status ───────────────────────────────────────────────────────
-
   fastify.get(
     '/onboarding/status',
     async (
-      request: FastifyRequest<{ Querystring: { organizationId: string } }>,
+      request: FastifyRequest<{ Querystring: { organizationId?: string } }>,
       reply: FastifyReply,
     ) => {
-      const { organizationId } = request.query;
-      if (!organizationId) return reply.status(400).send({ error: 'organizationId required' });
+      const context = authenticatedContext(request, request.query.organizationId);
+      if (!context) return reply.status(403).send({ error: 'Tenant mismatch' });
 
       await fastify.pg.query('SELECT set_config($1, $2, true)', [
         'app.current_tenant',
-        organizationId,
+        context.organizationId,
       ]);
 
-      const [orgResult, memberCount, deptCount, teamCount] = await Promise.all([
+      const [orgResult, memberCount, deptCount, teamCount, workflowCount] = await Promise.all([
         fastify.pg.query<{ waba_phone_number_id: string | null }>(
           'SELECT waba_phone_number_id FROM organizations WHERE id = $1',
-          [organizationId],
+          [context.organizationId],
         ),
         fastify.pg.query<{ count: string }>(
           "SELECT COUNT(*) AS count FROM memberships WHERE organization_id = $1 AND status = 'active'",
-          [organizationId],
+          [context.organizationId],
         ),
         fastify.pg.query<{ count: string }>(
           "SELECT COUNT(*) AS count FROM departments WHERE organization_id = $1 AND status != 'archived'",
-          [organizationId],
+          [context.organizationId],
         ),
         fastify.pg.query<{ count: string }>(
           "SELECT COUNT(*) AS count FROM teams WHERE organization_id = $1 AND status != 'archived'",
-          [organizationId],
+          [context.organizationId],
+        ),
+        fastify.pg.query<{ count: string }>(
+          'SELECT COUNT(*) AS count FROM workflows WHERE organization_id = $1 AND is_active = true',
+          [context.organizationId],
         ),
       ]);
 
@@ -230,12 +252,14 @@ export async function onboardingRoutes(fastify: FastifyInstance): Promise<void> 
       const members = parseInt(memberCount.rows[0]?.count ?? '0', 10);
       const departments = parseInt(deptCount.rows[0]?.count ?? '0', 10);
       const teams = parseInt(teamCount.rows[0]?.count ?? '0', 10);
+      const activeWorkflows = parseInt(workflowCount.rows[0]?.count ?? '0', 10);
 
       const steps = {
         wabaConfigured,
         membersInvited: members > 0,
         departmentsCreated: departments > 0,
         teamsCreated: teams > 0,
+        workflowReady: activeWorkflows > 0,
       };
 
       const completedSteps = Object.values(steps).filter(Boolean).length;
@@ -246,9 +270,10 @@ export async function onboardingRoutes(fastify: FastifyInstance): Promise<void> 
         envelope(
           {
             complete,
+            releaseReady: complete,
             progress: { completed: completedSteps, total: totalSteps },
             steps,
-            counts: { members, departments, teams },
+            counts: { members, departments, teams, activeWorkflows },
           },
           request.id,
         ),
