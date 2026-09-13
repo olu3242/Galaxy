@@ -6,11 +6,14 @@ on:
     - cron: '0 8 * * 1'
   push:
     branches: [main]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 
 jobs:
   # ──────────────────────────────────────────────────────────────────────────
-  # Dependency audit — check for known vulnerabilities in npm packages
+  # Dependency audit — check the exact lockfile for known vulnerabilities.
+  # This runs on pull requests so critical/high advisories block before merge.
   # ──────────────────────────────────────────────────────────────────────────
   dependency-audit:
     name: Dependency Audit
@@ -25,7 +28,7 @@ jobs:
           node-version: '20'
 
       - name: Install dependencies
-        run: pnpm install --no-frozen-lockfile
+        run: pnpm install --frozen-lockfile
 
       - name: Audit dependencies
         run: pnpm audit --audit-level=high
