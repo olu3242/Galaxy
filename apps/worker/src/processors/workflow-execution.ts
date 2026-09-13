@@ -7,13 +7,15 @@ import { createStepExecutor, type ExecutableWorkflowStep } from '../lib/step-exe
 import { withEngineLifecycle } from '../lib/withEngineLifecycle.js';
 import { withTenantClient } from '../lib/withTenantClient.js';
 
-type WorkflowJobName = 'start-workflow' | 'advance-step' | 'complete-workflow' | 'fail-workflow';
+type WorkflowJobName = 'start-workflow' | 'advance-step' | 'resume-step' | 'complete-workflow' | 'fail-workflow';
 
 interface WorkflowJobData {
   jobName: WorkflowJobName;
   organizationId: string;
   runId: string;
   actorId?: string;
+  completedStepId?: string;
+  outcome?: Record<string, unknown>;
   data?: Record<string, unknown>;
   correlationId?: string;
 }
@@ -246,6 +248,51 @@ export function createWorkflowProcessor(pool: Pool): (job: Job) => Promise<void>
               client,
               { ...run, status: 'running', current_step_id: firstStep.id },
               firstStep,
+              organizationId,
+              correlationId,
+              payload.actorId ?? run.triggered_by,
+            );
+            break;
+          }
+
+          case 'resume-step': {
+            const run = await getRun(client, organizationId, runId);
+            if (run.status !== 'waiting' && run.status !== 'running') {
+              throw new Error(`Cannot resume workflow ${runId} from status ${run.status}`);
+            }
+            const completedStepId = payload.completedStepId ?? run.current_step_id;
+            if (!completedStepId) {
+              throw new Error(`Cannot resume workflow ${runId} without a current step`);
+            }
+            if (run.current_step_id && completedStepId !== run.current_step_id) {
+              throw new Error(`Cannot resume workflow ${runId}: completed step ${completedStepId} is not current step ${run.current_step_id}`);
+            }
+            const current = await getStep(client, organizationId, run.workflow_id, completedStepId);
+            await completeStep(client, organizationId, runId, current.id);
+            if (run.status === 'waiting') {
+              stateMachine.assertTransition('waiting', 'running');
+              await client.query(
+                `UPDATE workflow_runs SET status = 'running', updated_at = NOW()
+                  WHERE id = $1 AND organization_id = $2`,
+                [runId, organizationId],
+              );
+            }
+            await client.query(
+              `INSERT INTO workflow_history
+                 (organization_id, run_id, from_status, to_status, actor_type, actor_id, notes, data)
+               VALUES ($1, $2, $3, 'running', 'system', 'worker', 'Workflow engine step completed', $4)`,
+              [organizationId, runId, run.status, JSON.stringify({ stepId: current.id, outcome: payload.outcome ?? null })],
+            );
+            const nextStep = await getNextStep(client, organizationId, run.workflow_id, current);
+            if (!nextStep) {
+              await completeRun(client, organizationId, runId, 'running', correlationId);
+              break;
+            }
+            await startStep(client, organizationId, runId, nextStep.id);
+            await executeCurrentStep(
+              client,
+              { ...run, status: 'running', current_step_id: nextStep.id },
+              nextStep,
               organizationId,
               correlationId,
               payload.actorId ?? run.triggered_by,
