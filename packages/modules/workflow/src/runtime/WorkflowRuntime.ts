@@ -9,8 +9,24 @@ import type {
 import { ContextIntelligenceEngine } from '../context/ContextIntelligenceEngine.js';
 import { WorkflowDiscoveryEngine } from '../discovery/WorkflowDiscoveryEngine.js';
 
+const WORKFLOW_STEP_TYPES = new Set<WorkflowExecutionStep['type']>([
+  'task',
+  'approval',
+  'notification',
+  'branch',
+  'delay',
+  'agent',
+]);
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function isWorkflowStepType(value: unknown): value is WorkflowExecutionStep['type'] {
+  return (
+    typeof value === 'string' &&
+    WORKFLOW_STEP_TYPES.has(value as WorkflowExecutionStep['type'])
+  );
 }
 
 function parseSteps(definition: Record<string, unknown>): WorkflowExecutionStep[] {
@@ -18,13 +34,11 @@ function parseSteps(definition: Record<string, unknown>): WorkflowExecutionStep[
   if (!Array.isArray(rawSteps)) return [];
 
   return rawSteps.flatMap((raw, index) => {
-    if (!isRecord(raw)) return [];
-    const type = raw.type;
-    if (!['task', 'approval', 'notification', 'branch', 'delay', 'agent'].includes(String(type))) return [];
+    if (!isRecord(raw) || !isWorkflowStepType(raw.type)) return [];
     const id = typeof raw.id === 'string' ? raw.id : `step-${index + 1}`;
     const name = typeof raw.name === 'string' ? raw.name : id;
     const config = isRecord(raw.config) ? raw.config : {};
-    return [{ id, name, type: type as WorkflowExecutionStep['type'], config }];
+    return [{ id, name, type: raw.type, config }];
   });
 }
 
@@ -36,7 +50,9 @@ export class WorkflowRuntime {
     private readonly hooks: WorkflowRuntimeHooks = {},
   ) {}
 
-  async handle(request: WorkflowRequest): Promise<{ plan: WorkflowExecutionPlan; runId: string; status: string }> {
+  async handle(
+    request: WorkflowRequest,
+  ): Promise<{ plan: WorkflowExecutionPlan; runId: string; status: string }> {
     let context: WorkflowContext = await this.contextEngine.build(request);
 
     try {
@@ -49,12 +65,13 @@ export class WorkflowRuntime {
       if (!best) throw new Error(`No workflow matched request ${request.correlationId}`);
 
       let steps = parseSteps(best.workflow.definition);
-      if (this.hooks.dispatchAgent) {
+      const dispatchAgent = this.hooks.dispatchAgent;
+      if (dispatchAgent !== undefined) {
         steps = await Promise.all(
           steps.map(async (step) => {
             if (step.type !== 'agent') return step;
-            const agentResult = await this.hooks.dispatchAgent?.(step, context);
-            return { ...step, config: { ...step.config, agentResult: agentResult ?? {} } };
+            const agentResult = await dispatchAgent(step, context);
+            return { ...step, config: { ...step.config, agentResult } };
           }),
         );
       }
