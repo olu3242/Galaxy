@@ -13,6 +13,7 @@ function ok<T extends object>(rows: T[]): QueryResult<T> {
 
 function makeClient(existing: boolean): PoolClient {
   const query = vi.fn(async (sql: string): Promise<QueryResult<object>> => {
+    if (sql.includes('INSERT INTO workflows')) return ok([{ id: INSTANTIATED }]);
     if (sql.includes('FROM workflows') && sql.includes('is_active = true')) {
       return existing
         ? ok([
@@ -46,7 +47,6 @@ function makeClient(existing: boolean): PoolClient {
         },
       ]);
     }
-    if (sql.includes('INSERT INTO workflows')) return ok([{ id: INSTANTIATED }]);
     return ok([]);
   });
   return { query } as unknown as PoolClient;
