@@ -7,11 +7,18 @@ import { AgentRegistryService, AgentRuntime } from '@galaxy/agents';
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 const registry = new AgentRegistryService(pool);
 const runtime = new AgentRuntime(pool);
-const redis = new Redis(process.env.REDIS_URL ?? 'redis://localhost:6379', {
-  maxRetriesPerRequest: null,
-  lazyConnect: true,
-});
-const workflowQueue = new Queue('workflow-execution', { connection: redis });
+let workflowQueue: Queue | undefined;
+
+function getWorkflowQueue(): Queue {
+  if (!workflowQueue) {
+    const redis = new Redis(process.env.REDIS_URL ?? 'redis://localhost:6379', {
+      maxRetriesPerRequest: null,
+      lazyConnect: true,
+    });
+    workflowQueue = new Queue('workflow-execution', { connection: redis });
+  }
+  return workflowQueue;
+}
 
 interface AgentJobData {
   type: 'execute' | 'approve';
@@ -48,21 +55,30 @@ export async function processAgentJob(job: Job<AgentJobData>): Promise<void> {
       correlationId,
     });
 
-    if (job.data.workflowRunId) {
-      await workflowQueue.add('resume-step', {
-        jobName: 'resume-step',
-        organizationId,
-        runId: job.data.workflowRunId,
-        ...(job.data.workflowStepId ? { completedStepId: job.data.workflowStepId } : {}),
-        actorId,
-        correlationId,
-        outcome: { engine: 'agent', status: 'completed' },
-      });
+    if (job.data.workflowRunId && job.data.workflowStepId) {
+      const idempotencyKey = `workflow:${job.data.workflowRunId}:${job.data.workflowStepId}:agent:${agentId}`;
+      await getWorkflowQueue().add(
+        'resume-step',
+        {
+          jobName: 'resume-step',
+          organizationId,
+          runId: job.data.workflowRunId,
+          completedStepId: job.data.workflowStepId,
+          actorId,
+          correlationId,
+          idempotencyKey,
+          outcome: { engine: 'agent', status: 'completed', agentId },
+        },
+        {
+          jobId: idempotencyKey,
+          attempts: 3,
+          backoff: { type: 'exponential', delay: 1000 },
+        },
+      );
     }
     return;
   }
 
-  // type === 'approve'
   if (!job.data.executionId) throw new Error('executionId required for approve action');
   await runtime.approveExecution(organizationId, job.data.executionId, actorId);
 }
