@@ -39,10 +39,8 @@ async function writeAuditLog(
   );
 }
 
-type ApprovalJobName = 'post-approval-advance' | 'post-rejection-notify';
-
 interface ApprovalJobData {
-  jobName: ApprovalJobName;
+  jobName: string;
   organizationId: string;
   approvalId: string;
   workflowRunId?: string;
@@ -161,8 +159,7 @@ export function createApprovalProcessor(pool: Pool, injectedWorkflowQueue?: Queu
           return;
         }
 
-        const _never: never = jobName;
-        throw new Error(`Unknown approval job: ${String(_never)}`);
+        throw new Error(`Unknown approval job: ${jobName}`);
       });
     });
 }
