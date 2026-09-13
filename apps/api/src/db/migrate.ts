@@ -98,6 +98,7 @@ import * as migration097 from './migrations/097_chaos_markers.js';
 import * as migration098 from './migrations/098_members_platform_audit_logs.js';
 import * as migration099 from './migrations/099_support_notes_and_entitlements.js';
 import * as migration100 from './migrations/100_tenant_lifecycle_and_limits.js';
+import * as migration101 from './migrations/101_workflow_step_execution_types.js';
 
 interface Migration {
   up: (pool: Pool) => Promise<void>;
@@ -204,6 +205,7 @@ const migrations: { name: string; migration: Migration }[] = [
   { name: '098_members_platform_audit_logs', migration: migration098 },
   { name: '099_support_notes_and_entitlements', migration: migration099 },
   { name: '100_tenant_lifecycle_and_limits', migration: migration100 },
+  { name: '101_workflow_step_execution_types', migration: migration101 },
 ];
 
 async function ensureMigrationsTable(pool: Pool): Promise<void> {
