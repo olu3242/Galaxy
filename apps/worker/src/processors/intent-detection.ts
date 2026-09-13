@@ -21,6 +21,8 @@ type DetectedIntent =
   | 'information_request'
   | 'other';
 
+type PersistedIntentSource = 'whatsapp' | 'api' | 'web' | 'scheduled';
+
 interface DirectIntentJobData {
   rawInput: string;
   organizationId: string;
@@ -117,6 +119,22 @@ function isAutomationDomain(value: unknown): value is AutomationDomain {
 
 function isFlowType(value: unknown): value is FlowType {
   return typeof value === 'string' && VALID_FLOW_TYPES.has(value);
+}
+
+function persistedSource(sourceType: string): PersistedIntentSource {
+  switch (sourceType.toLowerCase()) {
+    case 'whatsapp':
+      return 'whatsapp';
+    case 'web':
+      return 'web';
+    case 'scheduled':
+    case 'scheduler':
+      return 'scheduled';
+    case 'event':
+    case 'api':
+    default:
+      return 'api';
+  }
 }
 
 function parseClassification(raw: string): ClassificationResult {
@@ -401,8 +419,9 @@ async function handleInformationRequest(
   }
 
   const knowledgeContext = chunks.rows
-    .map((chunk, index) =>
-      `[${String(index + 1)}] ${chunk.title ?? 'Document'}: ${chunk.content.slice(0, 300)}`,
+    .map(
+      (chunk, index) =>
+        `[${String(index + 1)}] ${chunk.title ?? 'Document'}: ${chunk.content.slice(0, 300)}`,
     )
     .join('\n\n');
   const answerResponse = await anthropic.messages.create({
@@ -447,7 +466,7 @@ export function createIntentProcessor(
            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
           [
             context.organizationId,
-            context.sourceType,
+            persistedSource(context.sourceType),
             context.sourceId ?? null,
             context.rawInput,
             classification.detectedIntent,
