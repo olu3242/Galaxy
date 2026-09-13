@@ -35,7 +35,9 @@ describe('WorkflowRegistry', () => {
   it('rejects stale versions', () => {
     const registry = new WorkflowRegistry();
     registry.register(workflow('wf-1', 2));
-    expect(() => registry.register(workflow('wf-1', 1))).toThrow('older workflow version');
+    expect(() => {
+      registry.register(workflow('wf-1', 1));
+    }).toThrow('older workflow version');
   });
 });
 
@@ -45,6 +47,8 @@ describe('WorkflowStateMachine', () => {
     expect(machine.canTransition('pending', 'running')).toBe(true);
     expect(machine.canTransition('completed', 'running')).toBe(false);
     expect(machine.isTerminal('failed')).toBe(true);
-    expect(() => machine.assertTransition('cancelled', 'running')).toThrow('Invalid workflow transition');
+    expect(() => {
+      machine.assertTransition('cancelled', 'running');
+    }).toThrow('Invalid workflow transition');
   });
 });
