@@ -104,7 +104,13 @@ function retryOptions(jobId: string): QueueJobOptions {
   return { attempts: 3, backoff: { type: 'exponential', delay: 1000 }, jobId };
 }
 
-export function createStepExecutor(queues: StepExecutionQueues = queueSet()) {
+export function createStepExecutor(injectedQueues?: StepExecutionQueues) {
+  let queues = injectedQueues;
+  const getQueues = (): StepExecutionQueues => {
+    queues ??= queueSet();
+    return queues;
+  };
+
   return async (client: PoolClient, step: ExecutableWorkflowStep, context: StepExecutionContext): Promise<StepExecutionResult> => {
     const config = step.config ?? {};
 
@@ -158,7 +164,7 @@ export function createStepExecutor(queues: StepExecutionQueues = queueSet()) {
       case 'agent': {
         const agentId = stringValue(config.agentId);
         if (!agentId) throw new Error(`Agent step ${step.id} requires config.agentId`);
-        await queues.agent.add('execute', {
+        await getQueues().agent.add('execute', {
           type: 'execute', organizationId: context.organizationId, agentId,
           triggerType: 'workflow', triggerData: context.triggerData,
           input: typeof config.input === 'object' && config.input !== null ? config.input : {},
@@ -174,7 +180,7 @@ export function createStepExecutor(queues: StepExecutionQueues = queueSet()) {
         const recipientIds = stringArray(config.recipientIds);
         const broadcastId = stringValue(config.broadcastId);
         if (!broadcastId || recipientIds.length === 0) throw new Error(`Notification step ${step.id} requires broadcastId and recipientIds`);
-        await queues.notification.add('dispatch', {
+        await getQueues().notification.add('dispatch', {
           organizationId: context.organizationId, broadcastId, recipientIds,
           content: stringValue(config.content) ?? step.name,
           channel: stringValue(config.channel) ?? 'whatsapp',
@@ -187,7 +193,7 @@ export function createStepExecutor(queues: StepExecutionQueues = queueSet()) {
 
       case 'delay': {
         const delayMs = Math.max(0, numberValue(config.delayMs, 0));
-        await queues.workflow.add('resume-step', {
+        await getQueues().workflow.add('resume-step', {
           jobName: 'resume-step', organizationId: context.organizationId,
           runId: context.workflowRunId, completedStepId: step.id,
           actorId: context.actorId, correlationId: context.correlationId,
@@ -206,7 +212,7 @@ export function createStepExecutor(queues: StepExecutionQueues = queueSet()) {
       case 'automation': {
         const delayMs = numberValue(config.delayMs, -1);
         if (delayMs >= 0) {
-          await queues.workflow.add('resume-step', {
+          await getQueues().workflow.add('resume-step', {
             jobName: 'resume-step', organizationId: context.organizationId,
             runId: context.workflowRunId, completedStepId: step.id,
             actorId: context.actorId, correlationId: context.correlationId,
