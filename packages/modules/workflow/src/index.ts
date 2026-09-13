@@ -1,7 +1,10 @@
 export * from './types.js';
+export * from './contracts.js';
 export { WorkflowDefinitionService } from './services/WorkflowDefinitionService.js';
 export { WorkflowEngineService } from './services/WorkflowEngineService.js';
 export { WorkflowDiscoveryService } from './services/WorkflowDiscoveryService.js';
+export { WorkflowRegistry } from './runtime/WorkflowRegistry.js';
+export { WorkflowStateMachine } from './runtime/WorkflowStateMachine.js';
 export { ApprovalService } from './approvals/ApprovalService.js';
 export { ApprovalRuntimeService } from './approvals/ApprovalRuntimeService.js';
 export type {
