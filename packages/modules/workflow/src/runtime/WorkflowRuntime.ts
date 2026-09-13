@@ -62,12 +62,11 @@ export class WorkflowRuntime {
       if (!best) throw new Error(`No workflow matched request ${request.correlationId}`);
 
       let steps = parseSteps(best.workflow.definition);
-      const dispatchAgent = this.hooks.dispatchAgent;
-      if (dispatchAgent !== undefined) {
+      if (this.hooks.dispatchAgent !== undefined) {
         steps = await Promise.all(
           steps.map(async (step) => {
             if (step.type !== 'agent') return step;
-            const agentResult = await dispatchAgent(step, context);
+            const agentResult = await this.hooks.dispatchAgent?.(step, context);
             return { ...step, config: { ...step.config, agentResult } };
           }),
         );
@@ -82,8 +81,7 @@ export class WorkflowRuntime {
       };
 
       await this.hooks.onStage?.('workflow.plan.ready', context);
-      const execute = this.executor.execute.bind(this.executor);
-      const result = await execute(plan);
+      const result = await this.executor.execute(plan);
       await this.hooks.onStage?.('workflow.execution.dispatched', context);
       return { plan, runId: result.runId, status: result.status };
     } catch (error) {
