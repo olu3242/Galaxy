@@ -1,10 +1,17 @@
 import type { Job } from 'bullmq';
+import { Queue } from 'bullmq';
+import { Redis } from 'ioredis';
 import { Pool } from 'pg';
 import { AgentRegistryService, AgentRuntime } from '@galaxy/agents';
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 const registry = new AgentRegistryService(pool);
 const runtime = new AgentRuntime(pool);
+const redis = new Redis(process.env.REDIS_URL ?? 'redis://localhost:6379', {
+  maxRetriesPerRequest: null,
+  lazyConnect: true,
+});
+const workflowQueue = new Queue('workflow-execution', { connection: redis });
 
 interface AgentJobData {
   type: 'execute' | 'approve';
@@ -16,6 +23,8 @@ interface AgentJobData {
   input?: Record<string, unknown>;
   actorId: string;
   correlationId: string;
+  workflowRunId?: string;
+  workflowStepId?: string;
 }
 
 export async function processAgentJob(job: Job<AgentJobData>): Promise<void> {
@@ -38,6 +47,18 @@ export async function processAgentJob(job: Job<AgentJobData>): Promise<void> {
       actorId,
       correlationId,
     });
+
+    if (job.data.workflowRunId) {
+      await workflowQueue.add('resume-step', {
+        jobName: 'resume-step',
+        organizationId,
+        runId: job.data.workflowRunId,
+        ...(job.data.workflowStepId ? { completedStepId: job.data.workflowStepId } : {}),
+        actorId,
+        correlationId,
+        outcome: { engine: 'agent', status: 'completed' },
+      });
+    }
     return;
   }
 
