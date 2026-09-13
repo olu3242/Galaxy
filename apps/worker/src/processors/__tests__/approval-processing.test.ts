@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { describe, it, expect, vi } from 'vitest';
 import type { Pool, PoolClient, QueryResult } from 'pg';
 import type { Job } from 'bullmq';
@@ -78,7 +79,7 @@ describe('approval-processing convergence', () => {
       expect.objectContaining({ attempts: 3 }),
     );
     expect(
-      clientQuery.mock.calls.some(([sql]) => String(sql).includes("UPDATE workflow_runs") && String(sql).includes("status = 'completed'")),
+      clientQuery.mock.calls.some(([sql]) => String(sql).includes('UPDATE workflow_runs') && String(sql).includes("status = 'completed'")),
     ).toBe(false);
   });
 
